@@ -141,3 +141,103 @@ test('mecânicas de chefe: Presa-de-Ferro usa habilidades', async () => {
   assert.ok(tg);
   bot.close();
 });
+
+test('loja, criação, aprimoramento, baú e viagem', async () => {
+  const bot = new Bot(srv.port);
+  await bot.connect();
+  await bot.login('crafter');
+  await bot.createAndEnter('Artesao', 'mage');
+  bot.chat('/ouro 3000');
+  bot.chat('/nivel 6');
+  await sleep(200);
+  // compra com Otto
+  bot.chat(`/tp ${NPCS.otto.x} ${NPCS.otto.y + 1.5}`);
+  await bot.waitType('pos');
+  bot.send({ t: 'buy', n: 'otto', i: 'pot_mp_1', q: 4 });
+  await bot.wait((m) => m.t === 'inv' && m.l.some((it) => it && it.id === 'pot_mp_1' && it.q >= 9));
+  // alquimia com Fenwick
+  bot.chat('/item mat_slime 2'); bot.chat('/item mat_herb 1');
+  bot.chat(`/tp ${NPCS.fenwick.x} ${NPCS.fenwick.y + 1.5}`);
+  await bot.waitType('pos');
+  bot.send({ t: 'craft', n: 'fenwick', r: 'r_pot_hp_2' });
+  const cr = await bot.waitType('crafted');
+  assert.equal(cr.i, 'pot_hp_2');
+  // aprimoramento com Brunhilda (+1 nunca falha)
+  bot.chat('/item enh_stone 2');
+  bot.chat(`/tp ${NPCS.brunhilda.x} ${NPCS.brunhilda.y + 1.5}`);
+  await bot.waitType('pos');
+  bot.send({ t: 'enh', n: 'brunhilda', src: 'eq', slot: 'weapon' });
+  const en = await bot.waitType('enhres');
+  assert.ok(en.ok);
+  assert.equal(en.p, 1);
+  // baú com Marta
+  bot.chat(`/tp ${NPCS.marta.x} ${NPCS.marta.y + 1.5}`);
+  await bot.waitType('pos');
+  await sleep(150);
+  const slot = bot.state.inv.findIndex((it) => it && it.id === 'scroll_return');
+  bot.send({ t: 'stash', n: 'marta', op: 'put', slot });
+  await bot.wait((m) => m.t === 'stash' && m.l.some((it) => it && it.id === 'scroll_return'));
+  // viagem: só destinos visitados
+  bot.chat(`/tp ${NPCS.ilyas.x} ${NPCS.ilyas.y + 1.5}`);
+  await bot.waitType('pos');
+  bot.send({ t: 'tp', n: 'ilyas', z: 'forest' });
+  const err = await bot.wait((m) => m.t === 'msg' && m.k === 'err');
+  assert.match(err.m, /descobriu/);
+  bot.close();
+});
+
+test('morte, penalidade e renascimento na vila', async () => {
+  const bot = new Bot(srv.port);
+  await bot.connect();
+  await bot.login('dier');
+  await bot.createAndEnter('Fragil', 'mage');
+  bot.chat('/ir ruins');
+  await bot.waitType('world');
+  bot.chat('/tp 66 26');
+  const dead = await bot.waitType('dead', 30000);
+  assert.ok(dead);
+  bot.send({ t: 'resp' });
+  const w = await bot.waitType('world');
+  assert.equal(w.zone.id, 'town');
+  bot.close();
+});
+
+test('clã: fundar, convidar e conversar', async () => {
+  const a = new Bot(srv.port), b = new Bot(srv.port);
+  await a.connect(); await b.connect();
+  await a.login('guildA'); await b.login('guildB');
+  await a.createAndEnter('Lider', 'warrior');
+  await b.createAndEnter('Membro', 'ranger');
+  a.chat('/ouro 1000');
+  await sleep(100);
+  a.send({ t: 'guild', op: 'create', name: 'Lobos de Prata' });
+  await a.wait((m) => m.t === 'guild' && m.name === 'Lobos de Prata');
+  a.send({ t: 'guild', op: 'invite', name: 'Membro' });
+  await b.wait((m) => m.t === 'invite' && m.k === 'guild');
+  b.send({ t: 'guild', op: 'accept' });
+  await b.wait((m) => m.t === 'guild' && m.m && m.m.length === 2);
+  a.chat('/c bem-vindo');
+  const msg = await b.wait((m) => m.t === 'chat' && m.c === 'cla' && m.f === 'Lider');
+  assert.equal(msg.m, 'bem-vindo');
+  a.close(); b.close();
+});
+
+test('persistência: o personagem volta com o progresso', async () => {
+  const bot = new Bot(srv.port);
+  await bot.connect();
+  await bot.login('persist');
+  await bot.createAndEnter('Memoria', 'cleric');
+  bot.chat('/nivel 7');
+  bot.chat('/ouro 777');
+  await sleep(300);
+  bot.close();
+  await sleep(300);
+  const again = new Bot(srv.port);
+  await again.connect();
+  const chars = await again.login('persist', 'senha123', false);
+  assert.equal(chars.list[0].level, 7);
+  again.send({ t: 'enter', id: chars.list[0].id });
+  const w = await again.waitType('world');
+  assert.equal(w.you.char.gold, 25 + 777);
+  again.close();
+});

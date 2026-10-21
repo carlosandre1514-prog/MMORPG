@@ -59,7 +59,14 @@ export class Bot {
     if (m.t === 'quests') this.state.quests = m;
     if (m.t === 'stats') this.state.stats = m.s;
     for (const w of [...this.waiters]) {
-      if (w.pred(m)) { this.waiters.splice(this.waiters.indexOf(w), 1); clearTimeout(w.timer); w.resolve(m); }
+      if (w.pred(m)) {
+        this.waiters.splice(this.waiters.indexOf(w), 1);
+        clearTimeout(w.timer);
+        const i = this.msgs.lastIndexOf(m);
+        if (i >= 0) this.msgs.splice(i, 1);
+        w.resolve(m);
+        break;
+      }
     }
   }
 

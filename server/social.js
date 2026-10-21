@@ -56,6 +56,7 @@ export class Social {
     let text = clean(msg.m);
     if (!text) return;
     const now = Date.now();
+    if (this.world.dev && text.startsWith('/')) return this.command(p, text);
     // anti-spam: rajada de até 4 mensagens, recarrega 1 a cada 1,5s
     p.chatBurst = Math.max(0, p.chatBurst - (now - p.lastChat) / 1500);
     p.lastChat = now;

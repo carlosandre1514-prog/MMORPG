@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server/main.js",
     "dev": "DEV=1 XP_RATE=3 node server/main.js",
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.js"
   },
   "engines": {
     "node": ">=18"

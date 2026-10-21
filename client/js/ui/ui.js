@@ -12,6 +12,7 @@ import { Tooltip, slotEl } from './itemview.js';
 import { skillIcon, itemIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { minimapColor } from '../terrain.js';
 import { audio } from '../audio.js';
+import { charSprites } from '../charsprites.js';
 import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
@@ -349,6 +350,11 @@ export class UI {
     g.addColorStop(0, '#3a4a6b'); g.addColorStop(1, '#10141f');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 96, 96);
     const me = this.me;
+    if (charSprites.has(me.cls)) {
+      // retrato: aproxima o rosto do modelo
+      ctx.drawImage(charSprites.portrait(me.cls, 96, 0, 2.6), 0, 22);
+      return;
+    }
     const app = {};
     for (const [slot, it] of Object.entries(me.equip || {})) if (it) app[slot[0]] = it.id;
     const look = playerLook({ cls: me.cls, sk: me.skin, hr: me.hair, app });
@@ -470,6 +476,10 @@ export class UI {
   }
 
   toast(text, kind = 'info') {
+    // evita repetir a mesma mensagem em sequência
+    const now = performance.now();
+    if (this.lastToast && this.lastToast.text === text && now - this.lastToast.at < 1500) return;
+    this.lastToast = { text, at: now };
     const el = h('div', { class: 'toast t-' + kind }, text);
     this.toasts.appendChild(el);
     while (this.toasts.children.length > 5) this.toasts.removeChild(this.toasts.firstChild);

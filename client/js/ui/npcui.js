@@ -12,15 +12,17 @@ import { drawNpc, itemIcon } from '../sprites.js';
 import { canAccept, almostAvailable, isComplete, progress, need, countItem } from '../questlogic.js';
 import { objText, rewardsEl, fill } from './windows.js';
 import { audio } from '../audio.js';
+import { charSprites, NPC_SPRITES } from '../charsprites.js';
 
 export const npcMixin = {
   buildNpcWindows(W) {
     W('npc', 'Diálogo', { w: 470, pos: { x: 14, y: 110 }, onClose: () => { this.npcOpen = null; this.game.dialogNpc = null; } });
-    W('shop', 'Loja', { w: 420 });
-    W('craft', 'Criação', { w: 480 });
-    W('enhance', 'Aprimoramento', { w: 460 });
-    W('stash', 'Baú', { w: 380 });
-    W('teleport', 'Pedra do Caminho', { w: 340 });
+    const svcPos = () => ({ x: Math.min(500, Math.max(10, window.innerWidth - 850)), y: 100 });
+    W('shop', 'Loja', { w: 420, pos: svcPos });
+    W('craft', 'Criação', { w: 480, pos: svcPos });
+    W('enhance', 'Aprimoramento', { w: 460, pos: svcPos });
+    W('stash', 'Baú', { w: 380, pos: svcPos });
+    W('teleport', 'Pedra do Caminho', { w: 340, pos: svcPos });
     // fecha diálogos ao se afastar
     if (this.npcTimer) return;
     this.npcTimer = setInterval(() => {
@@ -53,6 +55,10 @@ export const npcMixin = {
     const g = ctx.createRadialGradient(64, 54, 6, 64, 64, 80);
     g.addColorStop(0, '#3b4b66'); g.addColorStop(1, '#121620');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+    if (charSprites.has(NPC_SPRITES[npc.id])) {
+      ctx.drawImage(charSprites.portrait(NPC_SPRITES[npc.id], 128, 0, 2.6), 0, 30);
+      return h('div', { class: 'npc-head' }, cv, h('div', {}, h('div', { class: 'npc-name' }, npc.name), npc.title ? h('div', { class: 'npc-title' }, npc.title) : null));
+    }
     const big = npc.look.type === 'board' || npc.look.type === 'altar' || npc.look.type === 'lore';
     ctx.setTransform(big ? 2.6 : 3, 0, 0, big ? 2.6 : 3, 64, big ? 118 : 150);
     drawNpc(ctx, 0, 0, npc, performance.now() / 1000, { lit: npc.id === 'altar' && this.game.questDone('ms19') });
@@ -119,6 +125,7 @@ export const npcMixin = {
     const w = this.wins[id];
     const npc = this.npcOpen;
     if (!w || !npc) return;
+    for (const o of ['shop', 'craft', 'enhance', 'stash', 'teleport']) if (o !== id) this.wins[o]?.close();
     if (id === 'stash') this.send({ t: 'stash', op: 'open', n: npc.id });
     const render = this['render' + id[0].toUpperCase() + id.slice(1)];
     render.call(this);
@@ -153,13 +160,12 @@ export const npcMixin = {
         h('button', { class: 'btn tiny', onclick: () => this.send({ t: 'buy', n: npc.id, i: id, q: qty ? parseInt(qty.value, 10) || 1 : 1 }) }, 'Comprar')));
     }
     const junk = me.inv.map((it, i) => ({ it, i })).filter(({ it }) => it && isEquipment(ITEMS[it.id]) && !(it.r > 0) && !it.p);
-    body.append(list,
-      h('div', { class: 'muted small' }, 'Para vender: clique com o botão direito em um item do inventário.'),
-      junk.length ? h('button', {
+    body.append(list, h('div', { class: 'muted small' }, 'Para vender: clique com o botão direito em um item do inventário.'));
+    if (junk.length) body.append(h('button', {
         class: 'btn ghost small', onclick: () => this.confirm(`Vender ${junk.length} equipamento(s) comum(ns) por ${junk.reduce((a, { it }) => a + sellPrice(it), 0)} ouro?`, () => {
           for (const { i } of junk) this.send({ t: 'sell', slot: i, n: npc.id });
         }, { yes: 'Vender' }),
-      }, `Vender equipamentos comuns (${junk.length})`) : null);
+      }, `Vender equipamentos comuns (${junk.length})`));
   },
 
   // ================================================================ criação

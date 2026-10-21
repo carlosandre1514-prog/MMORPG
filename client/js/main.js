@@ -9,6 +9,7 @@ import { UI } from './ui/ui.js';
 import { h, clear, esc } from './ui/dom.js';
 import { drawHumanoid, playerLook, skillIcon } from './sprites.js';
 import { audio } from './audio.js';
+import { charSprites } from './charsprites.js';
 
 const net = new Net();
 const screens = document.getElementById('screens');
@@ -112,6 +113,11 @@ function onChars(m) {
 }
 
 function charPreview(c, size = 120, dir = 0) {
+  if (charSprites.has(c.cls)) {
+    const cv = charSprites.portrait(c.cls, size, dir, size >= 150 ? 1.05 : 1.35);
+    cv.className = 'char-cv';
+    return cv;
+  }
   const cv = h('canvas', { width: size, height: size, class: 'char-cv' });
   const ctx = cv.getContext('2d');
   const app = {};
@@ -219,7 +225,7 @@ function createScreen() {
     h('div', { class: 'menu-title' }, 'Criar Portador'),
     h('div', { class: 'create-wrap' },
       h('div', { class: 'create-left' }, preview, h('div', { class: 'muted small center' }, 'Clique para girar'),
-        h('div', { class: 'lbl' }, 'Pele'), skinBox, h('div', { class: 'lbl' }, 'Cabelo'), hairBox),
+        ...(charSprites.ready ? [] : [h('div', { class: 'lbl' }, 'Pele'), skinBox, h('div', { class: 'lbl' }, 'Cabelo'), hairBox])),
       h('div', { class: 'create-right' }, classBox, info)),
     h('div', { class: 'row center' }, name, h('button', { class: 'btn big', onclick: create }, 'Criar')),
     err,
@@ -265,6 +271,7 @@ async function boot() {
   startBackdrop();
   show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')), h('div', { class: 'muted center' }, 'Conectando...'))));
   try {
+    await Promise.race([charSprites.load(), new Promise((r) => setTimeout(r, 8000))]);
     await net.connect();
     const hello = await net.request({ t: 'hello' }, (m) => m.t === 'hello');
     loginScreen(hello);

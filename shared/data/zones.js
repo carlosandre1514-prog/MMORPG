@@ -6,7 +6,7 @@ export const ZONES = {
   town: {
     id: 'town', name: 'Vila de Alvorada', levels: 'Zona Segura', safe: true, w: 64, h: 48,
     gen: { type: 'town', seed: 7 },
-    spawn: { x: 32.5, y: 29.5 },
+    spawn: { x: 30.5, y: 18.5 },
     ambient: '#000000', night: 0.55, music: 'town',
     portals: [
       { x: 62, y: 22, w: 2, h: 4, to: 'fields', tx: 4.5, ty: 45.5, label: 'Campos Verdejantes' },

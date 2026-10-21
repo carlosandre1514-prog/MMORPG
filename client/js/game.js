@@ -67,9 +67,14 @@ export class Game {
       if (!this.running) return;
       const dt = Math.min(0.1, (ts - this.lastFrame) / 1000);
       this.lastFrame = ts;
-      this.update(dt);
-      this.renderer.render(ts / 1000);
-      this.ui.frame();
+      try {
+        this.update(dt);
+        this.renderer.render(ts / 1000);
+        this.ui.frame();
+      } catch (e) {
+        // um erro num quadro não pode congelar o jogo
+        if (!this.loggedErr || ts - this.loggedErr > 5000) { console.error('[jogo] erro no quadro', e); this.loggedErr = ts; }
+      }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
@@ -186,7 +191,7 @@ export class Game {
     for (const full of m.n) {
       let e = this.entities.get(full.id);
       if (!e) {
-        e = { ...full, rx: full.x, ry: full.y, buf: [{ t: m.ts, x: full.x, y: full.y }], phase: Math.random() * 6, dir: 0, f: 0, moving: false };
+        e = { ...full, rx: full.x, ry: full.y, buf: [{ t: m.ts, x: full.x, y: full.y }], phase: Math.random() * 6, dir: 0, f: 0, moving: false, deathStart: now - 10000 };
         if (e.k === 'i') e.name = null;
         this.entities.set(full.id, e);
       } else {

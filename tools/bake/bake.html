@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bake de sprites KayKit</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "/tools/bake/node_modules/three/build/three.module.js",
+      "three/addons/": "/tools/bake/node_modules/three/examples/jsm/"
+    } }
+  </script>
+</head>
+<body style="background:#556">
+<script type="module">
+// Renderiza os personagens 3D KayKit (CC0) em spritesheets 2D para o jogo.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+
+const FRAME = 128;
+const DIRS = ['down', 'left', 'right', 'up'];
+const DIR_ROT = { down: 0, left: -Math.PI / 2, right: Math.PI / 2, up: Math.PI };
+const ANIMS = [
+  { name: 'idle', clip: 'Idle_A', frames: 8, loop: true },
+  { name: 'walk', clip: 'Walking_A', frames: 8, loop: true },
+  { name: 'attack', clip: 'Throw', frames: 6 },
+  { name: 'cast', clip: 'Use_Item', frames: 6 },
+  { name: 'hit', clip: 'Hit_A', frames: 4 },
+  { name: 'death', clip: 'Death_A', frames: 6 },
+];
+
+const loader = new GLTFLoader();
+const load = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setSize(FRAME * 2, FRAME * 2);
+renderer.setPixelRatio(1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setClearColor(0x000000, 0);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xfff4e0, 0x404858, 2.2));
+const sun = new THREE.DirectionalLight(0xffffff, 2.0);
+sun.position.set(-3, 6, 5);
+scene.add(sun);
+const rim = new THREE.DirectionalLight(0xbfd4ff, 0.8);
+rim.position.set(4, 3, -5);
+scene.add(rim);
+
+// câmera ortográfica inclinada (vista 3/4 como o mapa)
+const VIEW_H = 3.5; // unidades do mundo 3D visíveis na altura do quadro
+const cam = new THREE.OrthographicCamera(-VIEW_H / 2, VIEW_H / 2, VIEW_H / 2, -VIEW_H / 2, 0.1, 100);
+const PITCH = 0.55; // radianos
+const FEET_Y = 0.27; // pés a 12% da borda inferior do quadro
+cam.position.set(0, Math.sin(PITCH) * 20, Math.cos(PITCH) * 20);
+cam.lookAt(0, 0, 0);
+cam.updateMatrixWorld();
+// desloca o frustum para que a origem (pés) fique perto da base do quadro
+cam.top = VIEW_H * (1 - FEET_Y);
+cam.bottom = -VIEW_H * FEET_Y;
+cam.updateProjectionMatrix();
+
+async function bake(cfg, animClips, base) {
+  const gltf = await load(`${base}/characters/${cfg.model}.glb`);
+  const model = SkeletonUtils.clone(gltf.scene);
+  model.traverse((o) => {
+    if (o.isMesh) {
+      o.frustumCulled = false;
+      if (cfg.tint || cfg.emissive) {
+        o.material = o.material.clone();
+        if (cfg.tint) o.material.color.setRGB(...cfg.tint);
+        if (cfg.emissive) o.material.emissive = new THREE.Color(...cfg.emissive);
+      }
+      if (cfg.hide && cfg.hide.some((h) => o.name.includes(h))) o.visible = false;
+    }
+  });
+  for (const [side, bone] of [['right', 'handslotr'], ['left', 'handslotl']]) {
+    if (!cfg[side]) continue;
+    const w = await load(`${base}/weapons/${cfg[side]}.gltf`);
+    let slot = null;
+    model.traverse((o) => { if (o.name.replace(/[._]/g, '').toLowerCase() === bone) slot = o; });
+    if (slot) slot.add(w.scene);
+  }
+  const holder = new THREE.Group();
+  holder.add(model);
+  scene.add(holder);
+  const mixer = new THREE.AnimationMixer(model);
+  const sheet = document.createElement('canvas');
+  const maxFrames = Math.max(...ANIMS.map((a) => a.frames));
+  sheet.width = FRAME * maxFrames;
+  sheet.height = FRAME * ANIMS.length * DIRS.length;
+  const sctx = sheet.getContext('2d');
+  const tmp = document.createElement('canvas');
+  tmp.width = tmp.height = FRAME;
+  const tctx = tmp.getContext('2d');
+  const sil = document.createElement('canvas');
+  sil.width = sil.height = FRAME;
+  const silctx = sil.getContext('2d');
+  const meta = {};
+  ANIMS.forEach((a, ai) => {
+    const clip = animClips.find((c) => c.name === a.clip);
+    const action = mixer.clipAction(clip);
+    mixer.stopAllAction();
+    action.reset();
+    action.setLoop(a.loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
+    action.clampWhenFinished = true;
+    action.play();
+    const dur = clip.duration;
+    meta[a.name] = { row: ai * DIRS.length, frames: a.frames, loop: !!a.loop, dur: Math.round(dur * 1000) };
+    DIRS.forEach((d, di) => {
+      holder.rotation.y = DIR_ROT[d];
+      for (let f = 0; f < a.frames; f++) {
+        const t = a.loop ? (f / a.frames) * dur : (f / (a.frames - 1)) * dur * 0.999;
+        mixer.setTime(t);
+        renderer.render(scene, cam);
+        tctx.clearRect(0, 0, FRAME, FRAME);
+        tctx.filter = cfg.filter || 'none';
+        tctx.drawImage(renderer.domElement, 0, 0, FRAME, FRAME);
+        tctx.filter = 'none';
+        // contorno escuro para legibilidade sobre o mapa
+        silctx.globalCompositeOperation = 'source-over';
+        silctx.clearRect(0, 0, FRAME, FRAME);
+        silctx.drawImage(tmp, 0, 0);
+        silctx.globalCompositeOperation = 'source-in';
+        silctx.fillStyle = 'rgba(18,12,10,0.85)';
+        silctx.fillRect(0, 0, FRAME, FRAME);
+        const x = f * FRAME, y = (ai * DIRS.length + di) * FRAME;
+        for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) sctx.drawImage(sil, x + ox, y + oy);
+        sctx.drawImage(tmp, x, y);
+      }
+    });
+  });
+  scene.remove(holder);
+  return { png: sheet.toDataURL('image/webp', 0.9), anims: meta };
+}
+
+window.runBake = async (configs, base) => {
+  const general = await load(`${base}/animations/Rig_Medium_General.glb`);
+  const move = await load(`${base}/animations/Rig_Medium_MovementBasic.glb`);
+  const clips = [...general.animations, ...move.animations];
+  const out = {};
+  for (const cfg of configs) out[cfg.key] = await bake(cfg, clips, base);
+  return { frame: FRAME, anchorX: FRAME / 2, anchorY: Math.round(FRAME * (1 - FEET_Y)), dirs: DIRS, sprites: out };
+};
+window.bakeReady = true;
+</script>
+</body>
+</html>

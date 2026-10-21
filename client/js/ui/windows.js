@@ -12,6 +12,7 @@ import { h, clear, esc, Win, fmt } from './dom.js';
 import { slotEl } from './itemview.js';
 import { skillIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { audio } from '../audio.js';
+import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
 
 const SLOT_ICONS = { weapon: '⚔', head: '⛑', chest: '👕', legs: '👖', feet: '👢', ring: '💍', amulet: '📿' };
@@ -20,7 +21,7 @@ export const windowsMixin = {
   buildWindows() {
     const R = this.root;
     const W = (id, title, opts) => (this.wins[id] = new Win(R, id, title, opts));
-    W('inventory', 'Inventário', { w: 330 });
+    W('inventory', 'Inventário', { w: 330, pos: () => ({ x: Math.max(10, window.innerWidth - 350), y: Math.min(250, Math.max(10, window.innerHeight - 470)) }) });
     W('character', 'Personagem', { w: 520 });
     W('skills', 'Habilidades', { w: 470 });
     W('quests', 'Diário de Missões', { w: 640 });
@@ -124,9 +125,12 @@ export const windowsMixin = {
     const ctx = cv.getContext('2d');
     const app = {};
     for (const [slot, it] of Object.entries(me.equip || {})) if (it) app[slot[0]] = it.id;
-    const look = playerLook({ cls: me.cls, sk: me.skin, hr: me.hair, app });
-    ctx.setTransform(3.2, 0, 0, 3.2, 80, 185);
-    drawHumanoid(ctx, 0, 0, { ...look, dir: 0 });
+    if (charSprites.has(me.cls)) ctx.drawImage(charSprites.portrait(me.cls, 200, 0, 1.9), -20, -10);
+    else {
+      const look = playerLook({ cls: me.cls, sk: me.skin, hr: me.hair, app });
+      ctx.setTransform(3.2, 0, 0, 3.2, 80, 185);
+      drawHumanoid(ctx, 0, 0, { ...look, dir: 0 });
+    }
     doll.appendChild(cv);
     for (const slot of EQUIP_SLOTS) {
       const it = me.equip[slot];

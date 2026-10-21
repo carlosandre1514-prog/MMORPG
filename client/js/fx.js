@@ -212,7 +212,8 @@ export class Effects {
         ctx.beginPath(); ctx.moveTo(e.x0 * TILE, e.y0 * TILE - 14); ctx.lineTo(e.x * TILE, e.y * TILE - 14); ctx.stroke();
         ctx.restore();
       } else if (e.kind === 'lvl' || e.kind === 'rv' || e.kind === 'sp') {
-        const ent = g.entities.get(e.id);
+        const ent = e.id != null ? g.entities.get(e.id) : null;
+        if (!ent && !Number.isFinite(e.x)) continue;
         const x = ent ? ent.rx * TILE : e.x * TILE, y = ent ? ent.ry * TILE : e.y * TILE;
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';

@@ -5,6 +5,7 @@ import { NPCS } from '/shared/data/npcs.js';
 import { ITEMS } from '/shared/data/items.js';
 import { OBJ_INFO } from '/shared/tiles.js';
 import { drawHumanoid, drawMonster, drawNpc, playerLook, drawIcon, shadow, circle, ellipse, rr } from './sprites.js';
+import { charSprites, NPC_SPRITES, MONSTER_SPRITES } from './charsprites.js';
 
 export class Renderer {
   constructor(canvas, game) {
@@ -123,9 +124,10 @@ export class Renderer {
 
   // ------------------------------------------------------------------ entidades
   entityHeight(e) {
-    if (e.k === 'p') return 46;
+    if (e.k === 'p') return charSprites.has(e.cls) ? 52 : 46;
     if (e.k === 'n') {
       const n = NPCS[e.n];
+      if (charSprites.has(NPC_SPRITES[n.id])) return 52;
       const tp = n.look.type;
       if (tp === 'cat') return 20;
       if (tp === 'board' || tp === 'lore' || tp === 'altar') return 38;
@@ -134,6 +136,7 @@ export class Renderer {
     }
     if (e.k === 'm') {
       const d = MONSTERS[e.m];
+      if (charSprites.has(MONSTER_SPRITES[d.id])) return 52 * d.size;
       const base = { slime: 18, wolf: 24, boar: 24, goblin: 34, goblin_shaman: 34, spider: 22, spider_queen: 24, ent: 44, bat: 30, skeleton: 44, skeleton_archer: 44, golem: 44, golem_boss: 44, cultist: 44, wraith: 40, ash_knight: 46, morvath: 50 }[d.sprite] || 30;
       return base * d.size;
     }
@@ -153,25 +156,34 @@ export class Renderer {
     if (e.f & F.INVULN) alpha *= 0.6;
     if (alpha <= 0) return;
     ctx.save();
-    if (dead && e.k === 'm') {
+    if (dead && e.k === 'm' && !charSprites.has(MONSTER_SPRITES[e.m])) {
       ctx.translate(x, y);
       ctx.scale(1, Math.max(0.3, alpha));
       ctx.translate(-x, -y);
     }
+    const spriteState = { dir: e.dir, moving: e.moving, phase: e.phase, atkStart: e.atkStart, hurt: e.hurt, dead: !!dead, deathStart: e.deathStart, flash };
     if (e.k === 'p') {
       const look = e.look || (e.look = playerLook(e));
-      if (dead) { ctx.translate(x, y); ctx.rotate(Math.PI / 2 * 0.9); ctx.translate(-x, -y); }
-      drawHumanoid(ctx, x, y, { ...look, dir: e.dir, walk: e.phase, moving: e.moving, atk: atkV, flash, alpha });
+      if (charSprites.has(e.cls)) {
+        charSprites.draw(ctx, e.cls, x, y, { ...spriteState, alpha: dead ? 1 : alpha, glow: look.glow });
+      } else {
+        if (dead) { ctx.translate(x, y); ctx.rotate(Math.PI / 2 * 0.9); ctx.translate(-x, -y); }
+        drawHumanoid(ctx, x, y, { ...look, dir: e.dir, walk: e.phase, moving: e.moving, atk: atkV, flash, alpha });
+      }
       this.drawStatusFx(ctx, e, x, y, t);
     } else if (e.k === 'm') {
       const d = MONSTERS[e.m];
       const shake = (e.f & F.CAST) ? Math.sin(now / 25) * 1.2 : 0;
-      drawMonster(ctx, x + shake, y, d.sprite, d.color, d.size, t, { dir: e.dir, moving: e.moving, phase: e.phase, atk: atkV, flash, alpha, boss: d.boss });
+      const sk = MONSTER_SPRITES[d.id];
+      if (charSprites.has(sk)) charSprites.draw(ctx, sk, x + shake, y, { ...spriteState, alpha, size: d.size, glow: d.id === 'ash_knight' ? 'rgba(255,90,30,0.9)' : 'rgba(160,80,220,0.8)' });
+      else drawMonster(ctx, x + shake, y, d.sprite, d.color, d.size, t, { dir: e.dir, moving: e.moving, phase: e.phase, atk: atkV, flash, alpha, boss: d.boss });
       this.drawStatusFx(ctx, e, x, y, t);
     } else if (e.k === 'n') {
       const n = NPCS[e.n];
       const dir = g.dialogNpc === e.n ? g.faceDirTo(e) : 0;
-      drawNpc(ctx, x, y, n, t, { dir, lit: n.id === 'altar' && g.questDone('ms19') });
+      const sk = NPC_SPRITES[n.id];
+      if (charSprites.has(sk)) charSprites.draw(ctx, sk, x, y, { dir });
+      else drawNpc(ctx, x, y, n, t, { dir, lit: n.id === 'altar' && g.questDone('ms19') });
     }
     ctx.restore();
   }

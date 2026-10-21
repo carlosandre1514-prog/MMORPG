@@ -88,8 +88,9 @@ export class Win {
     if (!this.isOpen) {
       this.el.style.display = 'flex';
       if (!this.positioned && this.defaultPos) {
-        this.el.style.left = this.defaultPos.x + 'px';
-        this.el.style.top = this.defaultPos.y + 'px';
+        const p = typeof this.defaultPos === 'function' ? this.defaultPos() : this.defaultPos;
+        this.el.style.left = p.x + 'px';
+        this.el.style.top = p.y + 'px';
       } else if (!this.positioned) {
         const r = this.el.getBoundingClientRect();
         this.el.style.left = Math.max(10, (window.innerWidth - r.width) / 2 + (Math.random() - 0.5) * 60) + 'px';

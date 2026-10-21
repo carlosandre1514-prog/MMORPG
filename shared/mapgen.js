@@ -389,9 +389,21 @@ function applyFeatures(grid, zone, rng) {
         if (f.mine) {
           placeForce(f.x - 5, f.y + 2, O.CART); placeForce(f.x + 6, f.y - 2, O.CART);
           placeForce(f.x - 4, f.y - 3, O.TORCH); placeForce(f.x + 4, f.y - 3, O.TORCH);
+          // produção da mina: barras, tijolos e madeira de escoramento
+          placeForce(f.x - 6, f.y - 1, O.BARS); placeForce(f.x + 7, f.y + 1, O.BRICKS);
+          placeForce(f.x - 2, f.y - 5, O.PLANKS); placeForce(f.x + 2, f.y - 5, O.ORE);
         }
         placeForce(f.x - 3, f.y + 3, O.CRATE); placeForce(f.x + 4, f.y + 3, O.CRATE);
         placeForce(f.x + 5, f.y + 3, O.BARREL); placeForce(f.x - 4, f.y + 3, O.BARREL);
+        break;
+      }
+      case 'treasure': {
+        // tesouro acumulado em volta do covil de um chefe
+        for (let i = 0; i < f.n; i++) {
+          const ang = rng() * Math.PI * 2, d = f.r * (0.6 + rng() * 0.4);
+          const x = Math.round(f.x + Math.cos(ang) * d), y = Math.round(f.y + Math.sin(ang) * d);
+          if (grid.o(x, y) === 0) placeForce(x, y, i % 3 === 2 ? O.ORE : O.GOLD);
+        }
         break;
       }
       case 'gobcamp': {

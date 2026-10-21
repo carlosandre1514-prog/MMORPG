@@ -4,11 +4,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 const BASE = '/kaykit/';
-const MODELS = ['Barbarian', 'Knight', 'Mage', 'Ranger', 'Rogue', 'Rogue_Hooded'];
-const WEAPONS = ['axe_2handed', 'sword_1handed', 'shield_badge_color', 'staff', 'bow_withString', 'dagger', 'wand', 'spellbook_open', 'shield_round_barbarian'];
+const MODELS = ['Barbarian', 'Knight', 'Mage', 'Ranger', 'Rogue', 'Rogue_Hooded',
+  'Skeleton_Warrior', 'Skeleton_Minion', 'Skeleton_Rogue', 'Skeleton_Mage'];
+const WEAPONS = ['axe_2handed', 'sword_1handed', 'shield_badge_color', 'staff', 'bow_withString', 'dagger', 'wand', 'spellbook_open', 'shield_round_barbarian',
+  'Skeleton_Axe', 'Skeleton_Blade', 'Skeleton_Crossbow', 'Skeleton_Staff', 'Skeleton_Shield_Large_A', 'Skeleton_Shield_Small_A',
+  'sword_2handed', 'sword_2handed_color', 'axe_1handed'];
 const TARGET_HEIGHT = 1.45; // altura de um humano adulto em tiles
 
 // Aparências: modelo, armas, variação de cor (matiz em graus, saturação, brilho), escala e brilho emissivo.
+// Mortos-vivos: eyes = cor do brilho dos olhos; rise = sobem do chão ao aparecer; ghost = translúcido.
 export const LOOKS = {
   // classes jogáveis
   warrior: { model: 'Barbarian', right: 'axe_2handed' },
@@ -37,18 +41,20 @@ export const LOOKS = {
   // inimigos humanoides
   cultist: { model: 'Rogue_Hooded', right: 'wand', left: 'spellbook_open', hue: 150, sat: 0.9, bright: 0.75 },
   ash_knight: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color', sat: 0.3, bright: 0.5, emissive: [0.35, 0.06, 0.0] },
-  skeleton: { model: 'Knight', right: 'sword_1handed', sat: 0, bright: 1.35 },
-  skeleton_archer: { model: 'Ranger', left: 'bow_withString', sat: 0, bright: 1.3 },
+  skeleton: { model: 'Skeleton_Minion', right: 'Skeleton_Axe', eyes: [0.35, 0.75, 1.0], rise: true },
+  skeleton_archer: { model: 'Skeleton_Rogue', right: 'Skeleton_Crossbow', eyes: [0.45, 1.0, 0.55], rise: true },
+  skeleton_guard: { model: 'Skeleton_Warrior', right: 'Skeleton_Blade', left: 'Skeleton_Shield_Large_A', scale: 1.12, eyes: [1.0, 0.45, 0.12], rise: true },
+  wraith: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', eyes: [0.4, 1.0, 0.95], ghost: true, float: 0.4, emissive: [0.05, 0.16, 0.2], spawnClip: 'Spawn_Air' },
   goblin: { model: 'Rogue', right: 'dagger', scale: 0.72, hue: 70, sat: 1.2 },
   goblin_shaman: { model: 'Mage', right: 'staff', scale: 0.72, hue: 95, sat: 1.1 },
   morvath: { model: 'Knight', right: 'staff', sat: 0.15, bright: 0.6, emissive: [0.4, 0.08, 0.02], float: 0.35 },
 };
 
-const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric']);
+const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith']);
 
 const CLIPS = {
   idle: 'Idle_A', walk: 'Walking_A', run: 'Running_A', attack: 'Throw', cast: 'Use_Item',
-  hit: 'Hit_A', death: 'Death_A', spawn: 'Spawn_Ground',
+  hit: 'Hit_A', death: 'Death_A', spawn: 'Spawn_Ground', spawnAir: 'Spawn_Air',
 };
 
 class CharacterLibrary {
@@ -88,6 +94,15 @@ class CharacterLibrary {
 
   has(key) { return this.ready && !!LOOKS[key]; }
 
+  // Arma solta (saque no chão), na mesma escala das armas nas mãos dos personagens
+  weaponModel(name) {
+    const src = this.weapons[name];
+    if (!src || !this.models.Knight) return null;
+    const w = src.clone();
+    w.scale.setScalar(TARGET_HEIGHT / this.models.Knight.height);
+    return w;
+  }
+
   // Aplica variação de cor (matiz/saturação/brilho) via shader em um material próprio.
   applyTint(m, look) {
     const hue = ((look.hue || 0) * Math.PI) / 180;
@@ -126,6 +141,9 @@ class CharacterLibrary {
       if (!o.isMesh) return;
       // material próprio (variação de cor e brilho de dano por instância)
       o.material = this.applyTint(o.material.clone(), look);
+      // olhos que brilham no escuro (mortos-vivos)
+      if (look.eyes && /eyes/i.test(o.name)) { o.material.emissive = new THREE.Color(...look.eyes); o.material.emissiveIntensity = 2.2; o.material.userData.glow = true; }
+      if (look.ghost) { o.material.transparent = true; o.material.opacity = 0.72; o.material.depthWrite = false; }
       mats.push(o.material);
     });
     for (const [side, bone] of [['right', 'handslotr'], ['left', 'handslotl']]) {
@@ -160,7 +178,7 @@ class CharacterActor {
       const clip = clips[clipName];
       if (!clip) continue;
       const a = this.mixer.clipAction(clip);
-      if (['attack', 'cast', 'hit', 'death', 'spawn'].includes(name)) {
+      if (['attack', 'cast', 'hit', 'death', 'spawn', 'spawnAir'].includes(name)) {
         a.setLoop(THREE.LoopOnce, 1);
         a.clampWhenFinished = true;
       }
@@ -169,6 +187,12 @@ class CharacterActor {
     this.state = null;
     this.baseEmissive = mats.map((m) => (m.emissive ? m.emissive.clone() : null));
     this.play('idle');
+    // mortos-vivos despertam: saem do chão (ou descem do ar) quando aparecem
+    if (look.rise || look.spawnClip) {
+      const name = look.spawnClip === 'Spawn_Air' ? 'spawnAir' : 'spawn';
+      const a = this.actions[name];
+      if (a) { this.play(name, 0); this.risingUntil = performance.now() + a.getClip().duration * 1000 * 0.9; }
+    }
   }
 
   play(name, fade = 0.15) {
@@ -187,6 +211,7 @@ class CharacterActor {
   update(dt, st) {
     const now = st.now;
     let want;
+    if (this.risingUntil && now < this.risingUntil && !st.dead) { this.mixer.update(dt); return; }
     if (st.dead) want = 'death';
     else if (st.atkStart && now - st.atkStart < 650) want = this.caster ? 'cast' : 'attack';
     else if (st.hurt && now - st.hurt < 300 && !st.moving) want = 'hit';
@@ -220,7 +245,8 @@ class CharacterActor {
   }
 
   setOpacity(a) {
-    for (const m of this.mats) { m.transparent = a < 1; m.opacity = a; }
+    const base = this.look.ghost ? 0.72 : 1;
+    for (const m of this.mats) { m.transparent = a < 1 || base < 1; m.opacity = a * base; }
   }
 
   dispose() {

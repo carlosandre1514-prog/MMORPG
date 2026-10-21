@@ -117,6 +117,15 @@ export const MONSTERS = {
     drops: [{ id: 'mat_bone', chance: 0.4 }],
     questDrops: [{ id: 'q_miner_tag', chance: 0.4, quest: 'ms12' }],
   },
+  skeleton_guard: {
+    id: 'skeleton_guard', name: 'Guarda Esquelético', lvl: [16, 18], hp: 1.6, dmg: 1.15, def: 1.5,
+    speed: 2.7, aggro: 6, atkRange: 1.5, atkInterval: 1.7, sprite: 'skeleton', color: '#d5d8dc', size: 1.15, undead: true,
+    gold: [12, 24], equipChance: 0.15,
+    drops: [{ id: 'mat_bone', chance: 0.55 }, { id: 'mat_ore', chance: 0.2 }, { id: 'enh_stone', chance: 0.02 }],
+    questDrops: [{ id: 'q_miner_tag', chance: 0.5, quest: 'ms12' }],
+    abilities: [{ type: 'harden', at: 0.5, cd: 18, dr: 0.5, dur: 5, statusName: 'Muralha de Escudos' }],
+    lore: 'Os guardas da antiga guarnição anã ainda vigiam o caminho até o Coração da Montanha, escudo erguido.',
+  },
   golem: {
     id: 'golem', name: 'Golem de Pedra', lvl: [16, 17], hp: 2.1, dmg: 1.25, def: 2.0,
     speed: 2.1, aggro: 4, atkRange: 1.8, atkInterval: 2.1, sprite: 'golem', color: '#7f8c8d', size: 1.5,

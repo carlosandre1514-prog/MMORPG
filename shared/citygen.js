@@ -54,7 +54,7 @@ export function buildCapital(grid, zone) {
       const side = rng() < 0.5 ? 0 : (horizontal ? h : w) - 1;
       const px = horizontal ? x + i : x + side, py = horizontal ? y + side : y + i;
       const r = rng();
-      grid.setO(px, py, r < 0.3 ? O.BARREL : r < 0.55 ? O.CRATE : r < 0.75 ? O.SACK : r < 0.9 ? O.LUMBER : O.LAMP);
+      grid.setO(px, py, r < 0.24 ? O.BARREL : r < 0.44 ? O.CRATE : r < 0.58 ? O.SACK : r < 0.7 ? O.LUMBER : r < 0.8 ? O.PLANKS : r < 0.88 ? O.CLOTH : O.LAMP);
       i += 2;
     }
   };
@@ -198,8 +198,8 @@ export function buildCapital(grid, zone) {
 
   // Mercado: duas fileiras de barracas, caixotes e sacos
   for (const x of [79, 83, 87, 91, 95]) { obj(x, 41, O.STALL); obj(x, 52, O.STALL); }
-  for (const [x, y, o] of [[80, 42, O.CRATE], [84, 40, O.SACK], [88, 42, O.BARREL], [92, 40, O.CRATE], [96, 42, O.SACK],
-    [80, 51, O.BARREL], [84, 53, O.CRATE], [88, 51, O.SACK], [92, 53, O.LUMBER], [96, 51, O.CRATE]]) obj(x, y, o);
+  for (const [x, y, o] of [[80, 42, O.CLOTH], [84, 40, O.SACK], [88, 42, O.BARS], [92, 40, O.PLANKS], [96, 42, O.CLOTH],
+    [80, 51, O.BRICKS], [84, 53, O.CRATE], [88, 51, O.CLOTH], [92, 53, O.PLANKS], [96, 51, O.BARS], [78, 43, O.BARREL], [94, 50, O.SACK]]) obj(x, y, o);
   lamp(77, 40); lamp(96, 40); lamp(77, 53); lamp(96, 53);
 
   // ------------------------------------------------------------ construções especiais
@@ -209,7 +209,9 @@ export function buildCapital(grid, zone) {
   house(98, 39, 8, 6, 's', { type: 'tavern', label: 'Taverna do Javali Dourado', floors: 2 });
   house(98, 49, 8, 6, 'n', { type: 'guardhouse', label: 'Casa da Guarda', floors: 2 });
   obj(106, 41, O.BRAZIER); obj(106, 52, O.BRAZIER); obj(105, 45, O.BANNER); obj(105, 48, O.BANNER);
-  obj(35, 45, O.RACK); obj(43, 44, O.LUMBER); obj(42, 44, O.BARREL);
+  obj(35, 45, O.RACK); obj(37, 45, O.BARS); obj(42, 45, O.BRICKS); obj(43, 44, O.LUMBER); obj(42, 44, O.BARREL);
+  obj(82, 36, O.GOLD); obj(91, 36, O.GOLD); obj(83, 36, O.CRATE); // o ouro do Cofre, à vista na porta
+  obj(68, 16, O.BARS); obj(68, 18, O.BARS);
   obj(29, 48, O.BARREL);
 
   // ------------------------------------------------------------ fileiras e bairros

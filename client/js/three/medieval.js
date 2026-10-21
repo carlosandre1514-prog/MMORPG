@@ -1,38 +1,49 @@
-// Cenário do KayKit Medieval Hexagon Pack (Kay Lousberg, CC0): prédios, árvores, pedras, muralhas e objetos.
-// Todos os modelos vêm de um único GLB (gerado por tools/medieval/convert.mjs) e dividem um material com atlas.
+// Cenário dos packs KayKit (Kay Lousberg, CC0): Medieval Hexagon (árvores, pedras, montanhas, objetos) e
+// Resource Bits (minérios, barras, tecidos, madeira, ouro). Cada pack é um GLB gerado por
+// tools/medieval/convert.mjs, com todos os modelos dividindo um material com atlas.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const URL = '/kaykit/medieval/medieval.glb';
+// Packs convertidos por tools/medieval/convert.mjs; cada um tem o próprio atlas
+const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb'];
 
 export const medieval = {
   ready: false,
   geos: new Map(),
-  shared: new Set(), // geometrias do pack (não podem ser descartadas com a zona)
+  mats: new Map(), // nome do modelo -> material do pack (atlas)
+  shared: new Set(), // geometrias dos packs (não podem ser descartadas com a zona)
   material: null,
 
   async load(onProgress = () => {}) {
-    try {
-      const gltf = await new GLTFLoader().loadAsync(URL, (e) => { if (e.total) onProgress(e.loaded / e.total); });
-      gltf.scene.traverse((o) => {
-        if (!o.isMesh) return;
-        o.geometry.computeBoundingBox();
-        this.geos.set(o.name, o.geometry);
-        this.shared.add(o.geometry);
-        if (!this.material) this.material = o.material;
-      });
-      const m = this.material;
-      m.userData.shared = true;
-      m.roughness = 0.85;
-      m.metalness = 0;
-      if (m.map) { m.map.magFilter = THREE.LinearFilter; m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; }
-      this.ready = this.geos.size > 0;
-    } catch (e) {
-      console.warn('[cenário] modelos medievais indisponíveis, usando formas simples', e);
-    }
+    const prog = PACKS.map(() => 0);
+    await Promise.all(PACKS.map(async (url, i) => {
+      try {
+        const gltf = await new GLTFLoader().loadAsync(url, (e) => { if (e.total) { prog[i] = e.loaded / e.total; onProgress(prog.reduce((a, b) => a + b, 0) / PACKS.length); } });
+        let mat = null;
+        gltf.scene.traverse((o) => {
+          if (!o.isMesh) return;
+          o.geometry.computeBoundingBox();
+          mat ||= o.material;
+          this.geos.set(o.name, o.geometry);
+          this.mats.set(o.name, mat);
+          this.shared.add(o.geometry);
+        });
+        if (mat) {
+          mat.userData.shared = true;
+          mat.roughness = 0.85;
+          mat.metalness = 0;
+          if (mat.map) { mat.map.magFilter = THREE.LinearFilter; mat.map.generateMipmaps = false; mat.map.minFilter = THREE.LinearFilter; }
+          if (i === 0) this.material = mat;
+        }
+      } catch (e) {
+        console.warn('[cenário] pack indisponível, usando formas simples:', url, e);
+      }
+    }));
+    this.ready = this.geos.size > 0;
     onProgress(1);
   },
 
+  mat(name) { return this.mats.get(name) || this.material; },
   has(name) { return this.ready && this.geos.has(name); },
   geo(name) { return this.geos.get(name); },
   size(name) { return this.geos.get(name).boundingBox.getSize(new THREE.Vector3()); },
@@ -48,7 +59,7 @@ export const medieval = {
   },
 
   mesh(name, scale = 1) {
-    const m = new THREE.Mesh(this.geo(name), this.material);
+    const m = new THREE.Mesh(this.geo(name), this.mat(name));
     m.scale.setScalar(scale);
     m.castShadow = true;
     m.receiveShadow = true;
@@ -71,6 +82,13 @@ export const OBJECT_MODELS = {
   rack: { m: ['weaponrack'], h: 1.25 },
   sack: { m: ['sack'], w: 0.75 },
   lumber: { m: ['resource_lumber'], w: 1.15 },
+  // veio de minério: pepita grande sobre um monte de pedras (ferro é o mais comum, ouro o mais raro)
+  ore: { m: ['Iron_Nugget_Large', 'Iron_Nugget_Large', 'Copper_Nugget_Large', 'Silver_Nugget_Large', 'Gold_Nugget_Large'], h: 0.85, base: { m: 'Stone_Chunks_Large', w: 0.95 } },
+  bars: { m: ['Iron_Bars_Stack_Small', 'Iron_Bars_Stack_Medium', 'Copper_Bars_Stack_Small', 'Silver_Bars_Stack_Small'], w: 0.8 },
+  cloth: { m: ['Textiles_Stack_Large_Colored', 'Textiles_Stack_Small', 'Textiles_A'], w: 0.95 },
+  planks: { m: ['Wood_Planks_Stack_Medium', 'Wood_Planks_Stack_Small', 'Wood_Log_Stack'], w: 1.1 },
+  bricks: { m: ['Stone_Bricks_Stack_Small', 'Stone_Bricks_Stack_Medium'], w: 1.0 },
+  gold: { m: ['Gold_Bars_Stack_Medium', 'Gold_Bars', 'Gold_Bars_Stack_Small', 'Gold_Nuggets'], w: 0.8 },
 };
 
 // Construções da vila: modelo principal (e acessórios) para cada retângulo do mapa

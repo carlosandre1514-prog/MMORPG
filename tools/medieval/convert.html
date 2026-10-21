@@ -16,6 +16,7 @@
 // cada modelo vira uma malha (geometria unida) e todos dividem um material com o atlas reduzido.
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -43,8 +44,8 @@ function bakeModel(obj) {
   return geo;
 }
 
-window.runConvert = async (files, texSize) => {
-  const img = await loadImage('/src/Textures/hexagons_medieval.png');
+window.runConvert = async (files, texSize, atlas, flipY = true) => {
+  const img = await loadImage('/src/' + atlas);
   const cv = document.createElement('canvas');
   cv.width = cv.height = texSize;
   const ctx = cv.getContext('2d');
@@ -52,16 +53,17 @@ window.runConvert = async (files, texSize) => {
   ctx.drawImage(img, 0, 0, texSize, texSize);
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
-  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, metalness: 0, name: 'hexagons_medieval' });
-  const loader = new FBXLoader();
+  tex.flipY = flipY; // FBX usa UVs com origem embaixo; glTF, em cima
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, metalness: 0, name: 'atlas' });
+  const fbx = new FBXLoader(), gltf = new GLTFLoader();
   const scene = new THREE.Scene();
   const info = {};
   let tris = 0;
   for (const f of files) {
-    const obj = await loader.loadAsync('/src/' + f);
+    const obj = /\.gl(tf|b)$/i.test(f) ? (await gltf.loadAsync('/src/' + f)).scene : await fbx.loadAsync('/src/' + f);
     const geo = bakeModel(obj);
     if (!geo) { console.log('sem malha: ' + f); continue; }
-    const name = f.split('/').pop().replace(/\.fbx$/i, '');
+    const name = f.split('/').pop().replace(/\.(fbx|gltf|glb)$/i, '');
     const m = new THREE.Mesh(geo, mat);
     m.name = name;
     scene.add(m);

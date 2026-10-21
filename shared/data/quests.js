@@ -153,7 +153,7 @@ export const QUESTS = {
       'Dê descanso a eles. Destrua dez esqueletos e me traga seis plaquetas de identificação. Cada nome merece ser gravado na Pedra dos Mortos.',
     progress: 'Cada plaqueta é um amigo que não voltou para casa.',
     complete: '(Durgan passa os dedos sobre os nomes gravados, um por um.)\n\nBorin... Kili... Dwalin, o velho... Obrigado, Portador. Agora eles podem descansar.',
-    objectives: [{ type: 'kill', target: ['skeleton', 'skeleton_archer'], count: 10 }, { type: 'collect', item: 'q_miner_tag', count: 6 }],
+    objectives: [{ type: 'kill', target: ['skeleton', 'skeleton_archer', 'skeleton_guard'], count: 10 }, { type: 'collect', item: 'q_miner_tag', count: 6 }],
     rewards: { xp: 4200, gold: 400, items: [['pot_hp_3', 3]] },
   },
   ms13: {
@@ -391,7 +391,7 @@ export const QUESTS = {
     desc: 'Destrua 12 esqueletos nas Minas de Ferro Negro.',
     offer: 'CARTAZ: "Os anões pagam em ouro por cada morto-vivo destruído nas minas. — Durgan B. F."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelos anões de Ferro Negro.',
-    objectives: [{ type: 'kill', target: ['skeleton', 'skeleton_archer'], count: 12 }],
+    objectives: [{ type: 'kill', target: ['skeleton', 'skeleton_archer', 'skeleton_guard'], count: 12 }],
     rewards: { xp: 5200, gold: 300 },
   },
   rb_golem: {

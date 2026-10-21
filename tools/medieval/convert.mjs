@@ -1,5 +1,7 @@
-// Converte o KayKit Medieval Hexagon Pack (FBX, CC0) em assets/kaykit/medieval/medieval.glb.
-// Uso: node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png]
+// Converte packs KayKit (CC0) em um único GLB compacto por pack, com todas as peças dividindo um atlas reduzido.
+//   node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png] [--pack=medieval|resources]
+//   medieval  -> assets/kaykit/medieval/medieval.glb   (KayKit Medieval Hexagon Pack, FBX)
+//   resources -> assets/kaykit/resources/resources.glb (KayKit Resource Bits, glTF)
 // Requer o three em tools/bake/node_modules (cd tools/bake && npm install) e Playwright com Chromium.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -8,21 +10,19 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const SRC = path.resolve(process.argv[2] || '');
-const SHEET = process.argv[3];
-const OUT = path.join(ROOT, 'assets', 'kaykit', 'medieval');
-const TEX_SIZE = 128; // o atlas é feito de faixas em gradiente: 128px não perde nada visível
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const PACK = (process.argv.find((a) => a.startsWith('--pack=')) || '--pack=medieval').slice(7);
+const SRC = path.resolve(args[0] || '');
+const SHEET = args[1];
 const require = createRequire(import.meta.url);
 let chromium;
 try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(process.env.PLAYWRIGHT_PATH || '/opt/node-tools/node_modules/playwright')); }
 
-if (!fs.existsSync(path.join(SRC, 'Assets', 'fbx'))) {
-  console.error('Pasta do pack inválida (esperado Assets/fbx dentro dela):', SRC);
-  process.exit(1);
-}
-
-// Peças usadas pelo jogo (os tiles hexagonais e as variantes de cor que não usamos ficam de fora)
-const KEEP = [
+// Peças usadas pelo jogo em cada pack
+const PACKS = {
+  medieval: {
+    dir: 'Assets/fbx', ext: '.fbx', atlas: 'Textures/hexagons_medieval.png', out: 'medieval', skip: /waterless/,
+    keep: [
   // vila
   'building_castle_blue', 'building_tower_A_blue', 'building_blacksmith_blue', 'building_market_blue', 'building_barracks_yellow',
   'building_tavern_red', 'building_well_blue', 'building_church_blue', 'building_windmill_blue', 'building_mine_blue',
@@ -40,21 +40,44 @@ const KEEP = [
   'barrel', 'crate_A_big', 'crate_B_big', 'crate_A_small', 'crate_long_A', 'crate_long_B', 'crate_long_C', 'crate_open', 'sack',
   'bucket_water', 'bucket_arrows', 'resource_lumber', 'resource_stone', 'wheelbarrow', 'weaponrack', 'target', 'ladder', 'pallet',
   'flag_blue', 'flag_red',
-];
+],
+  },
+  resources: {
+    dir: 'Assets/gltf', ext: '.gltf', atlas: 'Textures/resource_bits_texture.png', out: 'resources', flipY: false,
+    keep: [
+      'Iron_Nuggets', 'Iron_Nugget_Large', 'Copper_Nugget_Large', 'Silver_Nugget_Large', 'Gold_Nugget_Large', 'Gold_Nuggets',
+      'Gold_Bars', 'Gold_Bars_Stack_Small', 'Gold_Bars_Stack_Medium', 'Iron_Bars_Stack_Small', 'Iron_Bars_Stack_Medium',
+      'Copper_Bars_Stack_Small', 'Silver_Bars_Stack_Small', 'Stone_Chunks_Small', 'Stone_Chunks_Large',
+      'Stone_Bricks_Stack_Small', 'Stone_Bricks_Stack_Medium', 'Textiles_Stack_Small', 'Textiles_Stack_Large_Colored', 'Textiles_A',
+      'Wood_Log_Stack', 'Wood_Planks_Stack_Small', 'Wood_Planks_Stack_Medium', 'Pallet_Wood_Covered_A',
+    ],
+  },
+};
+const cfg = PACKS[PACK];
+if (!cfg) { console.error('Pack desconhecido:', PACK); process.exit(1); }
+const OUT = path.join(ROOT, 'assets', 'kaykit', cfg.out);
+const TEX_SIZE = 128; // os atlas KayKit são faixas em gradiente: 128px não perde nada visível
+
+if (!fs.existsSync(path.join(SRC, cfg.dir))) {
+  console.error(`Pasta do pack inválida (esperado ${cfg.dir} dentro dela):`, SRC);
+  process.exit(1);
+}
 const files = [];
 const all = new Map();
 (function walk(dir) {
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
     if (f.isDirectory()) walk(path.join(dir, f.name));
-    else if (f.name.toLowerCase().endsWith('.fbx') && !dir.includes('waterless')) all.set(f.name.replace(/\.fbx$/i, ''), path.relative(SRC, path.join(dir, f.name)).split(path.sep).join('/'));
+    else if (f.name.toLowerCase().endsWith(cfg.ext) && !(cfg.skip && cfg.skip.test(dir))) {
+      all.set(f.name.slice(0, -cfg.ext.length), path.relative(SRC, path.join(dir, f.name)).split(path.sep).join('/'));
+    }
   }
-})(path.join(SRC, 'Assets', 'fbx'));
-for (const k of KEEP) {
+})(path.join(SRC, cfg.dir));
+for (const k of cfg.keep) {
   if (all.has(k)) files.push(all.get(k));
   else console.warn('Modelo não encontrado no pack:', k);
 }
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.fbx': 'application/octet-stream' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.fbx': 'application/octet-stream', '.gltf': 'model/gltf+json', '.bin': 'application/octet-stream' };
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent(req.url.split('?')[0]);
   const [base, rel] = url.startsWith('/src/') ? [SRC, url.slice(5)] : [ROOT, url];
@@ -72,12 +95,12 @@ page.on('pageerror', (e) => console.error('[erro]', e.message));
 await page.goto(`http://127.0.0.1:${server.address().port}/tools/medieval/convert.html`);
 await page.waitForFunction(() => window.convertReady === true, null, { timeout: 30000 });
 console.log(`Convertendo ${files.length} modelos...`);
-const result = await page.evaluate(([f, s]) => window.runConvert(f, s), [files, TEX_SIZE]);
+const result = await page.evaluate(([f, s, a, fy]) => window.runConvert(f, s, a, fy), [files, TEX_SIZE, cfg.atlas, cfg.flipY !== false]);
 fs.mkdirSync(OUT, { recursive: true });
 const glb = Buffer.from(result.glb, 'base64');
-fs.writeFileSync(path.join(OUT, 'medieval.glb'), glb);
+fs.writeFileSync(path.join(OUT, cfg.out + '.glb'), glb);
 fs.copyFileSync(path.join(SRC, 'License.txt'), path.join(OUT, 'LICENSE.txt'));
-console.log(`medieval.glb: ${(glb.length / 1024).toFixed(0)} KB`);
+console.log(`${cfg.out}.glb: ${(glb.length / 1024).toFixed(0)} KB`);
 if (SHEET) {
   const names = Object.keys(result.info);
   const front = !!process.env.FRONT;

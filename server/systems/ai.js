@@ -175,7 +175,7 @@ function tryAbilities(zone, m, tgt, now) {
       case 'harden':
         if (hpPct(m) <= a.at && abilityReady(m, a, now)) {
           useAbility(m, a, now);
-          addStatus(m, { id: 'harden', type: 'dr', value: a.dr, dur: a.dur, name: 'Pele de Cristal' }, now);
+          addStatus(m, { id: 'harden', type: 'dr', value: a.dr, dur: a.dur, name: a.statusName || 'Pele de Cristal' }, now);
           yell(zone, m, a.yell);
           zone.fx({ k: 'bf', id: m.id, s: 'harden' }, m.x, m.y);
         }

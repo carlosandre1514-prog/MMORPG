@@ -187,7 +187,8 @@ export function glowTexture() {
 const OBJECT_MODEL_KEY = {
   [O.TREE]: 'tree', [O.PINE]: 'pine', [O.BIGTREE]: 'bigtree', [O.ROCK]: 'rock', [O.BARREL]: 'barrel',
   [O.CRATE]: 'crate', [O.WELL]: 'well', [O.CART]: 'cart', [O.BANNER]: 'banner',
-  [O.TARGET]: 'target', [O.RACK]: 'rack', [O.SACK]: 'sack', [O.LUMBER]: 'lumber',
+  [O.TARGET]: 'target', [O.RACK]: 'rack', [O.SACK]: 'sack', [O.LUMBER]: 'lumber', [O.ORE]: 'ore',
+  [O.BARS]: 'bars', [O.CLOTH]: 'cloth', [O.PLANKS]: 'planks', [O.BRICKS]: 'bricks', [O.GOLD]: 'gold',
 };
 const NATURE = new Set([O.TREE, O.PINE, O.BIGTREE, O.ROCK]);
 
@@ -336,7 +337,7 @@ export class ZoneScene {
     for (const [name, pts] of groups) {
       if (!pts.length) continue;
       const base = medieval.fit(name, 1.75, 1.75);
-      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.material, pts.length);
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), pts.length);
       const col = new THREE.Color();
       pts.forEach(([x, y], i) => {
         const r = hash2(x, y, 43);
@@ -395,23 +396,28 @@ export class ZoneScene {
     const spec = OBJECT_MODELS[OBJECT_MODEL_KEY[o]];
     const names = spec.m.filter((n) => medieval.has(n));
     if (!names.length) return false;
-    const groups = new Map(names.map((n) => [n, []]));
+    const groups = new Map(names.map((n) => [n, { fit: spec, obs: [] }]));
     for (const ob of list) {
       const pickV = o === O.BANNER ? (ob.v > 0.5 ? 1 : 0) : Math.floor(hash2(ob.x, ob.y, 31) * names.length);
-      groups.get(names[Math.min(names.length - 1, pickV)]).push(ob);
+      groups.get(names[Math.min(names.length - 1, pickV)]).obs.push(ob);
     }
+    // peça de base comum a todas as variantes (ex.: monte de pedras sob a pepita de minério)
+    if (spec.base && medieval.has(spec.base.m)) groups.set(spec.base.m, { fit: spec.base, obs: list, base: true });
     const mtx = new THREE.Matrix4();
     const up = new THREE.Vector3(0, 1, 0);
     const col = new THREE.Color();
-    for (const [name, obs] of groups) {
-      if (!obs.length) continue;
-      const base = medieval.fit(name, spec.w, spec.w, spec.h);
+    const nature = NATURE.has(o);
+    const spin = nature || [O.BARREL, O.CRATE, O.ORE, O.GOLD].includes(o);
+    const quarter = [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.SACK, O.LUMBER].includes(o);
+    for (const [name, g] of groups) {
+      if (!g.obs.length) continue;
+      const base = medieval.fit(name, g.fit.w, g.fit.w, g.fit.h);
       const box = medieval.geo(name).boundingBox;
-      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.material, obs.length);
-      obs.forEach((ob, i) => {
-        const nature = NATURE.has(o);
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), g.obs.length);
+      g.obs.forEach((ob, i) => {
         const s = base * (nature ? 0.85 + ob.v * 0.3 : 1);
-        const rot = nature || o === O.BARREL || o === O.CRATE ? ob.v * Math.PI * 2 : o === O.CART ? (ob.v - 0.5) * 0.8 : 0;
+        let rot = spin ? ob.v * Math.PI * 2 : quarter ? Math.floor(ob.v * 4) * Math.PI / 2 : o === O.CART ? (ob.v - 0.5) * 0.8 : 0;
+        if (g.base) rot += 1.3;
         // centraliza a pegada do modelo no tile
         const cx = (box.min.x + box.max.x) / 2 * s, cz = (box.min.z + box.max.z) / 2 * s;
         const c = Math.cos(rot), sn = Math.sin(rot);
@@ -463,7 +469,7 @@ export class ZoneScene {
     for (const [name, list] of items) {
       const sz = medieval.size(name);
       const box = medieval.geo(name).boundingBox;
-      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.material, list.length);
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), list.length);
       list.forEach((it, i) => {
         const s = it.s / Math.max(sz.x, sz.z);
         mtx.compose(_v.set(it.x, -box.min.y * s - 0.05, it.y), _q.setFromAxisAngle(up, it.rot), _s.set(s, s, s));
@@ -496,7 +502,7 @@ export class ZoneScene {
       if (!list.length || !medieval.has(name)) continue;
       const lily = name.startsWith('waterlily');
       const base = medieval.fit(name, lily ? 0.55 : null, lily ? 0.55 : null, lily ? null : 0.75);
-      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.material, list.length);
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), list.length);
       list.forEach(([x, y, r], i) => {
         const s = base * (0.8 + r * 2);
         mtx.compose(_v.set(x + 0.2 + hash2(x, y, 56) * 0.6, lily ? 0.06 : 0, y + 0.2 + hash2(x, y, 57) * 0.6), _q.setFromAxisAngle(up, r * 60), _s.set(s, s, s));
@@ -592,7 +598,7 @@ export class ZoneScene {
       const sx = it.w ? Math.min(it.w / size.x, k * st2) : k;
       const sz = it.d ? Math.min(it.d / size.z, k * st2) : k;
       const sy = Math.min((sx + sz) / 2, it.h ? it.h / size.y : Infinity);
-      const mesh = new THREE.Mesh(medieval.geo(it.m), medieval.material);
+      const mesh = new THREE.Mesh(medieval.geo(it.m), medieval.mat(it.m));
       mesh.scale.set(sx, sy, sz);
       mesh.position.set(it.x - (box.min.x + box.max.x) / 2 * sx, -box.min.y * sy, it.z - (box.min.z + box.max.z) / 2 * sz);
       mesh.castShadow = true;
@@ -747,7 +753,7 @@ export class ZoneScene {
   dispose() {
     this.group.traverse((o) => {
       // materiais e geometrias dos packs são compartilhados entre zonas: só os prédios unidos são descartados
-      if (o.material === medieval.material || o.material?.userData?.shared) {
+      if (o.material?.userData?.shared) {
         if (o.isInstancedMesh || o.isBatchedMesh) o.dispose();
         if (o.geometry && !medieval.shared.has(o.geometry)) o.geometry.dispose();
         return;

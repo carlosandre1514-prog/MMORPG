@@ -8,6 +8,7 @@ import { ZoneScene, glowTexture } from './world3d.js';
 import { Effects3D } from './fx3d.js';
 import { characters, LOOKS } from './characters.js';
 import { buildCreature, buildNpcProp } from './creatures.js';
+import { medieval } from './medieval.js';
 import { itemIcon } from '../sprites.js';
 import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
@@ -31,6 +32,15 @@ function lerpAngle(a, b, t) {
   return a + d * t;
 }
 const DIR_ANGLE = [0, -Math.PI / 2, Math.PI / 2, Math.PI]; // baixo, esquerda, direita, cima
+
+// Saque no chão em 3D: armas por classe (comum, nível alto, lendária) e materiais do Resource Bits
+const LOOT_WEAPON = {
+  warrior: ['sword_1handed', 'sword_2handed', 'sword_2handed_color'],
+  mage: ['staff', 'staff', 'staff'],
+  ranger: ['bow_withString', 'bow_withString', 'bow_withString'],
+  cleric: ['axe_1handed', 'axe_1handed', 'wand'],
+};
+const LOOT_RESOURCE = { mat_ore: 'Iron_Nuggets', enh_stone: 'Silver_Nugget_Large', mat_ember: 'Gold_Nugget_Large' };
 
 export class Renderer3D {
   constructor(canvas, overlayCanvas, game) {
@@ -165,23 +175,28 @@ export class Renderer3D {
 
   itemModel(e) {
     const root = new THREE.Group();
-    let tex = this.iconTex.get(e.i);
-    if (!tex) {
-      tex = new THREE.TextureLoader().load(itemIcon(e.i, 48));
-      tex.colorSpace = THREE.SRGBColorSpace;
-      this.iconTex.set(e.i, tex);
-    }
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false }));
-    sp.scale.setScalar(0.55);
-    sp.position.y = 0.4;
-    root.add(sp);
     const base = ITEMS[e.i];
     const r = e.r || 0;
     const color = base && base.type === 'quest' ? '#f1c40f' : RARITY[r].color;
+    const mesh = this.lootMesh(base);
+    let sp = null;
+    if (mesh) root.add(mesh);
+    else {
+      let tex = this.iconTex.get(e.i);
+      if (!tex) {
+        tex = new THREE.TextureLoader().load(itemIcon(e.i, 48));
+        tex.colorSpace = THREE.SRGBColorSpace;
+        this.iconTex.set(e.i, tex);
+      }
+      sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false }));
+      sp.scale.setScalar(0.55);
+      sp.position.y = 0.4;
+      root.add(sp);
+    }
     if (r >= 1 || (base && base.type === 'quest')) {
       const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color, blending: THREE.AdditiveBlending, depthWrite: false }));
-      glow.scale.setScalar(0.9);
-      glow.position.y = 0.38;
+      glow.scale.setScalar(mesh ? 1.1 : 0.9);
+      glow.position.y = mesh ? 0.2 : 0.38;
       root.add(glow);
     }
     if (r >= 2) {
@@ -189,7 +204,39 @@ export class Renderer3D {
       beam.position.y = 1.3;
       root.add(beam);
     }
-    return { root, icon: sp, update: (dt, st) => { sp.position.y = 0.38 + Math.sin(st.now / 400 + e.id) * 0.06; }, dispose() {} };
+    const ph = (e.id % 17) * 0.37;
+    return {
+      root, icon: sp,
+      update: (dt, st) => {
+        if (sp) sp.position.y = 0.38 + Math.sin(st.now / 400 + e.id) * 0.06;
+        if (mesh) { mesh.rotation.y += dt * 0.7; mesh.position.y = 0.06 + Math.sin(st.now / 500 + ph) * 0.04; }
+      },
+      dispose() {},
+    };
+  }
+
+  // Modelo 3D do item caído, quando existe (arma da classe ou material do Resource Bits)
+  lootMesh(base) {
+    if (!base) return null;
+    let model = null;
+    if (base.type === 'weapon' && characters.ready && LOOT_WEAPON[base.cls]) {
+      const list = LOOT_WEAPON[base.cls];
+      model = characters.weaponModel(base.unique ? list[2] : base.tier >= 4 ? list[1] : list[0]);
+      if (model) { const lay = new THREE.Group(); lay.add(model); lay.rotation.z = Math.PI / 2; model = lay; }
+    } else if (LOOT_RESOURCE[base.id] && medieval.has(LOOT_RESOURCE[base.id])) {
+      const name = LOOT_RESOURCE[base.id];
+      model = medieval.mesh(name, medieval.fit(name, 0.45, 0.45, 0.42));
+    }
+    if (!model) return null;
+    // centraliza no tile, apoiado no chão
+    const holder = new THREE.Group();
+    holder.add(model);
+    const box = new THREE.Box3().setFromObject(holder);
+    const c = box.getCenter(new THREE.Vector3());
+    model.position.set(model.position.x - c.x, model.position.y - box.min.y, model.position.z - c.z);
+    const spin = new THREE.Group();
+    spin.add(holder);
+    return spin;
   }
 
   removeActor(a) {

@@ -81,7 +81,7 @@ export const MONSTERS = {
     gold: [0, 1], equipChance: 0, summon: true, xpMult: 0.3, drops: [],
   },
   vexara: {
-    id: 'vexara', name: "Vex'ara", title: 'A Rainha Tecelã', lvl: [13, 13], hp: 13, dmg: 1.2, def: 1.3,
+    id: 'vexara', name: "Vex'ara", title: 'A Rainha Tecelã', lvl: [13, 13], hp: 12, dmg: 1.2, def: 1.3,
     speed: 3.0, aggro: 8, atkRange: 2.0, atkInterval: 1.6, sprite: 'spider_queen', color: '#4a235a', size: 2.4,
     boss: true, respawn: 240, leash: 20, xpMult: 10,
     gold: [100, 180], equipDrops: 2, uniqueDrop: { id: 'u_vexara_crown', chance: 0.3 },
@@ -125,7 +125,7 @@ export const MONSTERS = {
     abilities: [{ type: 'stomp', cd: 12, radius: 2.5, delay: 1.2, mult: 1.3, stun: 0.8 }],
   },
   kragmor: {
-    id: 'kragmor', name: 'Kragmor', title: 'O Coração da Montanha', lvl: [19, 19], hp: 16, dmg: 1.3, def: 1.6,
+    id: 'kragmor', name: 'Kragmor', title: 'O Coração da Montanha', lvl: [19, 19], hp: 12, dmg: 1.3, def: 1.6,
     speed: 2.4, aggro: 8, atkRange: 2.4, atkInterval: 2.0, sprite: 'golem_boss', color: '#566573', size: 2.8,
     boss: true, respawn: 240, leash: 20, xpMult: 12,
     gold: [200, 350], equipDrops: 3, uniqueDrop: { id: 'u_kragmor_heart', chance: 0.3 },
@@ -157,14 +157,14 @@ export const MONSTERS = {
     abilities: [{ type: 'drain', pct: 0.5 }],
   },
   ash_knight: {
-    id: 'ash_knight', name: 'Cavaleiro das Cinzas', lvl: [22, 24], hp: 2.0, dmg: 1.3, def: 1.6,
+    id: 'ash_knight', name: 'Cavaleiro das Cinzas', lvl: [22, 24], hp: 1.7, dmg: 1.3, def: 1.6,
     speed: 2.8, aggro: 6, atkRange: 1.8, atkInterval: 1.8, sprite: 'ash_knight', color: '#2c3e50', size: 1.3, voidborn: true,
     gold: [20, 40], equipChance: 0.16,
     drops: [{ id: 'mat_ash', chance: 0.5 }, { id: 'mat_essence', chance: 0.15 }, { id: 'enh_stone', chance: 0.03 }],
     abilities: [{ type: 'stomp', cd: 9, radius: 2.4, delay: 1.0, mult: 1.6, name: 'Golpe Giratório', burn: 0.15, burnDur: 3 }],
   },
   morvath: {
-    id: 'morvath', name: 'Morvath', title: 'O Rei Cinzento', lvl: [26, 26], hp: 26, dmg: 1.35, def: 1.5,
+    id: 'morvath', name: 'Morvath', title: 'O Rei Cinzento', lvl: [26, 26], hp: 20, dmg: 1.35, def: 1.5,
     speed: 3.0, aggro: 10, atkRange: 7, atkInterval: 2.0, proj: 'ash', sprite: 'morvath', color: '#5d6d7e', size: 2.4,
     boss: true, respawn: 300, leash: 24, xpMult: 16, voidborn: true, flying: true,
     gold: [600, 1000], equipDrops: 4, uniqueDrop: { id: 'u_ashen_crown', chance: 0.3 },

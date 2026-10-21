@@ -88,3 +88,9 @@ cd tools/bake && npm install && node bake.mjs
 
 - Personagens 3D: **KayKit Adventurers 2.0** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Fontes: Cinzel e Alegreya Sans (Google Fonts).
+
+## Capturas
+
+![Vila de Alvorada](docs/screenshots/vila.png)
+![Diálogo de missão](docs/screenshots/dialogo.png)
+![Luta contra chefe](docs/screenshots/chefe.png)

@@ -10,10 +10,13 @@ import { h, clear, esc } from './ui/dom.js';
 import { drawHumanoid, playerLook, skillIcon } from './sprites.js';
 import { audio } from './audio.js';
 import { charSprites } from './charsprites.js';
+import { characters } from './three/characters.js';
+import { medieval } from './three/medieval.js';
 
 const net = new Net();
 const screens = document.getElementById('screens');
 const canvas = document.getElementById('game');
+const overlayCanvas = document.getElementById('overlay');
 const uiRoot = document.getElementById('ui');
 let ui = null, game = null, charList = [], maxChars = 4, account = '';
 
@@ -21,6 +24,7 @@ function show(el) {
   clear(screens).appendChild(el);
   screens.style.display = 'flex';
   canvas.style.display = 'none';
+  overlayCanvas.style.display = 'none';
   uiRoot.style.display = 'none';
 }
 
@@ -238,10 +242,11 @@ function createScreen() {
 function enterGame() {
   screens.style.display = 'none';
   canvas.style.display = 'block';
+  overlayCanvas.style.display = 'block';
   uiRoot.style.display = 'block';
   if (!ui) ui = new UI(uiRoot, net);
   else ui.build();
-  game = new Game(net, canvas, ui);
+  game = new Game(net, canvas, overlayCanvas, ui);
   ui.game = game;
   game.start();
 }
@@ -269,9 +274,18 @@ net.onClose = () => {
 async function boot() {
   document.title = GAME_NAME;
   startBackdrop();
-  show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')), h('div', { class: 'muted center' }, 'Conectando...'))));
+  const fill = h('div');
+  const status = h('div', { class: 'muted center' }, 'Carregando modelos 3D...');
+  show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')), status, h('div', { class: 'load-bar' }, fill))));
+  const prog = [0, 0];
+  const bar = () => { fill.style.width = Math.round((prog[0] * 0.5 + prog[1] * 0.5) * 100) + '%'; };
   try {
-    await Promise.race([charSprites.load(), new Promise((r) => setTimeout(r, 8000))]);
+    await Promise.all([
+      Promise.race([charSprites.load(), new Promise((r) => setTimeout(r, 8000))]),
+      characters.load((p) => { prog[0] = p; bar(); }),
+      medieval.load((p) => { prog[1] = p; bar(); }),
+    ]);
+    status.textContent = 'Conectando...';
     await net.connect();
     const hello = await net.request({ t: 'hello' }, (m) => m.t === 'hello');
     loginScreen(hello);

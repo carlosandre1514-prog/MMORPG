@@ -12,16 +12,16 @@ import { moveWithCollision, canStand } from '/shared/collision.js';
 import { findPath } from '/shared/pathfinding.js';
 import { itemName } from '/shared/itemgen.js';
 import { Terrain } from './terrain.js';
-import { Renderer } from './render.js';
-import { Effects } from './fx.js';
+import { Renderer3D } from './three/engine.js';
 import { Input } from './input.js';
 import { audio } from './audio.js';
 import { canAccept, isComplete } from './questlogic.js';
 
 const INTERP_DELAY = 110;
+const DIR_ANGLE = [0, -Math.PI / 2, Math.PI / 2, Math.PI];
 
 export class Game {
-  constructor(net, canvas, ui) {
+  constructor(net, canvas, overlayCanvas, ui) {
     this.net = net;
     this.ui = ui;
     this.canvas = canvas;
@@ -29,10 +29,10 @@ export class Game {
     this.me = { id: 0, x: 0, y: 0, posSeq: 0, hp: 1, mp: 1, mhp: 1, mmp: 1, level: 1, xp: 0, nx: 100, gold: 0, points: 0, stats: null, statuses: [], inv: [], equip: {}, stash: [], quests: { active: {}, done: {} }, visited: [], flags: {} };
     this.zone = null;
     this.terrain = null;
-    this.zoom = Math.max(1.15, Math.min(2.2, window.innerWidth / (34 * TILE)));
-    this.fx = new Effects(this);
+    this.zoom = 2; // distância da câmera = 30 / zoom
     this.input = new Input(canvas);
-    this.renderer = new Renderer(canvas, this);
+    this.renderer = new Renderer3D(canvas, overlayCanvas, this);
+    this.fx = this.renderer.fx;
     this.target = null;
     this.hover = null;
     this.cooldowns = {};
@@ -161,7 +161,6 @@ export class Game {
     this.zone = { id: z.id, w: z.w, h: z.h, def: ZONES[z.id], structures: z.st, map: buildMap(z.w, z.h, tiles, objs, z.st) };
     this.terrain = new Terrain(this.zone);
     this.entities.clear();
-    this.fx.list = []; this.fx.particles = [];
     this.target = null; this.hover = null; this.path = null; this.action = null;
     const me = this.me;
     const y = m.you;
@@ -174,6 +173,8 @@ export class Game {
       quests: c.quests, visited: c.visited, flags: c.flags, title: c.title, guild: c.guild, skin: c.skin, hair: c.hair, record: c.record,
     });
     this.sent = { x: me.x, y: me.y, d: 0 };
+    me.facing = 0;
+    this.renderer.setZone(this.zone, this.terrain);
     this.timeBase = { w: m.time, len: m.len, at: performance.now() };
     this.dev = m.dev;
     this.markerVer++;
@@ -209,7 +210,7 @@ export class Game {
         e.deathStart = now;
         if (e.k === 'm') {
           audio.play('monsterdie', 0.6);
-          this.fx.burst(e.rx * TILE, e.ry * TILE - 10, 14, { color: MONSTERS[e.m].color, color2: '#ffffff', speed: 70, life: 600 });
+          this.fx.burst({ x: e.rx, y: e.ry, h: 0.5 }, 22, { color: MONSTERS[e.m].color, color2: '#ffffff', speed: 2.2, up: 2.5, life: 800, grav: -6 });
           if (this.target === e.id) this.target = null;
         }
       }
@@ -231,113 +232,116 @@ export class Game {
     }
   }
 
+  // âncora 3D de texto acima de uma entidade
   entityHead(e) {
-    return { x: e.rx * TILE, y: e.ry * TILE - this.renderer.entityHeight(e) };
+    return { id: e.id };
+  }
+
+  faceAt(a, targetId, now) {
+    if (!a) return;
+    a.faceTarget = targetId;
+    a.faceAt = now;
   }
 
   onFx(ev) {
     const me = this.me;
     const now = performance.now();
+    const fx = this.fx;
     const ent = (id) => this.entities.get(id);
     const nearMe = (x, y) => Math.hypot(x - me.x, y - me.y) < 14;
+    const at = (e, frac = 0.6) => ({ x: e.rx, y: e.ry, h: this.renderer.entityHeight(e) * frac });
     switch (ev.k) {
       case 'd': {
         const e = ent(ev.id);
         if (!e) break;
-        const h = this.entityHead(e);
         const mine = ev.s === me.id, onMe = ev.id === me.id;
         const color = onMe ? '#ff5252' : ev.h === 'o' ? '#c39bd3' : mine ? (ev.c ? '#ffb142' : '#ffffff') : '#d5d8dc';
-        const size = onMe ? 14 : mine ? (ev.c ? 20 : 15) : 11;
-        this.fx.text(h.x, h.y, String(ev.v) + (ev.c ? '!' : ''), color, { crit: ev.c, size });
-        if (ev.ab) this.fx.text(h.x, h.y + 12, `(${ev.ab} absorvido)`, '#bb8fce', { size: 9 });
+        const size = onMe ? 16 : mine ? (ev.c ? 24 : 17) : 13;
+        fx.text({ id: e.id }, String(ev.v) + (ev.c ? '!' : ''), color, { crit: ev.c, size });
+        if (ev.ab) fx.text({ id: e.id, oy: 16 }, `(${ev.ab} absorvido)`, '#bb8fce', { size: 11 });
         if (mine || onMe) audio.play(ev.c ? 'crit' : 'hit', onMe ? 0.8 : 1);
-        if (onMe && ev.v > me.mhp * 0.15) this.shake = 6;
-        if (ev.h !== 'o') this.fx.burst(e.rx * TILE, e.ry * TILE - 14, ev.c ? 8 : 4, { color: e.k === 'm' ? MONSTERS[e.m].color : '#e74c3c', color2: '#ffffff', speed: 50, life: 350 });
+        if (onMe && ev.v > me.mhp * 0.15) this.shake = 8;
+        if (ev.h !== 'o') fx.burst(at(e), ev.c ? 14 : 7, { color: e.k === 'm' ? MONSTERS[e.m].color : '#e74c3c', color2: '#ffffff', speed: 1.8, up: 1.6, life: 450, grav: -6 });
         break;
       }
       case 'h': {
         const e = ent(ev.id);
         if (!e) break;
-        const h = this.entityHead(e);
-        this.fx.text(h.x, h.y, '+' + ev.v, '#58d68d', { size: 13 });
-        if (ev.id === me.id && ev.v > 5) this.fx.burst(e.rx * TILE, e.ry * TILE - 10, 6, { style: 'heal', speed: 20, up: 40, life: 600, glow: true, grav: -20 });
+        fx.text({ id: e.id }, '+' + ev.v, '#58d68d', { size: 15 });
+        if (ev.v > 5) fx.burst(at(e, 0.3), 10, { style: 'heal', speed: 0.7, up: 2.4, life: 800, grav: 0.5 });
         break;
       }
-      case 'mp': { const e = ent(ev.id); if (e) { const h = this.entityHead(e); this.fx.text(h.x, h.y, '+' + ev.v, '#5dade2', { size: 12 }); } break; }
-      case 'mi': { const e = ent(ev.id); if (e) { const h = this.entityHead(e); this.fx.text(h.x, h.y, ev.t, '#bdc3c7', { size: 11 }); } break; }
+      case 'mp': { const e = ent(ev.id); if (e) fx.text({ id: e.id }, '+' + ev.v, '#5dade2', { size: 14 }); break; }
+      case 'mi': { const e = ent(ev.id); if (e) fx.text({ id: e.id }, ev.t, '#bdc3c7', { size: 13 }); break; }
       case 'pr': {
         const a = ent(ev.a);
         if (!a) break;
-        this.fx.add({ kind: 'proj', fromPos: { x: a.rx * TILE, y: a.ry * TILE - 18 }, to: ev.b, style: ev.s, dur: Math.max(60, ev.t) });
+        fx.add({ kind: 'proj', fromPos: fx.entPos(ev.a, 0.62), to: ev.b, style: ev.s, dur: Math.max(60, ev.t) });
         if (nearMe(a.rx, a.ry)) {
           const snd = { arrow: 'arrow', arrow_big: 'arrow', poison: 'arrow', fire: 'fire', frost: 'frost', holy: 'holy', arcane: 'magic', shadow: 'magic', ash: 'fire', heal: 'heal' }[ev.s];
           if (snd) audio.play(snd, ev.a === me.id ? 1 : 0.5);
         }
         a.atkStart = now;
+        this.faceAt(a, ev.b, now);
         break;
       }
       case 'sw': {
         const a = ent(ev.id);
         if (!a) break;
         a.atkStart = now;
-        this.fx.add({ kind: 'swing', id: ev.id, target: ev.b, style: ev.s, dur: 260 });
+        this.faceAt(a, ev.b, now);
+        fx.add({ kind: 'swing', id: ev.id, target: ev.b, style: ev.s, dur: 280 });
         if (nearMe(a.rx, a.ry)) audio.play('swing', ev.id === me.id ? 1 : 0.5);
         break;
       }
       case 'ao': {
-        this.fx.add({ kind: 'aoe', x: ev.x, y: ev.y, r: ev.r, style: ev.s, id: ev.id, dur: 550, ground: true });
-        this.fx.burst(ev.x * TILE, ev.y * TILE, Math.min(40, 8 + ev.r * 6), { style: ev.s, speed: ev.r * 40, life: 650, glow: ['meteor', 'fire', 'grace', 'frostnova', 'void'].includes(ev.s), up: 20 });
+        fx.add({ kind: 'aoe', x: ev.x, y: ev.y, r: ev.r, style: ev.s, id: ev.id, dur: 600 });
+        if (ev.id != null) { const a = ent(ev.id); if (a) a.atkStart = now; }
         if (nearMe(ev.x, ev.y)) {
           const snd = { meteor: 'explosion', fire: 'explosion', stomp: 'stomp', rock: 'stomp', void: 'explosion', frostnova: 'frost', grace: 'heal', whirl: 'swing', shout: 'buff', poison: 'hit', charge: 'stomp' }[ev.s];
           if (snd) audio.play(snd);
-          if (['meteor', 'stomp', 'rock', 'void', 'fire', 'charge'].includes(ev.s)) this.shake = Math.max(this.shake, ev.s === 'void' ? 10 : 5);
+          if (['meteor', 'stomp', 'rock', 'void', 'fire', 'charge'].includes(ev.s)) this.shake = Math.max(this.shake, ev.s === 'void' ? 14 : 8);
         }
         break;
       }
       case 'tg':
-        this.fx.add({ kind: 'tele', x: ev.x, y: ev.y, r: ev.r, dur: ev.t, style: ev.s, friendly: !!ev.f });
-        if (ev.s === 'meteor' || ev.s === 'fire') this.fx.add({ kind: 'falling', x: ev.x, y: ev.y, dur: ev.t });
+        fx.add({ kind: 'tele', x: ev.x, y: ev.y, r: ev.r, dur: ev.t, style: ev.s, friendly: !!ev.f });
+        if (ev.s === 'meteor' || ev.s === 'fire') fx.add({ kind: 'falling', x: ev.x, y: ev.y, dur: ev.t });
         if (!ev.f && Math.hypot(ev.x - me.x, ev.y - me.y) < ev.r + 1) audio.play('warn');
         break;
-      case 'ar': this.fx.add({ kind: 'area', x: ev.x, y: ev.y, r: ev.r, dur: ev.t, style: ev.s }); if (ev.s === 'arrows' && nearMe(ev.x, ev.y)) audio.play('arrow'); break;
-      case 'bf': this.fx.add({ kind: 'buff', id: ev.id, style: ev.s, dur: 900 }); if (ev.id === me.id) audio.play('buff'); break;
-      case 'ds': this.fx.add({ kind: 'dash', x0: ev.x0, y0: ev.y0, x: ev.x, y: ev.y, style: ev.s, dur: 350 }); {
+      case 'ar': fx.add({ kind: 'area', x: ev.x, y: ev.y, r: ev.r, dur: ev.t, style: ev.s }); if (ev.s === 'arrows' && nearMe(ev.x, ev.y)) audio.play('arrow'); break;
+      case 'bf': fx.add({ kind: 'buff', id: ev.id, style: ev.s, dur: 900 }); if (ev.id === me.id) audio.play('buff'); break;
+      case 'ds': {
+        fx.add({ kind: 'dash', x0: ev.x0, y0: ev.y0, x: ev.x, y: ev.y, style: ev.s, dur: 350 });
         const e = ent(ev.id);
         if (e && e.id !== me.id) { e.rx = ev.x; e.ry = ev.y; e.buf = [{ t: this.serverNow(), x: ev.x, y: ev.y }]; }
-      } break;
+        break;
+      }
       case 'lv': {
-        this.fx.add({ kind: 'lvl', id: ev.id, dur: 1600 });
+        fx.add({ kind: 'lvl', id: ev.id, dur: 1800 });
         const e = ent(ev.id);
-        if (e) { const h = this.entityHead(e); this.fx.text(h.x, h.y - 10, 'NÍVEL!', '#f7dc6f', { size: 16, dur: 1800, crit: true }); this.fx.burst(e.rx * TILE, e.ry * TILE - 20, 30, { style: 'grace', speed: 90, life: 900, glow: true, up: 40 }); }
+        if (e) {
+          fx.text({ id: e.id, oy: -22 }, 'NÍVEL!', '#f7dc6f', { size: 20, dur: 1800, crit: true });
+          fx.burst(at(e, 0.5), 40, { style: 'grace', speed: 2.5, up: 4, life: 1100, grav: -2 });
+        }
         break;
       }
-      case 'rv': this.fx.add({ kind: 'rv', id: ev.id, dur: 1400 }); audio.play('heal'); break;
-      case 'sp': this.fx.add({ kind: 'sp', x: ev.x, y: ev.y, dur: 900 }); break;
-      case 'ab': {
-        const e = ent(ev.id);
-        if (e) { const h = this.entityHead(e); this.fx.text(h.x, h.y - 18, ev.n, '#ff9f43', { size: 12, vy: -12, dur: 1600 }); }
-        break;
-      }
-      case 'ag': {
-        const e = ent(ev.id);
-        if (e) { const h = this.entityHead(e); this.fx.text(h.x, h.y - 6, '!', '#ff4d4d', { size: 18, vy: -10, dur: 700 }); }
-        break;
-      }
-      case 'xp': {
-        const e = this.myEntity();
-        if (e) { const h = this.entityHead(e); this.fx.text(h.x + 22, h.y + 10, `+${ev.v} XP`, '#c39bd3', { size: 11, vy: -25, dur: 1400 }); }
-        break;
-      }
+      case 'rv': fx.add({ kind: 'rv', id: ev.id, dur: 1400 }); audio.play('heal'); break;
+      case 'sp': fx.add({ kind: 'sp', x: ev.x, y: ev.y, dur: 900 }); fx.burst({ x: ev.x, y: ev.y, h: 0.3 }, 18, { style: 'void', speed: 1.5, up: 2, life: 700 }); break;
+      case 'ab': { const e = ent(ev.id); if (e) fx.text({ id: e.id, oy: -30 }, ev.n, '#ff9f43', { size: 15, vy: -14, dur: 1600 }); break; }
+      case 'ag': { const e = ent(ev.id); if (e) fx.text({ id: e.id, oy: -10 }, '!', '#ff4d4d', { size: 22, vy: -12, dur: 700 }); break; }
+      case 'xp': { const e = this.myEntity(); if (e) fx.text({ id: e.id, ox: 34, oy: 12 }, `+${ev.v} XP`, '#c39bd3', { size: 13, vy: -28, dur: 1400 }); break; }
       case 'gd': {
         const e = this.myEntity();
-        if (e) { const h = this.entityHead(e); this.fx.text(h.x - 22, h.y + 16, `+${ev.v} ouro`, '#f4d03f', { size: 11, vy: -25, dur: 1400 }); audio.play('coin', 0.5); }
+        if (e) { fx.text({ id: e.id, ox: -34, oy: 20 }, `+${ev.v} ouro`, '#f4d03f', { size: 13, vy: -28, dur: 1400 }); audio.play('coin', 0.5); }
         break;
       }
       case 'cs': {
         const sk = SKILLS[ev.s];
         const e = ent(ev.id);
         if (sk && e) {
-          this.fx.burst(e.rx * TILE, e.ry * TILE - 20, 6, { color: sk.icon.c1, color2: sk.icon.c2, speed: 30, life: 400, glow: true, up: 20 });
+          fx.burst(at(e, 0.7), 10, { color: sk.icon.c1, color2: sk.icon.c2, speed: 1.2, up: 1.5, life: 500, grav: 0 });
+          e.atkStart = now;
           if (ev.id === me.id) this.ui.flashSkill(ev.s);
         }
         break;
@@ -373,7 +377,7 @@ export class Game {
       if (!this.zone || this.me.dead) return;
       audio.init();
       this.ui.closeMenus();
-      const e = this.hover;
+      const e = this.renderer.pick(inp.mouse.x, inp.mouse.y);
       const wp = this.renderer.screenToWorld(inp.mouse.x, inp.mouse.y);
       if (button === 2 && e && e.k === 'p' && e.id !== this.me.id) { this.ui.playerMenu(e, inp.mouse.x, inp.mouse.y); return; }
       if (e) {
@@ -386,15 +390,21 @@ export class Game {
           return;
         }
       }
+      if (button === 2) return;
       // mover para o ponto clicado
       this.action = null;
       this.sendAttack(null);
-      const p = findPath(this.zone.map, this.me.x, this.me.y, wp.x, wp.y, 6000);
-      this.path = p;
-      this.fx.add({ kind: 'aoe', x: wp.x, y: wp.y, r: 0.35, style: 'whirl', dur: 400, ground: true });
+      this.path = findPath(this.zone.map, this.me.x, this.me.y, wp.x, wp.y, 6000);
+      this.fx.add({ kind: 'ring', x: wp.x, y: wp.y, dur: 450 });
+    });
+    inp.on('drag', (dx, dy) => {
+      // arrastar com o botão direito/do meio gira e inclina a câmera
+      const r = this.renderer;
+      r.yaw -= dx * 0.008;
+      r.pitch = Math.max(0.45, Math.min(1.35, r.pitch + dy * 0.005));
     });
     inp.on('wheel', (d) => {
-      this.zoom = Math.max(1, Math.min(3.2, this.zoom * (d > 0 ? 0.9 : 1.1)));
+      this.zoom = Math.max(1, Math.min(3.6, this.zoom * (d > 0 ? 0.9 : 1.1)));
     });
   }
 
@@ -562,20 +572,8 @@ export class Game {
 
   updateHover() {
     const inp = this.input;
-    if (!inp.mouse.inside) { this.hover = null; return; }
-    const wp = this.renderer.screenToWorld(inp.mouse.x, inp.mouse.y);
-    let best = null, bestY = -Infinity;
-    for (const e of this.entities.values()) {
-      if (e.id === this.me.id) continue;
-      if (e.k === 'i') {
-        if (Math.hypot(wp.x - e.rx, wp.y - (e.ry - 0.25)) < 0.55 && e.ry > bestY) { best = e; bestY = e.ry + 100; }
-        continue;
-      }
-      if ((e.f & F.DEAD) && e.k === 'm') continue;
-      const h = this.renderer.entityHeight(e) / TILE;
-      const w = e.k === 'm' ? Math.max(0.5, MONSTERS[e.m].size * 0.45) : 0.45;
-      if (wp.x > e.rx - w && wp.x < e.rx + w && wp.y > e.ry - h && wp.y < e.ry + 0.2 && e.ry > bestY) { best = e; bestY = e.ry; }
-    }
+    if (!inp.mouse.inside || inp.dragging) { this.hover = null; return; }
+    const best = this.renderer.pick(inp.mouse.x, inp.mouse.y);
     this.hover = best;
     this.canvas.style.cursor = best ? (best.k === 'm' || this.isHostile(best) ? 'crosshair' : 'pointer') : 'default';
   }
@@ -633,10 +631,17 @@ export class Game {
     let dx = 0, dy = 0;
     const blocked = me.dead || (this.myFlags() & (F.STUN | F.ROOT));
     if (!this.ui.typing()) {
-      if (inp.down('w') || inp.down('ArrowUp')) dy -= 1;
-      if (inp.down('s') || inp.down('ArrowDown')) dy += 1;
-      if (inp.down('a') || inp.down('ArrowLeft')) dx -= 1;
-      if (inp.down('d') || inp.down('ArrowRight')) dx += 1;
+      let fwd = 0, side = 0;
+      if (inp.down('w') || inp.down('ArrowUp')) fwd += 1;
+      if (inp.down('s') || inp.down('ArrowDown')) fwd -= 1;
+      if (inp.down('a') || inp.down('ArrowLeft')) side -= 1;
+      if (inp.down('d') || inp.down('ArrowRight')) side += 1;
+      // relativo à câmera
+      const yaw = this.renderer.yaw;
+      dx = Math.cos(yaw) * side - Math.sin(yaw) * fwd;
+      dy = -Math.sin(yaw) * side - Math.cos(yaw) * fwd;
+      if (Math.abs(dx) < 1e-6) dx = 0;
+      if (Math.abs(dy) < 1e-6) dy = 0;
     }
     this.keyMoving = !!(dx || dy);
     if (this.keyMoving) {
@@ -662,14 +667,14 @@ export class Game {
       } else if (this.path) {
         this.path = null; // preso
       }
-      if (Math.abs(dx) > Math.abs(dy)) me.dir = dx < 0 ? 1 : 2; else me.dir = dy < 0 ? 3 : 0;
+      me.facing = Math.atan2(dx, dy);
     } else if (this.action && this.action.type === 'attack') {
       const t = this.entities.get(this.action.id);
-      if (t) {
-        const ddx = t.rx - me.x, ddy = t.ry - me.y;
-        if (Math.abs(ddx) > Math.abs(ddy)) me.dir = ddx < 0 ? 1 : 2; else me.dir = ddy < 0 ? 3 : 0;
-      }
+      if (t) me.facing = Math.atan2(t.rx - me.x, t.ry - me.y);
     }
+    // direção cardinal (usada pelo servidor e pelo minimapa)
+    const fx = Math.sin(me.facing || 0), fy = Math.cos(me.facing || 0);
+    if (Math.abs(fx) > Math.abs(fy)) me.dir = fx < 0 ? 1 : 2; else me.dir = fy < 0 ? 3 : 0;
     this.localMoving = moving;
     const s = this.sent;
     if (now - this.lastSend > 66 && (Math.abs(me.x - s.x) > 0.01 || Math.abs(me.y - s.y) > 0.01 || s.d !== me.dir)) {
@@ -704,9 +709,12 @@ export class Game {
           nx = a.x + (c.x - a.x) * k; ny = a.y + (c.y - a.y) * k;
         }
       }
-      const moved = Math.hypot(nx - e.rx, ny - e.ry);
-      e.moving = moved > 0.3 * dt;
-      if (e.moving) e.phase += moved * 4.2;
+      const mx = nx - e.rx, my = ny - e.ry;
+      const moved = Math.hypot(mx, my);
+      e.moving = e.id === this.me.id ? !!this.localMoving : moved > 0.3 * dt;
+      if (e.moving) { e.phase += moved * 4.2; e.vx = mx; e.vy = my; e.lastMoveAt = now; }
+      const spd = dt > 0 ? moved / dt : 0;
+      e.spd = (e.spd || 0) * 0.8 + spd * 0.2;
       e.rx = nx; e.ry = ny;
     }
   }

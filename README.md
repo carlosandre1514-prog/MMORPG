@@ -1,8 +1,8 @@
 # Aethra: A Chama Partida
 
-Um **MMORPG 2D multiplayer para navegador**, feito do zero: servidor autoritativo em Node.js (sem nenhuma dependência), mundo persistente, combate em tempo real, 4 classes, 6 regiões, 20 missões de campanha com história completa, chefes com mecânicas, itens com raridade e afixos aleatórios, aprimoramento, criação, grupos, clãs, comércio entre jogadores, arena JxJ e ranking.
+Um **MMORPG 3D multiplayer para navegador**, feito do zero: servidor autoritativo em Node.js (sem nenhuma dependência), mundo persistente, combate em tempo real, 4 classes, 6 regiões, 20 missões de campanha com história completa, chefes com mecânicas, itens com raridade e afixos aleatórios, aprimoramento, criação, grupos, clãs, comércio entre jogadores, arena JxJ e ranking.
 
-Os personagens jogáveis, vários NPCs e inimigos humanoides usam os modelos 3D **KayKit Adventurers 2.0** (CC0), pré-renderizados em spritesheets animadas. O restante da arte (mapas, monstros, objetos, ícones, efeitos) e todo o áudio são gerados por código.
+O mundo é renderizado em **3D com Three.js** (câmera orbital, sombras, ciclo dia/noite, luzes dinâmicas, partículas). Personagens, NPCs e inimigos humanoides são os modelos animados **KayKit Adventurers 2.0**; casas, castelo, muralhas, árvores, pedras e objetos vêm do **KayKit Medieval Hexagon Pack** (ambos CC0). Criaturas, efeitos, ícones e todo o áudio são gerados por código.
 
 ## Como jogar (2 minutos)
 
@@ -33,6 +33,8 @@ No modo DEV, use no chat:
 
 Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`.
 
+Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
+
 ## Controles
 
 | Ação | Tecla |
@@ -47,6 +49,7 @@ Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DE
 | Chat | Enter (`/m` mundo, `/g` grupo, `/c` clã, `/s nome` sussurro, `/quem`, `/ajuda`) |
 | Opções de jogador | botão direito sobre outro jogador (grupo, comércio, sussurro) |
 | Zoom | roda do mouse |
+| Girar / inclinar câmera | arrastar com o botão direito (ou do meio) |
 
 ## O que existe no jogo
 
@@ -72,25 +75,30 @@ Cobre fórmulas, itens, inventário, consistência dos dados, geração e conect
 ```
 server/   servidor (WebSocket próprio, mundo, zonas, IA, combate, missões, social)
 shared/   dados e regras usados pelos dois lados (classes, itens, monstros, missões, mapas)
-client/   jogo no navegador (Canvas 2D, interface, áudio procedural)
-assets/kaykit/   modelos 3D originais KayKit (CC0)
-tools/bake/      gera as spritesheets a partir dos modelos 3D (Three.js + Chromium)
+client/   jogo no navegador (Three.js em client/vendor, cena 3D em client/js/three, interface, áudio procedural)
+assets/kaykit/   modelos 3D KayKit (CC0): personagens, armas e animações; medieval/medieval.glb com o cenário
+tools/bake/      gera os retratos 2D dos personagens a partir dos modelos 3D (Three.js + Chromium)
+tools/medieval/  converte o KayKit Medieval Hexagon Pack (FBX) no medieval.glb usado pelo jogo
 docs/GAME_DESIGN.md   documento de design: história, mecânicas e fórmulas
 ```
 
-### Regerar os sprites dos personagens
+### Regerar os retratos e o cenário
 
 ```bash
-cd tools/bake && npm install && node bake.mjs
+cd tools/bake && npm install && node bake.mjs                     # retratos dos personagens
+node tools/medieval/convert.mjs <pasta-do-Medieval-Hexagon-Pack>   # cenário (usa o three de tools/bake)
 ```
 
 ## Créditos
 
 - Personagens 3D: **KayKit Adventurers 2.0** por Kay Lousberg — www.kaylousberg.com (licença CC0).
+- Cenário 3D: **KayKit Medieval Hexagon Pack** por Kay Lousberg — www.kaylousberg.com (licença CC0).
+- Motor 3D: **Three.js** (licença MIT).
 - Fontes: Cinzel e Alegreya Sans (Google Fonts).
 
 ## Capturas
 
 ![Vila de Alvorada](docs/screenshots/vila.png)
 ![Diálogo de missão](docs/screenshots/dialogo.png)
-![Luta contra chefe](docs/screenshots/chefe.png)
+![Combate nos Campos](docs/screenshots/combate.png)
+![Floresta Sussurrante](docs/screenshots/floresta.png)

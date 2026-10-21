@@ -20,6 +20,9 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; user-select: none; }
 canvas#game { position: fixed; inset: 0; display: block; }
+canvas#overlay { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+.load-bar { width: 260px; height: 10px; background: rgba(0,0,0,0.5); border: 1px solid #6b5530; border-radius: 5px; overflow: hidden; margin: 6px auto; }
+.load-bar div { height: 100%; width: 0; background: linear-gradient(90deg, #c9a24a, #ffd27a); transition: width 0.2s; }
 canvas#backdrop { position: fixed; inset: 0; z-index: 0; }
 #screens { position: fixed; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; overflow: auto; }
 #ui { position: fixed; inset: 0; pointer-events: none; z-index: 5; }

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Conversão KayKit Medieval</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "/tools/bake/node_modules/three/build/three.module.js",
+      "three/addons/": "/tools/bake/node_modules/three/examples/jsm/"
+    } }
+  </script>
+</head>
+<body style="margin:0;background:#334">
+<script type="module">
+// Converte os modelos FBX do KayKit Medieval Hexagon Pack (CC0) num único GLB compacto:
+// cada modelo vira uma malha (geometria unida) e todos dividem um material com o atlas reduzido.
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+
+function loadImage(url) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+}
+
+function bakeModel(obj) {
+  obj.updateMatrixWorld(true);
+  const parts = [];
+  obj.traverse((o) => {
+    if (!o.isMesh) return;
+    let g = o.geometry.clone();
+    g.applyMatrix4(o.matrixWorld);
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+    if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    if (g.index) g = g.toNonIndexed();
+    g.clearGroups();
+    parts.push(g);
+  });
+  if (!parts.length) return null;
+  let geo = parts.length === 1 ? parts[0] : mergeGeometries(parts, false);
+  geo = mergeVertices(geo, 1e-4);
+  geo.computeBoundingBox();
+  return geo;
+}
+
+window.runConvert = async (files, texSize) => {
+  const img = await loadImage('/src/Textures/hexagons_medieval.png');
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = texSize;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, texSize, texSize);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, metalness: 0, name: 'hexagons_medieval' });
+  const loader = new FBXLoader();
+  const scene = new THREE.Scene();
+  const info = {};
+  let tris = 0;
+  for (const f of files) {
+    const obj = await loader.loadAsync('/src/' + f);
+    const geo = bakeModel(obj);
+    if (!geo) { console.log('sem malha: ' + f); continue; }
+    const name = f.split('/').pop().replace(/\.fbx$/i, '');
+    const m = new THREE.Mesh(geo, mat);
+    m.name = name;
+    scene.add(m);
+    const b = geo.boundingBox;
+    info[name] = { min: b.min.toArray().map((v) => +v.toFixed(3)), max: b.max.toArray().map((v) => +v.toFixed(3)), tris: geo.index.count / 3 };
+    tris += geo.index.count / 3;
+  }
+  console.log(`${scene.children.length} modelos, ${tris} triângulos`);
+  const glb = await new GLTFExporter().parseAsync(scene, { binary: true });
+  const bytes = new Uint8Array(glb);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  window.convertScene = scene;
+  return { glb: btoa(bin), info };
+};
+
+// Folha de contato: cada modelo numa célula, com o nome, para conferência visual
+window.contactSheet = (names, cols, cell, front) => {
+  const rows = Math.ceil(names.length / cols);
+  const W = cols * cell, H = rows * cell;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setSize(W, H);
+  renderer.setScissorTest(true);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  document.body.appendChild(renderer.domElement);
+  const label = document.createElement('canvas');
+  label.width = W; label.height = H;
+  const lc = label.getContext('2d');
+  lc.font = '11px sans-serif'; lc.fillStyle = '#fff';
+  names.forEach((n, i) => {
+    const src = window.convertScene.getObjectByName(n);
+    const s = new THREE.Scene();
+    s.background = new THREE.Color(0x445566);
+    s.add(new THREE.HemisphereLight(0xffffff, 0x556655, 2.2));
+    const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(3, 5, 4); s.add(sun);
+    const m = src.clone(); s.add(m);
+    const b = src.geometry.boundingBox;
+    const size = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+    const r = Math.max(size.x, size.y, size.z) || 1;
+    const cam = new THREE.PerspectiveCamera(35, 1, r * 0.05, r * 20);
+    if (front) cam.position.set(c.x, c.y + r * 0.9, c.z + r * 2.2);
+    else cam.position.set(c.x + r * 1.3, c.y + r * 1.1, c.z + r * 1.7);
+    cam.lookAt(c);
+    const x = (i % cols) * cell, y = H - (Math.floor(i / cols) + 1) * cell;
+    renderer.setViewport(x, y, cell, cell); renderer.setScissor(x, y, cell, cell);
+    renderer.render(s, cam);
+    lc.fillText(`${n} (${size.x.toFixed(2)}×${size.y.toFixed(2)}×${size.z.toFixed(2)})`, (i % cols) * cell + 3, Math.floor(i / cols) * cell + 12);
+  });
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const oc = out.getContext('2d');
+  oc.drawImage(renderer.domElement, 0, 0);
+  oc.drawImage(label, 0, 0);
+  return out.toDataURL('image/png');
+};
+window.convertReady = true;
+</script>
+</body>
+</html>

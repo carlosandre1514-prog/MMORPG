@@ -2,7 +2,7 @@
 
 ## 1. Visão
 
-MMORPG 2D de fantasia sombria em visão 3/4, jogado no navegador. Sessões curtas e diretas: entrar, receber uma missão, caçar, evoluir, enfrentar chefes em grupo. O mundo é compartilhado e persistente; o servidor é a autoridade sobre combate, itens e progresso.
+MMORPG 3D de fantasia sombria com câmera orbital em terceira pessoa, jogado no navegador. Sessões curtas e diretas: entrar, receber uma missão, caçar, evoluir, enfrentar chefes em grupo. O mundo é compartilhado e persistente; o servidor é a autoridade sobre combate, itens e progresso.
 
 ## 2. História
 
@@ -73,5 +73,5 @@ Chat por zona, mundo, grupo, clã e sussurro; grupos de até 4 (XP com bônus de
 
 - Servidor Node.js sem dependências: HTTP estático + WebSocket (RFC 6455) próprio, laço a 20 ticks/s, envio de estado incremental por área de interesse, persistência JSON atômica, senhas com scrypt, limites de taxa.
 - Movimento previsto no cliente e validado no servidor (velocidade, colisão, linha livre); correções e teleportes com número de sequência.
-- Cliente: Canvas 2D com terreno em blocos pré-renderizados, ordenação por profundidade, iluminação dia/noite, partículas, interpolação de entidades, interface em DOM e áudio sintetizado por WebAudio.
+- Cliente: Three.js (WebGL) com chão em blocos texturizados, modelos KayKit animados por esqueleto, construções e natureza instanciadas, sombras, céu e névoa por zona com ciclo dia/noite, luzes dinâmicas, partículas, transparência do cenário em volta do jogador, rótulos 2D projetados sobre a cena, interpolação de entidades, interface em DOM e áudio sintetizado por WebAudio. A qualidade (resolução e sombras) se ajusta sozinha em máquinas lentas.
 - Personagens KayKit (CC0) convertidos de glTF para spritesheets (4 direções × parado, andando, atacando, conjurando, ferido, morrendo) pela ferramenta `tools/bake`.

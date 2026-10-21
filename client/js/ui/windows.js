@@ -421,6 +421,7 @@ export const windowsMixin = {
             <tr><td>Z</td><td>Mostrar nomes dos itens no chão</td></tr>
             <tr><td>Enter</td><td>Chat</td></tr>
             <tr><td>Roda do mouse</td><td>Zoom</td></tr>
+            <tr><td>Botão direito (arrastar)</td><td>Girar e inclinar a câmera</td></tr>
             <tr><td>I C K J M P G O</td><td>Inventário, Personagem, Habilidades, Missões, Mapa, Grupo, Clã, Ranking</td></tr>
             <tr><td>Esc</td><td>Fechar janela / Opções</td></tr>
           </table>
@@ -442,7 +443,7 @@ export const windowsMixin = {
       </div>
       <div class="ql-sub">A história até aqui</div>
       <div class="ql-story">Há um mês, Morvath, o Sumo-Guardião da Ordem da Chama, extinguiu a Chama Primordial do Santuário de Lúmen e a partiu em três Brasas — Vida, Terra e Espírito — entregando-as a criaturas corrompidas. Desde então, a Névoa Cinzenta avança sobre Aethra. Quando a Chama se partiu, centelhas caíram do céu e despertaram os Portadores. Você é um deles. Recupere as três Brasas e reacenda a luz.</div>
-      <div class="muted small" style="margin-top:8px">Personagens 3D: KayKit Adventurers por Kay Lousberg (www.kaylousberg.com), CC0.</div>
+      <div class="muted small" style="margin-top:8px">Modelos 3D: KayKit Adventurers e KayKit Medieval Hexagon Pack por Kay Lousberg (www.kaylousberg.com), CC0.</div>
       ${this.game.dev ? '<div class="ql-sub">Modo de teste (DEV)</div><div class="muted">/nivel N · /ouro N · /item id [qtd] [raridade] · /ir zona · /tp x y · /curar · /matar · /ids</div>' : ''}`;
   },
 
@@ -455,12 +456,13 @@ export const windowsMixin = {
       cb.addEventListener('change', () => fn(cb.checked));
       return h('label', { class: 'opt-row' }, cb, ' ', label);
     };
-    const zoom = h('input', { type: 'range', min: '1', max: '3.2', step: '0.05', value: String(this.game.zoom) });
+    const zoom = h('input', { type: 'range', min: '1', max: '3.6', step: '0.05', value: String(this.game.zoom) });
     zoom.addEventListener('input', () => { this.game.zoom = parseFloat(zoom.value); });
     body.append(
       toggle('Efeitos sonoros', audio.enabled, (v) => { audio.init(); audio.setSfx(v); }),
       toggle('Música ambiente', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); if (v) audio.startMusic(this.game.zone.def.music); }),
       toggle('Mostrar nomes dos itens no chão (Z)', this.game.showItemNames, (v) => { this.game.showItemNames = v; }),
+      toggle('Sombras (desative se o jogo ficar lento)', this.game.renderer.shadows, (v) => this.game.renderer.setShadows(v)),
       h('label', { class: 'opt-row' }, 'Zoom ', zoom),
       h('div', { class: 'row' },
         h('button', { class: 'btn small', onclick: () => { this.wins.options.close(); this.send({ t: 'logout' }); } }, 'Trocar personagem'),

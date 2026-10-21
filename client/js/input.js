@@ -14,10 +14,31 @@ export class Input {
     });
     window.addEventListener('keyup', (e) => { this.keys.delete(normKey(e)); });
     window.addEventListener('blur', () => this.keys.clear());
+    this.dragging = false;
+    this.drag = null;
     canvas.addEventListener('mousemove', (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.mouse.inside = true; });
     canvas.addEventListener('mouseleave', () => { this.mouse.inside = false; });
-    canvas.addEventListener('mousedown', (e) => { this.mouse.down = true; this.emit('click', e.button, e); });
-    window.addEventListener('mouseup', () => { this.mouse.down = false; });
+    canvas.addEventListener('mousedown', (e) => {
+      this.mouse.down = true;
+      // botão direito/do meio: arrastar gira a câmera; clique curto continua sendo clique
+      if (e.button === 1 || e.button === 2) { this.drag = { button: e.button, x: e.clientX, y: e.clientY, moved: 0 }; e.preventDefault(); return; }
+      this.emit('click', e.button, e);
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!this.drag) return;
+      const dx = e.clientX - this.drag.x, dy = e.clientY - this.drag.y;
+      this.drag.x = e.clientX; this.drag.y = e.clientY;
+      this.drag.moved += Math.abs(dx) + Math.abs(dy);
+      if (this.drag.moved > 4) { this.dragging = true; this.emit('drag', dx, dy); }
+    });
+    window.addEventListener('mouseup', (e) => {
+      this.mouse.down = false;
+      if (this.drag && e.button === this.drag.button) {
+        if (this.drag.moved <= 4) this.emit('click', this.drag.button, e);
+        this.drag = null;
+        this.dragging = false;
+      }
+    });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     canvas.addEventListener('wheel', (e) => { this.emit('wheel', Math.sign(e.deltaY), e); e.preventDefault(); }, { passive: false });
     // toque: toque simples = clique

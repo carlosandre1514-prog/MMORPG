@@ -1,6 +1,7 @@
 // Servidor de arquivos estáticos para o cliente e o código compartilhado.
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -10,10 +11,30 @@ const MIME = {
   '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.glb': 'model/gltf-binary',
+  '.gltf': 'model/gltf+json',
+  '.bin': 'application/octet-stream',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
 };
+
+// Tipos que valem a pena comprimir (os modelos 3D e o Three.js encolhem bastante com gzip)
+const COMPRESSIBLE = new Set(['.html', '.js', '.mjs', '.css', '.json', '.glb', '.gltf', '.bin', '.svg']);
+const gzCache = new Map(); // arquivo -> { mtimeMs, size, data }
+
+function gzipped(file, st, cb) {
+  const c = gzCache.get(file);
+  if (c && c.mtimeMs === st.mtimeMs && c.size === st.size) { cb(null, c.data); return; }
+  fs.readFile(file, (err, raw) => {
+    if (err) { cb(err); return; }
+    zlib.gzip(raw, { level: 6 }, (err2, data) => {
+      if (err2) { cb(err2); return; }
+      gzCache.set(file, { mtimeMs: st.mtimeMs, size: st.size, data });
+      cb(null, data);
+    });
+  });
+}
 
 export function createStaticHandler(mounts) {
   // mounts: [{ prefix: '/shared/', dir: '/abs/shared' }, { prefix: '/', dir: '/abs/client' }]
@@ -32,13 +53,22 @@ export function createStaticHandler(mounts) {
       if (!file.startsWith(m.dir)) { res.writeHead(403); res.end(); return true; }
       fs.stat(file, (err, st) => {
         if (err || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Não encontrado'); return; }
-        res.writeHead(200, {
-          'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
-          'Content-Length': st.size,
-          'Cache-Control': 'no-cache',
+        const type = MIME[path.extname(file)] || 'application/octet-stream';
+        const etag = `W/"${st.size.toString(36)}-${Math.floor(st.mtimeMs).toString(36)}"`;
+        if (req.headers['if-none-match'] === etag) { res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' }); res.end(); return; }
+        const head = { 'Content-Type': type, 'Cache-Control': 'no-cache', ETag: etag };
+        const gz = COMPRESSIBLE.has(path.extname(file)) && st.size > 1024 && /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+        if (!gz) {
+          res.writeHead(200, { ...head, 'Content-Length': st.size });
+          if (req.method === 'HEAD') { res.end(); return; }
+          fs.createReadStream(file).pipe(res);
+          return;
+        }
+        gzipped(file, st, (e, data) => {
+          if (e) { res.writeHead(500); res.end(); return; }
+          res.writeHead(200, { ...head, 'Content-Encoding': 'gzip', 'Content-Length': data.length, Vary: 'Accept-Encoding' });
+          res.end(req.method === 'HEAD' ? undefined : data);
         });
-        if (req.method === 'HEAD') { res.end(); return; }
-        fs.createReadStream(file).pipe(res);
       });
       return true;
     }

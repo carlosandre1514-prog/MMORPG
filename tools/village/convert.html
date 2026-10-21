@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Conversão Medieval Village MegaKit</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "/tools/bake/node_modules/three/build/three.module.js",
+      "three/addons/": "/tools/bake/node_modules/three/examples/jsm/"
+    } }
+  </script>
+</head>
+<body style="margin:0;background:#334">
+<script type="module">
+// Converte as peças modulares do Medieval Village MegaKit (Quaternius, CC0) num GLB só com geometria:
+// cada peça vira um grupo com uma malha por material (Plaster, UnevenBrick, WoodTrim...). As texturas
+// são reduzidas e salvas à parte; o jogo monta os materiais pelo nome.
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+
+THREE.Cache.enabled = true;
+const manager = new THREE.LoadingManager();
+// as texturas ficam todas na raiz do pack, qualquer que seja o caminho gravado no FBX
+manager.setURLModifier((url) => {
+  const m = /([A-Za-z0-9_]+\.(png|jpg|tga))$/i.exec(url);
+  return m && !url.endsWith('.fbx') ? '/src/' + m[1] : url;
+});
+
+function materialKey(m) {
+  // os materiais do pack se chamam MI_Plaster, MI_UnevenBrick, MI_WoodTrim, MI_WindowGlass...
+  const n = /^MI_?([A-Za-z]+)/.exec(m.name || '');
+  if (n) return n[1];
+  const src = (m.map && (m.map.image?.currentSrc || m.map.image?.src || m.map.name)) || '';
+  const t = /T_([A-Za-z]+?)(_BaseColor)?\.png/.exec(src);
+  return t ? t[1] : 'Other';
+}
+
+// separa a geometria de cada malha por material e junta as partes de mesmo material
+function bakePiece(obj) {
+  obj.updateMatrixWorld(true);
+  const parts = new Map();
+  const info = new Map();
+  obj.traverse((o) => {
+    if (!o.isMesh) return;
+    let g = o.geometry.clone();
+    g.applyMatrix4(o.matrixWorld);
+    if (g.index) g = g.toNonIndexed();
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    const groups = g.groups.length ? g.groups : [{ start: 0, count: g.attributes.position.count, materialIndex: 0 }];
+    for (const gr of groups) {
+      const mat = mats[gr.materialIndex] || mats[0];
+      const key = materialKey(mat);
+      if (!info.has(key)) info.set(key, { color: mat.color?.getHexString(), name: mat.name, transparent: mat.transparent, alphaTest: mat.alphaTest });
+      const sub = new THREE.BufferGeometry();
+      for (const a of ['position', 'normal', 'uv']) {
+        const src = g.attributes[a];
+        if (!src) continue;
+        sub.setAttribute(a, new THREE.BufferAttribute(src.array.slice(gr.start * src.itemSize, (gr.start + gr.count) * src.itemSize), src.itemSize));
+      }
+      if (!sub.attributes.uv) sub.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(gr.count * 2), 2));
+      if (!parts.has(key)) parts.set(key, []);
+      parts.get(key).push(sub);
+    }
+  });
+  const out = new Map();
+  for (const [key, list] of parts) {
+    let geo = list.length === 1 ? list[0] : mergeGeometries(list, false);
+    geo = mergeVertices(geo, 1e-4);
+    out.set(key, geo);
+  }
+  return { geos: out, info };
+}
+
+window.runConvert = async (files) => {
+  const loader = new FBXLoader(manager);
+  const scene = new THREE.Scene();
+  const mats = new Map();
+  const matInfo = {};
+  const pieces = {};
+  let tris = 0;
+  for (const f of files) {
+    const obj = await loader.loadAsync('/src/' + f);
+    const { geos, info } = bakePiece(obj);
+    const name = f.replace(/\.fbx$/i, '');
+    const grp = new THREE.Group();
+    grp.name = name;
+    const box = new THREE.Box3();
+    const keys = [];
+    for (const [key, geo] of geos) {
+      if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ name: key }));
+      if (!matInfo[key]) matInfo[key] = info.get(key);
+      const m = new THREE.Mesh(geo, mats.get(key));
+      m.name = name + '__' + key;
+      grp.add(m);
+      geo.computeBoundingBox();
+      box.union(geo.boundingBox);
+      tris += geo.index.count / 3;
+      keys.push(key);
+    }
+    scene.add(grp);
+    pieces[name] = { min: box.min.toArray().map((v) => +v.toFixed(3)), max: box.max.toArray().map((v) => +v.toFixed(3)), mats: keys };
+  }
+  console.log(`${files.length} peças, ${tris} triângulos, materiais: ${[...mats.keys()].join(', ')}`);
+  window.convertScene = scene;
+  window.convertMats = mats;
+  const glb = await new GLTFExporter().parseAsync(scene, { binary: true });
+  const bytes = new Uint8Array(glb);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return { glb: btoa(bin), pieces, matInfo };
+};
+
+// Reduz uma textura do pack para o jogo (JPG; PNG quando precisa de transparência)
+window.shrinkTexture = async (file, size, png) => {
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = '/src/' + file; });
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = size;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, size, size);
+  return cv.toDataURL(png ? 'image/png' : 'image/jpeg', 0.86);
+};
+
+// Folha de contato para conferência (texturas simples por material)
+window.contactSheet = async (names, cols, cell, texFiles) => {
+  const tl = new THREE.TextureLoader();
+  const looks = {};
+  for (const [key, file] of Object.entries(texFiles)) {
+    const t = await tl.loadAsync('/src/' + file);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    looks[key] = new THREE.MeshStandardMaterial({ map: t, roughness: 0.9, side: THREE.DoubleSide, alphaTest: key === 'Vine' ? 0.5 : 0, color: key === 'Vine' ? 0x4a8a2a : 0xffffff });
+  }
+  const rows = Math.ceil(names.length / cols);
+  const W = cols * cell, H = rows * cell;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setSize(W, H);
+  renderer.setScissorTest(true);
+  const label = document.createElement('canvas');
+  label.width = W; label.height = H;
+  const lc = label.getContext('2d');
+  lc.font = '11px sans-serif'; lc.fillStyle = '#fff';
+  names.forEach((n, i) => {
+    const src = window.convertScene.getObjectByName(n);
+    const s = new THREE.Scene();
+    s.background = new THREE.Color(0x445566);
+    s.add(new THREE.HemisphereLight(0xffffff, 0x556655, 2.2));
+    const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(3, 5, 4); s.add(sun);
+    const g = src.clone();
+    g.traverse((o) => { if (o.isMesh) { const k = o.material.name; o.material = looks[k] || looks[k.replace(/Wear$/, '')] || new THREE.MeshStandardMaterial({ color: k === 'WindowGlass' ? 0x9fc3d9 : 0xff00ff }); } });
+    s.add(g);
+    const b = new THREE.Box3().setFromObject(g);
+    const size = b.getSize(new THREE.Vector3()), c = b.getCenter(new THREE.Vector3());
+    const r = Math.max(size.x, size.y, size.z) || 1;
+    const cam = new THREE.PerspectiveCamera(35, 1, r * 0.05, r * 20);
+    cam.position.set(c.x + r * 0.9, c.y + r * 0.8, c.z + r * 2.0);
+    cam.lookAt(c);
+    const x = (i % cols) * cell, y = H - (Math.floor(i / cols) + 1) * cell;
+    renderer.setViewport(x, y, cell, cell); renderer.setScissor(x, y, cell, cell);
+    renderer.render(s, cam);
+    lc.fillText(n, (i % cols) * cell + 3, Math.floor(i / cols) * cell + 12);
+    lc.fillText(`${size.x.toFixed(2)}×${size.y.toFixed(2)}×${size.z.toFixed(2)} min ${b.min.x.toFixed(1)},${b.min.y.toFixed(1)},${b.min.z.toFixed(1)}`, (i % cols) * cell + 3, Math.floor(i / cols) * cell + 25);
+  });
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const oc = out.getContext('2d');
+  oc.drawImage(renderer.domElement, 0, 0);
+  oc.drawImage(label, 0, 0);
+  return out.toDataURL('image/png');
+};
+window.convertReady = true;
+</script>
+</body>
+</html>

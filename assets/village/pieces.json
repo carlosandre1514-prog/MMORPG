@@ -1,0 +1,650 @@
+{
+ "materials": {
+  "UnevenBrick": {
+   "color": "cccccc",
+   "name": "MI_UnevenBrick",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "WoodTrim": {
+   "color": "cccccc",
+   "name": "MI_WoodTrim",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "Plaster": {
+   "color": "cccccc",
+   "name": "MI_Plaster",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "Brick": {
+   "color": "cccccc",
+   "name": "MI_Brick",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "RockTrim": {
+   "color": "cccccc",
+   "name": "MI_RockTrim",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "WindowGlass": {
+   "color": "cccccc",
+   "name": "MI_WindowGlass",
+   "transparent": true,
+   "alphaTest": 0
+  },
+  "RoundTiles": {
+   "color": "cccccc",
+   "name": "MI_RoundTiles",
+   "transparent": false,
+   "alphaTest": 0
+  },
+  "Vine": {
+   "color": "1a5900",
+   "name": "MI_Vine",
+   "transparent": true,
+   "alphaTest": 0
+  }
+ },
+ "pieces": {
+  "Wall_UnevenBrick_Straight": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "UnevenBrick",
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Wall_UnevenBrick_Door_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "UnevenBrick",
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Wall_UnevenBrick_Door_Flat": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "UnevenBrick",
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Wall_UnevenBrick_Window_Wide_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "UnevenBrick",
+    "Plaster"
+   ]
+  },
+  "Wall_UnevenBrick_Window_Wide_Flat": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "UnevenBrick",
+    "Plaster"
+   ]
+  },
+  "Wall_UnevenBrick_Window_Thin_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Plaster",
+    "UnevenBrick"
+   ]
+  },
+  "Wall_Plaster_Straight": {
+   "min": [
+    -100,
+    -0.21,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Wall_Plaster_Straight_L": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100.178,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Brick",
+    "Plaster"
+   ]
+  },
+  "Wall_Plaster_Straight_R": {
+   "min": [
+    -100.178,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Brick",
+    "Plaster"
+   ]
+  },
+  "Wall_Plaster_WoodGrid": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "Plaster",
+    "WoodTrim"
+   ]
+  },
+  "Wall_Plaster_Door_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Plaster",
+    "RockTrim"
+   ]
+  },
+  "Wall_Plaster_Door_Flat": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "RockTrim",
+    "Plaster"
+   ]
+  },
+  "Wall_Plaster_Window_Wide_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Brick",
+    "Plaster"
+   ]
+  },
+  "Wall_Plaster_Window_Wide_Flat": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "Brick",
+    "Plaster",
+    "WoodTrim"
+   ]
+  },
+  "Wall_Plaster_Window_Thin_Round": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "Brick",
+    "Plaster",
+    "WoodTrim"
+   ]
+  },
+  "Wall_Arch": {
+   "min": [
+    -100,
+    0,
+    0
+   ],
+   "max": [
+    100,
+    300,
+    6.405
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Corner_Exterior_Wood": {
+   "min": [
+    -10.509,
+    0,
+    -11.982
+   ],
+   "max": [
+    10.509,
+    300,
+    11.982
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Door_1_Round": {
+   "min": [
+    -4.626,
+    3.309,
+    -5.756
+   ],
+   "max": [
+    107.375,
+    235.133,
+    6.314
+   ],
+   "mats": [
+    "WindowGlass",
+    "WoodTrim"
+   ]
+  },
+  "Door_1_Flat": {
+   "min": [
+    -4.626,
+    3.523,
+    -5.756
+   ],
+   "max": [
+    107.16,
+    213.494,
+    6.314
+   ],
+   "mats": [
+    "WindowGlass",
+    "WoodTrim"
+   ]
+  },
+  "Window_Wide_Round1": {
+   "min": [
+    -68.246,
+    101.604,
+    -25.228
+   ],
+   "max": [
+    68.246,
+    274.178,
+    27.729
+   ],
+   "mats": [
+    "WoodTrim",
+    "WindowGlass"
+   ]
+  },
+  "Window_Wide_Flat1": {
+   "min": [
+    -80.412,
+    94.418,
+    -26.658
+   ],
+   "max": [
+    80.412,
+    252.429,
+    41.686
+   ],
+   "mats": [
+    "WoodTrim",
+    "WindowGlass"
+   ]
+  },
+  "Window_Thin_Round1": {
+   "min": [
+    -44.381,
+    101.604,
+    -25.202
+   ],
+   "max": [
+    44.381,
+    262.073,
+    9.237
+   ],
+   "mats": [
+    "WoodTrim",
+    "WindowGlass"
+   ]
+  },
+  "WindowShutters_Wide_Round_Open": {
+   "min": [
+    -119.996,
+    109.324,
+    9.079
+   ],
+   "max": [
+    110.353,
+    274.043,
+    56.315
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "WindowShutters_Wide_Flat_Open": {
+   "min": [
+    -123.871,
+    109.324,
+    13.666
+   ],
+   "max": [
+    124.186,
+    251.728,
+    59.317
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "WindowShutters_Thin_Round_Open": {
+   "min": [
+    -81.957,
+    109.324,
+    5.902
+   ],
+   "max": [
+    78.671,
+    261.167,
+    43.55
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Roof_RoundTiles_4x4": {
+   "min": [
+    -275.654,
+    -51.572,
+    -273.991
+   ],
+   "max": [
+    275.654,
+    373.367,
+    282.157
+   ],
+   "mats": [
+    "WoodTrim",
+    "RoundTiles"
+   ]
+  },
+  "Roof_RoundTiles_4x6": {
+   "min": [
+    -275.654,
+    -51.572,
+    -378.603
+   ],
+   "max": [
+    275.654,
+    371.787,
+    378.625
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
+  "Roof_RoundTiles_6x8": {
+   "min": [
+    -412.489,
+    -78.213,
+    -482.875
+   ],
+   "max": [
+    412.489,
+    489.005,
+    485.399
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
+  "Roof_RoundTiles_8x10": {
+   "min": [
+    -497.6,
+    -77.996,
+    -585.2
+   ],
+   "max": [
+    497.6,
+    600.137,
+    600.745
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
+  "Roof_Front_Brick4": {
+   "min": [
+    -218.381,
+    -13.18,
+    -33.496
+   ],
+   "max": [
+    221.6,
+    293.67,
+    79.414
+   ],
+   "mats": [
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Roof_Front_Brick6": {
+   "min": [
+    -334.652,
+    -13.18,
+    -33.496
+   ],
+   "max": [
+    334.788,
+    438.398,
+    79.414
+   ],
+   "mats": [
+    "Plaster",
+    "WoodTrim"
+   ]
+  },
+  "Roof_Front_Brick8": {
+   "min": [
+    -425.472,
+    -13.18,
+    -33.496
+   ],
+   "max": [
+    425.608,
+    531.407,
+    79.414
+   ],
+   "mats": [
+    "WoodTrim",
+    "Plaster"
+   ]
+  },
+  "Prop_Chimney": {
+   "min": [
+    -50,
+    0,
+    -50
+   ],
+   "max": [
+    44.578,
+    317.788,
+    50
+   ],
+   "mats": [
+    "RockTrim",
+    "Brick"
+   ]
+  },
+  "Prop_Chimney2": {
+   "min": [
+    -50,
+    0,
+    -49.401
+   ],
+   "max": [
+    44.578,
+    300,
+    49.401
+   ],
+   "mats": [
+    "UnevenBrick"
+   ]
+  },
+  "Prop_Vine1": {
+   "min": [
+    -78.314,
+    -212.052,
+    -4.471
+   ],
+   "max": [
+    75.262,
+    48.203,
+    17.426
+   ],
+   "mats": [
+    "Vine"
+   ]
+  },
+  "Prop_Vine2": {
+   "min": [
+    -49.405,
+    -212.052,
+    -4.471
+   ],
+   "max": [
+    89.206,
+    48.203,
+    16.914
+   ],
+   "mats": [
+    "Vine"
+   ]
+  },
+  "Prop_Vine4": {
+   "min": [
+    -71.813,
+    -101.388,
+    -2.678
+   ],
+   "max": [
+    29.845,
+    57.429,
+    12.324
+   ],
+   "mats": [
+    "Vine"
+   ]
+  }
+ }
+}

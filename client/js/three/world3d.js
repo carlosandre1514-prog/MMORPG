@@ -6,6 +6,7 @@ import { TILE } from '/shared/constants.js';
 import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
+import { village, villagePlan } from './village.js';
 
 const CHUNK = 16;
 const GROUND_RES = 0.75; // pixels de textura por pixel de mundo 2D (32 px por tile)
@@ -520,7 +521,29 @@ export class ZoneScene {
   }
 
   buildStructures() {
-    this.zone.structures.forEach((st, i) => this.group.add(medieval.ready ? this.packHouse(st, i) : this.house(st)));
+    this.zone.structures.forEach((st, i) => {
+      if (village.ready) this.group.add(this.villageHouse(st, i));
+      else this.group.add(medieval.ready ? this.packHouse(st, i) : this.house(st));
+    });
+  }
+
+  // Prédio montado com as peças modulares (Medieval Village MegaKit) + objetos do KayKit em volta
+  villageHouse(st, index) {
+    const plan = villagePlan(st, index);
+    const g = new THREE.Group();
+    g.add(village.build(plan));
+    for (const it of plan.props || []) {
+      if (!medieval.has(it.m)) continue;
+      const box = medieval.geo(it.m).boundingBox;
+      const s = medieval.fit(it.m, it.w, it.w, it.h);
+      const mesh = medieval.mesh(it.m, s);
+      mesh.rotation.y = it.rot || 0;
+      mesh.position.set(it.x - (box.min.x + box.max.x) / 2 * s, -box.min.y * s, it.z - (box.min.z + box.max.z) / 2 * s);
+      g.add(mesh);
+    }
+    if (st.label) g.add(this.signboard(st.label, -st.w / 2 + 1.1, st.h / 2 + 0.15));
+    g.position.set(st.x + st.w / 2, 0, st.y + st.h / 2);
+    return g;
   }
 
   // Construção com modelos do pack, encaixada no retângulo do mapa (a frente/porta fica para +Z)
@@ -684,13 +707,19 @@ export class ZoneScene {
       p.userData.pillar.material.opacity = 0.14 + Math.sin(t * 2) * 0.05;
     }
     this.windowMat.emissiveIntensity = darkness * 1.6;
+    if (village.mats.WindowGlass) village.mats.WindowGlass.emissiveIntensity = darkness * 1.5;
     if (this.waterMat) this.waterMat.opacity = 0.42 + Math.sin(t * 1.3) * 0.05;
     if (this.lavaMat) this.lavaMat.emissiveIntensity = 1.1 + Math.sin(t * 2) * 0.3;
   }
 
   dispose() {
     this.group.traverse((o) => {
-      if (o.material === medieval.material) { if (o.isInstancedMesh) o.dispose(); return; }
+      // materiais e geometrias dos packs são compartilhados entre zonas: só os prédios unidos são descartados
+      if (o.material === medieval.material || o.material?.userData?.shared) {
+        if (o.isInstancedMesh) o.dispose();
+        if (o.geometry && !medieval.shared.has(o.geometry)) o.geometry.dispose();
+        return;
+      }
       if (o.geometry && !objGeoCacheHas(o.geometry)) o.geometry.dispose();
       if (o.material) {
         const ms = Array.isArray(o.material) ? o.material : [o.material];

@@ -21,6 +21,7 @@ export function startServer(opts = {}) {
   const serveStatic = createStaticHandler([
     { prefix: '/shared/', dir: path.join(ROOT, 'shared') },
     { prefix: '/kaykit/', dir: path.join(ROOT, 'assets', 'kaykit') },
+    { prefix: '/village/', dir: path.join(ROOT, 'assets', 'village') },
     { prefix: '/', dir: path.join(ROOT, 'client') },
   ]);
   const server = http.createServer((req, res) => {

@@ -8,6 +8,7 @@ const URL = '/kaykit/medieval/medieval.glb';
 export const medieval = {
   ready: false,
   geos: new Map(),
+  shared: new Set(), // geometrias do pack (não podem ser descartadas com a zona)
   material: null,
 
   async load(onProgress = () => {}) {
@@ -17,9 +18,11 @@ export const medieval = {
         if (!o.isMesh) return;
         o.geometry.computeBoundingBox();
         this.geos.set(o.name, o.geometry);
+        this.shared.add(o.geometry);
         if (!this.material) this.material = o.material;
       });
       const m = this.material;
+      m.userData.shared = true;
       m.roughness = 0.85;
       m.metalness = 0;
       if (m.map) { m.map.magFilter = THREE.LinearFilter; m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; }

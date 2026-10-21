@@ -1,0 +1,9 @@
+Medieval Village MegaKit (Standard)
+Criado por Quaternius — https://quaternius.com
+
+Licença: Creative Commons Zero (CC0 1.0 Universal)
+http://creativecommons.org/publicdomain/zero/1.0/
+
+Livre para uso pessoal, educacional e comercial; crédito não obrigatório.
+Os arquivos deste diretório foram gerados a partir das peças FBX e texturas originais
+por tools/village/convert.mjs (geometria unida por material, texturas reduzidas para 512 px).

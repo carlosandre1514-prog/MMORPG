@@ -1,0 +1,74 @@
+// Classes jogáveis. Os atributos crescem automaticamente por nível (growth)
+// e o jogador recebe pontos livres para distribuir.
+
+export const CLASSES = {
+  warrior: {
+    id: 'warrior',
+    name: 'Guerreiro',
+    desc: 'Mestre do combate corpo a corpo. Resiste a golpes que derrubariam qualquer outro e protege os aliados atraindo a fúria dos inimigos.',
+    role: 'Tanque / Dano corpo a corpo',
+    primary: 'str',
+    baseHp: 110, hpPerLvl: 16,
+    baseMp: 40, mpPerLvl: 3,
+    base: { str: 12, dex: 6, int: 3, vit: 10 },
+    growth: { str: 2, dex: 1, int: 0, vit: 2 },
+    recommended: { str: 2, vit: 1 },
+    atkRange: 1.8, atkInterval: 1.1, projectile: null,
+    color: '#c0392b',
+    skills: ['w_strike', 'w_cry', 'w_charge', 'w_whirl', 'w_titan', 'w_exec'],
+    startItems: ['w_weapon_1', 'chest_1', 'pot_hp_1:5'],
+  },
+  mage: {
+    id: 'mage',
+    name: 'Mago',
+    desc: 'Estudioso das artes arcanas. Frágil, mas capaz de reduzir grupos inteiros de inimigos a cinzas à distância.',
+    role: 'Dano mágico à distância / Controle',
+    primary: 'int',
+    baseHp: 70, hpPerLvl: 9,
+    baseMp: 90, mpPerLvl: 9,
+    base: { str: 3, dex: 5, int: 13, vit: 6 },
+    growth: { str: 0, dex: 1, int: 3, vit: 1 },
+    recommended: { int: 2, vit: 1 },
+    atkRange: 6.5, atkInterval: 1.35, projectile: 'arcane',
+    color: '#2e86de',
+    skills: ['m_fire', 'm_frost', 'm_shield', 'm_meteor', 'm_blink', 'm_nova'],
+    startItems: ['m_weapon_1', 'chest_1', 'pot_hp_1:3', 'pot_mp_1:5'],
+  },
+  ranger: {
+    id: 'ranger',
+    name: 'Arqueiro',
+    desc: 'Caçador ágil e certeiro. Abate alvos de longe com golpes críticos devastadores e se esquiva com acrobacias.',
+    role: 'Dano físico à distância',
+    primary: 'dex',
+    baseHp: 85, hpPerLvl: 11,
+    baseMp: 55, mpPerLvl: 5,
+    base: { str: 5, dex: 13, int: 4, vit: 7 },
+    growth: { str: 1, dex: 3, int: 0, vit: 1 },
+    recommended: { dex: 2, vit: 1 },
+    atkRange: 7, atkInterval: 1.0, projectile: 'arrow',
+    color: '#27ae60',
+    skills: ['r_aimed', 'r_poison', 'r_roll', 'r_rain', 'r_hawk', 'r_multi'],
+    startItems: ['r_weapon_1', 'chest_1', 'pot_hp_1:5'],
+  },
+  cleric: {
+    id: 'cleric',
+    name: 'Clérigo',
+    desc: 'Devoto da Chama Primordial. Cura e fortalece os aliados, e pune os servos do Vazio com luz sagrada.',
+    role: 'Suporte / Cura',
+    primary: 'int',
+    baseHp: 95, hpPerLvl: 12,
+    baseMp: 80, mpPerLvl: 7,
+    base: { str: 6, dex: 4, int: 11, vit: 9 },
+    growth: { str: 1, dex: 0, int: 2, vit: 2 },
+    recommended: { int: 2, vit: 1 },
+    atkRange: 5.5, atkInterval: 1.3, projectile: 'holy',
+    color: '#f1c40f',
+    skills: ['c_smite', 'c_heal', 'c_bless', 'c_consec', 'c_faith', 'c_grace'],
+    startItems: ['c_weapon_1', 'chest_1', 'pot_hp_1:3', 'pot_mp_1:5'],
+  },
+};
+
+export const CLASS_LIST = ['warrior', 'mage', 'ranger', 'cleric'];
+
+export const SKIN_TONES = ['#f5d0a9', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e'];
+export const HAIR_COLORS = ['#2b1d0e', '#6b3e1d', '#c58b3c', '#e8d36c', '#b03a2e', '#dcdcdc', '#3c5aa8', '#2d8a4e'];

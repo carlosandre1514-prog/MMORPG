@@ -7,6 +7,7 @@ import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
+import { buildFortifications } from './castle3d.js';
 
 const CHUNK = 16;
 const GROUND_RES = 0.75; // pixels de textura por pixel de mundo 2D (32 px por tile)
@@ -186,6 +187,7 @@ export function glowTexture() {
 const OBJECT_MODEL_KEY = {
   [O.TREE]: 'tree', [O.PINE]: 'pine', [O.BIGTREE]: 'bigtree', [O.ROCK]: 'rock', [O.BARREL]: 'barrel',
   [O.CRATE]: 'crate', [O.WELL]: 'well', [O.CART]: 'cart', [O.BANNER]: 'banner',
+  [O.TARGET]: 'target', [O.RACK]: 'rack', [O.SACK]: 'sack', [O.LUMBER]: 'lumber',
 };
 const NATURE = new Set([O.TREE, O.PINE, O.BIGTREE, O.ROCK]);
 
@@ -521,29 +523,59 @@ export class ZoneScene {
   }
 
   buildStructures() {
-    this.zone.structures.forEach((st, i) => {
-      if (village.ready) this.group.add(this.villageHouse(st, i));
-      else this.group.add(medieval.ready ? this.packHouse(st, i) : this.house(st));
-    });
+    const forts = [], houses = [];
+    for (const st of this.zone.structures) (st.kind === 'wall' || st.kind === 'tower' || st.kind === 'gate' ? forts : houses).push(st);
+    if (forts.length) this.group.add(buildFortifications(forts, this.fortMaterials(), (x, y, z, castle) => this.towerFlag(x, y, z, castle)));
+    if (village.ready) {
+      // a cidade inteira em um BatchedMesh por material
+      const placements = [];
+      for (const st of houses) village.place(villagePlan(st), village.baseMatrix(st), placements);
+      if (placements.length) this.group.add(village.batch(placements));
+      for (const st of houses) if (st.label) this.group.add(this.facing(st, (W, D) => this.signboard(st.label, -W / 2 + 1.1, D / 2 + 0.15)));
+    } else {
+      houses.forEach((st, i) => this.group.add(this.facing(st, (W, D) => {
+        const local = { ...st, x: -W / 2, y: -D / 2, w: W, h: D };
+        return medieval.ready ? this.packHouse(local, i) : this.house(local);
+      })));
+    }
   }
 
-  // Prédio montado com as peças modulares (Medieval Village MegaKit) + objetos do KayKit em volta
-  villageHouse(st, index) {
-    const plan = villagePlan(st, index);
+  // Monta algo no referencial da fachada (largura W, profundidade D, frente para +Z) e gira para st.face
+  facing(st, fn) {
+    const side = st.face === 'e' || st.face === 'w';
+    const W = side ? st.h : st.w, D = side ? st.w : st.h;
     const g = new THREE.Group();
-    g.add(village.build(plan));
-    for (const it of plan.props || []) {
-      if (!medieval.has(it.m)) continue;
-      const box = medieval.geo(it.m).boundingBox;
-      const s = medieval.fit(it.m, it.w, it.w, it.h);
-      const mesh = medieval.mesh(it.m, s);
-      mesh.rotation.y = it.rot || 0;
-      mesh.position.set(it.x - (box.min.x + box.max.x) / 2 * s, -box.min.y * s, it.z - (box.min.z + box.max.z) / 2 * s);
-      g.add(mesh);
-    }
-    if (st.label) g.add(this.signboard(st.label, -st.w / 2 + 1.1, st.h / 2 + 0.15));
+    g.add(fn(W, D));
+    g.rotation.y = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 }[st.face || 's'];
     g.position.set(st.x + st.w / 2, 0, st.y + st.h / 2);
     return g;
+  }
+
+  fortMaterials() {
+    if (village.ready) {
+      return {
+        stone: village.mats.UnevenBrick, roof: village.mats.RoundTiles,
+        trim: new THREE.MeshStandardMaterial({ map: village.mats.Brick.map, normalMap: village.mats.Brick.normalMap, color: 0xb8b2a8, roughness: 0.95 }),
+        iron: new THREE.MeshStandardMaterial({ color: 0x2b2a2e, roughness: 0.5, metalness: 0.6 }),
+      };
+    }
+    return {
+      stone: new THREE.MeshStandardMaterial({ color: 0x8f877c, roughness: 1 }),
+      trim: new THREE.MeshStandardMaterial({ color: 0xa69e92, roughness: 1 }),
+      roof: new THREE.MeshStandardMaterial({ color: 0xa8432e, roughness: 0.9 }),
+      iron: new THREE.MeshStandardMaterial({ color: 0x2b2a2e, roughness: 0.5, metalness: 0.6 }),
+    };
+  }
+
+  // bandeira no topo das torres (azul no castelo, vermelha nas muralhas)
+  towerFlag(x, y, z, castle) {
+    const name = castle ? 'flag_blue' : 'flag_red';
+    if (!medieval.has(name)) return;
+    const box = medieval.geo(name).boundingBox;
+    const s = medieval.fit(name, null, null, 1.7);
+    const m = medieval.mesh(name, s);
+    m.position.set(x - (box.min.x + box.max.x) / 2 * s, y - 0.25, z - (box.min.z + box.max.z) / 2 * s);
+    this.group.add(m);
   }
 
   // Construção com modelos do pack, encaixada no retângulo do mapa (a frente/porta fica para +Z)
@@ -716,7 +748,7 @@ export class ZoneScene {
     this.group.traverse((o) => {
       // materiais e geometrias dos packs são compartilhados entre zonas: só os prédios unidos são descartados
       if (o.material === medieval.material || o.material?.userData?.shared) {
-        if (o.isInstancedMesh) o.dispose();
+        if (o.isInstancedMesh || o.isBatchedMesh) o.dispose();
         if (o.geometry && !medieval.shared.has(o.geometry)) o.geometry.dispose();
         return;
       }

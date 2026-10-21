@@ -55,7 +55,7 @@ Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e d
 
 - **História**: a campanha "A Chama Partida" em 4 atos + epílogo (20 missões), com diálogos, reviravoltas e final; missões secundárias, contratos repetíveis e pedras de memória com lore.
 - **Classes**: Guerreiro, Mago, Arqueiro e Clérigo, cada uma com 6 habilidades (provocar, investida, meteoros, teleporte, chuva de flechas, cura, ressurreição...).
-- **Mundo**: Vila de Alvorada (segura), Campos Verdejantes, Floresta Sussurrante, Minas de Ferro Negro, Ruínas de Cinza e Arena de Sangue — mapas procedurais determinísticos, ciclo dia/noite e iluminação dinâmica.
+- **Mundo**: Cidade de Alvorada (capital murada e segura, com castelo, mercado, bairros e becos), Campos Verdejantes, Floresta Sussurrante, Minas de Ferro Negro, Ruínas de Cinza e Arena de Sangue — mapas procedurais determinísticos, ciclo dia/noite e iluminação dinâmica.
 - **Combate**: alvo + auto-ataque, projéteis, áreas, críticos, esquiva, escudos, venenos, queimaduras, lentidão, atordoamento, ameaça (aggro), monstros em bando e com coleira.
 - **Chefes**: Presa-de-Ferro, Vex'ara, Kragmor e Morvath (3 fases), com ataques telegrafados no chão, invocações, fúria e teleporte.
 - **Itens**: 5 raridades, afixos aleatórios, lendários únicos, aprimoramento +1 a +10 com risco, forja e alquimia, loja, baú.

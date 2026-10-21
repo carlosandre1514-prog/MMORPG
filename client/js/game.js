@@ -482,7 +482,7 @@ export class Game {
     const me = this.me;
     const now = performance.now();
     if (me.dead) return;
-    if (this.zone.def.safe) { this.ui.toast('Você não pode lutar dentro da vila.', 'err'); return; }
+    if (this.zone.def.safe) { this.ui.toast('Você não pode lutar dentro da cidade.', 'err'); return; }
     if (me.level < sk.lvl) { this.ui.toast(`${sk.name} requer nível ${sk.lvl}.`, 'err'); audio.play('error'); return; }
     const cd = this.cooldowns[sk.id];
     if (cd && cd.end > now) { this.ui.toast(`${sk.name} em recarga.`, 'err'); return; }

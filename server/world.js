@@ -6,6 +6,7 @@ import { TICK_RATE, MAX_LEVEL, POINTS_PER_LEVEL, DAY_LENGTH, INV_SIZE, STASH_SIZ
 import { xpToNext, computeStats } from '../shared/formulas.js';
 import { createItem } from '../shared/itemgen.js';
 import { Zone } from './zone.js';
+import { canStand } from '../shared/collision.js';
 import { Player } from './entities/player.js';
 import { addItem, newInventory } from './systems/inventory.js';
 import { statusList } from './systems/effects.js';
@@ -151,7 +152,7 @@ export class World {
     this.byName.set(ch.name.toLowerCase(), p);
     let zone = this.zones.get(ch.zone);
     let x = ch.x, y = ch.y;
-    // personagens mortos voltam vivos na vila
+    // personagens mortos voltam vivos na cidade
     if (p.dead) {
       p.dead = false;
       p.hp = Math.round(p.stats.maxHp * 0.5);
@@ -160,6 +161,8 @@ export class World {
     }
     // a arena não guarda posição
     if (zone.def.pvp) { zone = this.zones.get('town'); x = ZONES.town.spawn.x; y = ZONES.town.spawn.y; }
+    // os mapas podem mudar entre versões: posição que virou parede ou casa volta para a entrada da zona
+    if (!canStand(zone.map, x, y)) { x = zone.def.spawn.x; y = zone.def.spawn.y; }
     zone.addPlayer(p, x, y);
     this.sendWorld(p, true);
     this.social.onLogin(p);

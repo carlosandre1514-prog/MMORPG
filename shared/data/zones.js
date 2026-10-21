@@ -4,15 +4,15 @@ import { T, O } from '../tiles.js';
 
 export const ZONES = {
   town: {
-    id: 'town', name: 'Vila de Alvorada', levels: 'Zona Segura', safe: true, w: 64, h: 48,
+    id: 'town', name: 'Cidade de Alvorada', levels: 'Zona Segura', safe: true, w: 112, h: 96,
     gen: { type: 'town', seed: 7 },
-    spawn: { x: 30.5, y: 18.5 },
+    spawn: { x: 56.5, y: 19.5 },
     ambient: '#000000', night: 0.55, music: 'town',
     portals: [
-      { x: 62, y: 22, w: 2, h: 4, to: 'fields', tx: 4.5, ty: 45.5, label: 'Campos Verdejantes' },
-      { x: 18, y: 0, w: 4, h: 2, to: 'arena', tx: 20.5, ty: 34.5, label: 'Arena de Sangue' },
+      { x: 110, y: 45, w: 2, h: 4, to: 'fields', tx: 4.5, ty: 45.5, label: 'Campos Verdejantes' },
+      { x: 55, y: 94, w: 3, h: 2, to: 'arena', tx: 20.5, ty: 34.5, label: 'Arena de Sangue' },
     ],
-    desc: 'O último refúgio dos homens à beira da Névoa Cinzenta.',
+    desc: 'A capital murada, último refúgio dos homens à beira da Névoa Cinzenta.',
   },
 
   fields: {
@@ -20,7 +20,7 @@ export const ZONES = {
     spawn: { x: 6.5, y: 45.5 },
     night: 0.6, music: 'fields',
     portals: [
-      { x: 0, y: 43, w: 2, h: 5, to: 'town', tx: 59.5, ty: 23.5, label: 'Vila de Alvorada' },
+      { x: 0, y: 43, w: 2, h: 5, to: 'town', tx: 107.5, ty: 46.5, label: 'Cidade de Alvorada' },
       { x: 108, y: 20, w: 2, h: 5, to: 'forest', tx: 5.5, ty: 50.5, label: 'Floresta Sussurrante' },
     ],
     gen: {
@@ -192,7 +192,7 @@ export const ZONES = {
     safeRects: [{ x: 0, y: 32, w: 40, h: 8 }],
     night: 0.5, music: 'arena',
     portals: [
-      { x: 18, y: 38, w: 4, h: 2, to: 'town', tx: 19.5, ty: 5.5, label: 'Vila de Alvorada' },
+      { x: 18, y: 38, w: 4, h: 2, to: 'town', tx: 56.5, ty: 90.5, label: 'Cidade de Alvorada' },
     ],
   },
 };

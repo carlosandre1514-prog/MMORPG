@@ -37,7 +37,8 @@ const KEEP = [
   'Corner_Exterior_Wood', 'Door_1_Round', 'Door_1_Flat',
   'Window_Wide_Round1', 'Window_Wide_Flat1', 'Window_Thin_Round1',
   'WindowShutters_Wide_Round_Open', 'WindowShutters_Wide_Flat_Open', 'WindowShutters_Thin_Round_Open',
-  'Roof_RoundTiles_4x4', 'Roof_RoundTiles_4x6', 'Roof_RoundTiles_6x8', 'Roof_RoundTiles_8x10',
+  'Roof_RoundTiles_4x4', 'Roof_RoundTiles_4x6', 'Roof_RoundTiles_6x6', 'Roof_RoundTiles_6x8', 'Roof_RoundTiles_6x10',
+  'Roof_RoundTiles_8x10', 'Roof_RoundTiles_8x12', 'Roof_RoundTiles_8x14',
   'Roof_Front_Brick4', 'Roof_Front_Brick6', 'Roof_Front_Brick8',
   'Prop_Chimney', 'Prop_Chimney2', 'Prop_Vine1', 'Prop_Vine2', 'Prop_Vine4',
 ];

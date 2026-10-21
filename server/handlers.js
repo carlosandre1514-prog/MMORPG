@@ -151,7 +151,7 @@ const HANDLERS = {
       p.zone.fx({ k: 'mp', id: p.id, v: u.mp }, p.x, p.y);
       p.send({ t: 'pcd', k: 'mp', d: 8000 });
     } else if (u.recall) {
-      if (p.zone.id === 'town') return p.err('Você já está na vila.');
+      if (p.zone.id === 'town') return p.err('Você já está na cidade.');
       if (p.casting) return;
       p.casting = {
         until: now + 3000, interruptible: true, name: base.name,

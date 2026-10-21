@@ -142,7 +142,7 @@ pot('pot_mp_2', 'Poção de Mana', 8, { mp: 130 }, 45, '#2471a3', 'Restaura 130 
 pot('pot_mp_3', 'Poção de Mana Maior', 15, { mp: 300 }, 110, '#1a5276', 'Restaura 300 de mana.');
 add({
   id: 'scroll_return', name: 'Pergaminho de Retorno', type: 'consumable', lvl: 1, stack: true,
-  use: { recall: true }, price: 30, desc: 'Após 3s de concentração, transporta você para a Vila de Alvorada. Interrompido por dano ou movimento.',
+  use: { recall: true }, price: 30, desc: 'Após 3s de concentração, transporta você para a Cidade de Alvorada. Interrompido por dano ou movimento.',
   icon: { shape: 'scroll', c1: '#f5e6c8', c2: '#2e86c1' },
 });
 const elixir = (id, name, buff, price, c1, desc) =>
@@ -178,7 +178,7 @@ add({
 // ---------------- Itens de missão ----------------
 const qi = (id, name, shape, c1, desc) =>
   add({ id, name, type: 'quest', lvl: 1, stack: true, price: 0, icon: { shape, c1, c2: '#f1c40f' }, desc });
-qi('q_supplies', 'Suprimentos Roubados', 'sack', '#ca6f1e', 'Caixas de comida e remédios roubadas da Vila.');
+qi('q_supplies', 'Suprimentos Roubados', 'sack', '#ca6f1e', 'Caixas de comida e remédios roubadas da cidade.');
 qi('q_miner_tag', 'Plaqueta de Mineiro', 'tag', '#d4ac0d', 'Uma plaqueta de identificação com um nome gravado.');
 qi('q_sigil', 'Sigilo Velado', 'sigil', '#7d3c98', 'O símbolo dos Velados: um olho fechado envolto em névoa.');
 qi('q_brasa_vida', 'Brasa da Vida', 'brasa', '#58d68d', 'Um fragmento verde e quente da Chama Primordial.');

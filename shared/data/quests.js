@@ -6,20 +6,20 @@ export const QUESTS = {
   // ===================== ATO I — O DESPERTAR =====================
   ms1: {
     id: 'ms1', main: true, act: 'Ato I', name: 'O Despertar', giver: 'thalric', turnIn: 'bran', lvl: 1,
-    desc: 'Thalric pediu que você se apresente à Capitã Bran, na saída leste da vila.',
+    desc: 'Thalric pediu que você se apresente à Capitã Bran, no Portão Leste da cidade.',
     offer: 'Calma, calma. Respire. Você dormiu por três dias depois que a luz caiu do céu e atravessou seu peito.\n\n' +
       'Sei que está confuso, {name}, então serei direto: há um mês, a Chama Primordial que ardia no Santuário de Lúmen foi extinta. ' +
       'Morvath, o Sumo-Guardião da minha Ordem, a partiu em três Brasas e as entregou a criaturas da Névoa.\n\n' +
       'Quando a Chama se partiu, centelhas se espalharam por Aethra. Uma delas escolheu você. Isso faz de você um Portador — alguém capaz de carregar a luz.\n\n' +
       'Mas um Portador sem treino é apenas uma vela ao vento. Procure a Capitã Bran, no portão leste. Ela vai testar do que você é capaz.',
-    progress: 'A Capitã Bran está no portão leste da vila. Siga a estrada de pedras.',
+    progress: 'A Capitã Bran está no Portão Leste da cidade. Siga a rua do comércio, a leste da Praça da Chama.',
     complete: 'Então você é o tal Portador de quem Thalric tanto fala? Hm. Parece meio... comum. Sem ofensa.\n\nVamos ver se essa centelha serve para alguma coisa além de brilhar no escuro.',
     objectives: [{ type: 'talk', npc: 'bran' }],
     rewards: { xp: 60, gold: 10, items: [['pot_hp_1', 3]] },
   },
   ms2: {
     id: 'ms2', main: true, act: 'Ato I', name: 'Prova de Valor', giver: 'bran', turnIn: 'bran', lvl: 1, prereq: ['ms1'],
-    desc: 'Elimine as Gosmas Verdes que infestam os Campos Verdejantes, a leste da vila.',
+    desc: 'Elimine as Gosmas Verdes que infestam os Campos Verdejantes, a leste da cidade.',
     offer: 'As Gosmas Verdes se multiplicaram como praga desde que a Névoa chegou. Elas entopem os poços e corroem as cercas.\n\n' +
       'Saia pelo portão leste e elimine seis delas nos Campos Verdejantes. Se voltar inteiro, conversamos de verdade.\n\n' +
       'Dica de quem já enterrou muitos recrutas: clique em um inimigo para atacá-lo e use suas habilidades com as teclas 1 a 6.',
@@ -84,7 +84,7 @@ export const QUESTS = {
   },
   ms7: {
     id: 'ms7', main: true, act: 'Ato II', name: 'Saqueadores Verdes', giver: 'kael', turnIn: 'kael', lvl: 6, prereq: ['ms6'],
-    desc: 'Derrote goblins e recupere os suprimentos roubados da Vila de Alvorada.',
+    desc: 'Derrote goblins e recupere os suprimentos roubados da Cidade de Alvorada.',
     offer: 'Antes de pensar em rainhas e névoas, temos um problema mais imediato: goblins.\n\n' +
       'Eles roubaram metade dos suprimentos que Alvorada mandou para este acampamento. Sem comida e remédios, não aguentamos uma semana.\n\n' +
       'O acampamento goblin fica a nordeste daqui. Elimine oito deles e recupere cinco caixas de suprimentos. Os xamãs também carregam caixas — e sabem curar os outros, então derrube-os primeiro.',
@@ -124,8 +124,8 @@ export const QUESTS = {
   // ===================== ATO III — AS PROFUNDEZAS =====================
   ms10: {
     id: 'ms10', main: true, act: 'Ato III', name: 'Ecos da Vitória', giver: 'sylvara', turnIn: 'thalric', lvl: 11, prereq: ['ms9'],
-    desc: 'Volte à Vila de Alvorada e conte a Thalric sobre a Brasa da Vida.',
-    offer: 'Thalric precisa saber que a primeira Brasa foi recuperada. Use uma Pedra do Caminho para voltar à vila mais rápido.',
+    desc: 'Volte à Cidade de Alvorada e conte a Thalric sobre a Brasa da Vida.',
+    offer: 'Thalric precisa saber que a primeira Brasa foi recuperada. Use uma Pedra do Caminho para voltar à cidade mais rápido.',
     progress: 'Thalric espera por você em Alvorada.',
     complete: 'A Brasa da Vida... posso senti-la em você, {name}. Quente como o primeiro sol da primavera.\n\n' +
       'Vexa era uma boa alma. Que a floresta guarde sua memória.\n\nMas não há tempo para luto. Restam duas Brasas.',
@@ -240,14 +240,14 @@ export const QUESTS = {
     complete: 'Você ergue as mãos sobre o altar. As três Brasas — Vida, Terra e Espírito — saem do seu peito como pássaros de luz.\n\n' +
       'Elas giram, se tocam, se fundem. Por um instante, o mundo inteiro fica em silêncio.\n\n' +
       'E então a Chama Primordial ruge de volta à vida.\n\n' +
-      'A luz varre as Ruínas de Cinza. A Névoa recua, gritando. Ao longe, na Vila de Alvorada, os sinos começam a tocar sozinhos.\n\n' +
+      'A luz varre as Ruínas de Cinza. A Névoa recua, gritando. Ao longe, na Cidade de Alvorada, os sinos começam a tocar sozinhos.\n\n' +
       'Você é, agora e para sempre, um Portador da Chama.',
     objectives: [{ type: 'talk', npc: 'altar' }],
     rewards: { xp: 10000, gold: 500, title: 'Portador da Chama' },
   },
   ms20: {
     id: 'ms20', main: true, act: 'Epílogo', name: 'Alvorada', giver: 'altar', turnIn: 'thalric', lvl: 22, prereq: ['ms19'],
-    desc: 'Volte à Vila de Alvorada e fale com Thalric.',
+    desc: 'Volte à Cidade de Alvorada e fale com Thalric.',
     offer: 'Uma voz antiga ecoa da Chama: "Volte para casa, Portador. Há alguém esperando por você."',
     progress: 'Thalric espera por você em Alvorada.',
     complete: '(Thalric está de pé na praça, olhando para o leste, onde o céu finalmente está azul.)\n\n' +
@@ -263,7 +263,7 @@ export const QUESTS = {
   sq_cat: {
     id: 'sq_cat', name: 'O Gato do Pip', giver: 'pip', turnIn: 'pip', lvl: 1,
     desc: 'Encontre Bigodes, o gato de Pip, que fugiu para os Campos Verdejantes (perto da lagoa a sudoeste).',
-    offer: 'Você viu o Bigodes? Ele é laranja, gordo e muito mal-humorado! Ele fugiu pelo portão ontem e mamãe disse que eu não posso sair da vila.\n\n' +
+    offer: 'Você viu o Bigodes? Ele é laranja, gordo e muito mal-humorado! Ele fugiu pelo portão ontem e mamãe disse que eu não posso sair da cidade.\n\n' +
       'Acho que ele foi para o sudoeste dos campos, perto da água. Ele adora caçar sapos. Por favor, vê se ele está bem?',
     progress: 'Achou o Bigodes? Ele gosta de água... mesmo dizendo que não.',
     complete: 'Ele está bem?! Que alívio! Ele sempre volta quando fica com fome mesmo...\n\nToma, é tudo que eu tenho. Era pra comprar doce, mas você merece mais!',

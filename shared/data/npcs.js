@@ -2,9 +2,9 @@
 // services: shop, craft, enhance, stash, teleport, board (contratos), lore
 
 export const NPCS = {
-  // ======================= Vila de Alvorada =======================
+  // ======================= Cidade de Alvorada =======================
   thalric: {
-    id: 'thalric', name: 'Ancião Thalric', title: 'Último Guardião da Chama', zone: 'town', x: 32.5, y: 13.5,
+    id: 'thalric', name: 'Ancião Thalric', title: 'Último Guardião da Chama', zone: 'town', x: 56.5, y: 15.5,
     look: { type: 'human', skin: '#e0ac69', hair: '#e5e7e9', hairStyle: 'bald', beard: '#e5e7e9', robe: '#1f3a93', trim: '#f1c40f', staff: true },
     greeting: 'A luz da Chama ainda arde em você, Portador. Posso sentir. O que deseja saber?',
     talk: [
@@ -15,7 +15,7 @@ export const NPCS = {
     services: [],
   },
   bran: {
-    id: 'bran', name: 'Capitã Bran', title: 'Guarda de Alvorada', zone: 'town', x: 56.5, y: 21.5,
+    id: 'bran', name: 'Capitã Bran', title: 'Guarda de Alvorada', zone: 'town', x: 106.5, y: 44.5,
     look: { type: 'human', skin: '#c68642', hair: '#b03a2e', hairStyle: 'short', armor: '#7f8c8d', trim: '#c0392b', sword: true },
     greeting: 'Mantenha a guarda alta, recruta. Lá fora, a Névoa não perdoa distrações.',
     talk: [
@@ -25,7 +25,7 @@ export const NPCS = {
     services: [],
   },
   lyra: {
-    id: 'lyra', name: 'Lyra', title: 'Caçadora', zone: 'town', x: 56.5, y: 27.5,
+    id: 'lyra', name: 'Lyra', title: 'Caçadora', zone: 'town', x: 106.5, y: 50.5,
     look: { type: 'human', skin: '#f5d0a9', hair: '#2d8a4e', hairStyle: 'long', tunic: '#1e8449', trim: '#784212', bow: true },
     greeting: 'Shh... Ouviu isso? Não? Bom. Significa que ainda estamos seguros aqui dentro.',
     talk: [
@@ -35,7 +35,7 @@ export const NPCS = {
     services: [],
   },
   otto: {
-    id: 'otto', name: 'Otto', title: 'Mercador', zone: 'town', x: 47.5, y: 19.5,
+    id: 'otto', name: 'Otto', title: 'Mercador', zone: 'town', x: 87.5, y: 43.5,
     look: { type: 'human', skin: '#f5d0a9', hair: '#6b3e1d', hairStyle: 'short', beard: '#6b3e1d', tunic: '#d68910', trim: '#784212', hat: '#784212' },
     greeting: 'Bem-vindo, bem-vindo! Poções, pergaminhos, tudo que um aventureiro precisa para voltar vivo... ou quase!',
     talk: ['Desde que a estrada do sul fechou, minhas mercadorias chegam pela metade. E pelo dobro do preço!'],
@@ -43,7 +43,7 @@ export const NPCS = {
     shop: ['pot_hp_1', 'pot_hp_2', 'pot_hp_3', 'pot_mp_1', 'pot_mp_2', 'pot_mp_3', 'scroll_return', 'mat_herb'],
   },
   brunhilda: {
-    id: 'brunhilda', name: 'Brunhilda', title: 'Ferreira', zone: 'town', x: 12.5, y: 21.5,
+    id: 'brunhilda', name: 'Brunhilda', title: 'Ferreira', zone: 'town', x: 39.5, y: 45.5,
     look: { type: 'human', skin: '#e0ac69', hair: '#c58b3c', hairStyle: 'braid', tunic: '#5d4037', apron: '#3e2723', hammer: true },
     greeting: 'Hah! Mais um que precisa de aço. Traga materiais e ouro, e eu faço milagres na bigorna.',
     talk: [
@@ -56,7 +56,7 @@ export const NPCS = {
     craft: 'smith',
   },
   fenwick: {
-    id: 'fenwick', name: 'Fenwick', title: 'Alquimista', zone: 'town', x: 11.5, y: 35.5,
+    id: 'fenwick', name: 'Fenwick', title: 'Alquimista', zone: 'town', x: 34.5, y: 47.5,
     look: { type: 'human', skin: '#f5d0a9', hair: '#dcdcdc', hairStyle: 'wild', robe: '#6c3483', trim: '#58d68d', goggles: true },
     greeting: 'Cuidado com os frascos! Esse aí explode se olhar torto. O que posso destilar para você?',
     talk: [
@@ -68,35 +68,35 @@ export const NPCS = {
     craft: 'alchemy',
   },
   marta: {
-    id: 'marta', name: 'Marta', title: 'Guardiã do Cofre', zone: 'town', x: 50.5, y: 36.5,
+    id: 'marta', name: 'Marta', title: 'Guardiã do Cofre', zone: 'town', x: 87.5, y: 37.5,
     look: { type: 'human', skin: '#8d5524', hair: '#2b1d0e', hairStyle: 'bun', robe: '#145a32', trim: '#f4d03f' },
     greeting: 'O cofre de Alvorada nunca foi arrombado. Nem por ladrões, nem pela Névoa. Seus pertences estarão seguros.',
     talk: ['Cada Portador tem seu próprio baú. O que você guarda aqui, só você retira.'],
     services: ['stash'],
   },
   ilyas: {
-    id: 'ilyas', name: 'Ilyas', title: 'Mago do Portal', zone: 'town', x: 23.5, y: 24.5,
+    id: 'ilyas', name: 'Ilyas', title: 'Mago do Portal', zone: 'town', x: 47.5, y: 40.5,
     look: { type: 'human', skin: '#c68642', hair: '#3c5aa8', hairStyle: 'long', robe: '#1b4f72', trim: '#85c1e9', hat: '#1b4f72', pointyHat: true, staff: true },
     greeting: 'Os caminhos entre as Pedras do Caminho estão abertos para quem já os percorreu. Para onde deseja ir?',
     talk: ['Cada Pedra do Caminho é um fragmento do antigo santuário. Elas se lembram de quem as tocou.'],
     services: ['teleport'],
   },
   pip: {
-    id: 'pip', name: 'Pip', title: 'Menino Curioso', zone: 'town', x: 35.5, y: 27.5, small: true,
+    id: 'pip', name: 'Pip', title: 'Menino Curioso', zone: 'town', x: 61.5, y: 56.5, small: true,
     look: { type: 'human', skin: '#f5d0a9', hair: '#e8d36c', hairStyle: 'messy', tunic: '#5dade2', trim: '#2874a6', small: true },
     greeting: 'Você é um Portador de verdade?! Uau! Consegue soltar fogo pelas mãos?',
     talk: ['Quando eu crescer, vou ser um Portador também! Ou um gato. Gatos dormem o dia todo.'],
     services: [],
   },
   board: {
-    id: 'board', name: 'Quadro de Contratos', title: 'Caçadas Repetíveis', zone: 'town', x: 28.5, y: 19.5,
+    id: 'board', name: 'Quadro de Contratos', title: 'Caçadas Repetíveis', zone: 'town', x: 52.5, y: 41.5,
     look: { type: 'board' },
     greeting: 'Cartazes de recompensa cobrem a madeira. A Guarda de Alvorada paga bem por cada ameaça eliminada.',
     talk: [],
     services: ['board'],
   },
   statue: {
-    id: 'statue', name: 'Estátua de Aurelion', title: 'Primeiro Guardião', zone: 'town', x: 32.5, y: 20.5,
+    id: 'statue', name: 'Estátua de Aurelion', title: 'Primeiro Guardião', zone: 'town', x: 56.5, y: 41.5,
     look: { type: 'lore' }, noMarker: true,
     greeting: '"Aqui jaz a memória de Aurelion, que acendeu a Chama Primordial no coração de Lúmen e jurou protegê-la até o fim dos tempos."',
     talk: [

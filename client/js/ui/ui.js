@@ -533,7 +533,7 @@ export class UI {
   showDeath(m) {
     const pvp = this.game.zone.def.pvp;
     this.deathAt = performance.now();
-    this.deathBtnText = pvp ? 'Voltar à luta' : 'Renascer na Vila de Alvorada';
+    this.deathBtnText = pvp ? 'Voltar à luta' : 'Renascer na Cidade de Alvorada';
     clear(this.deathEl).append(
       h('div', { class: 'death-title' }, 'Você caiu'),
       h('div', { class: 'death-sub' }, m.by ? `Derrotado por ${m.by}` : 'A Névoa reclama mais uma alma...'),

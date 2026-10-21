@@ -329,7 +329,7 @@ export class Renderer3D {
     this.updateCamera(dt);
     this.updateLights(now, t);
     this.updateRings(t);
-    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr);
+    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist);
     this.renderer.render(this.scene, this.camera);
     this.overlay.draw(t);
   }

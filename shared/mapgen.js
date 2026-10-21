@@ -2,6 +2,7 @@
 import { T, O, TILE_INFO, OBJ_INFO } from './tiles.js';
 import { mulberry32, fbm, hash2 } from './rng.js';
 import { NPCS } from './data/npcs.js';
+import { buildCapital } from './citygen.js';
 
 class Grid {
   constructor(w, h, base) {
@@ -523,93 +524,7 @@ function genArena(zone) {
 // ---------------------------------------------------------------- vila
 
 function genTown(zone) {
-  const { w, h } = zone;
-  const seed = zone.gen.seed;
-  const rng = mulberry32(seed);
-  const grid = new Grid(w, h, T.GRASS);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (fbm(x * 0.09, y * 0.09, seed, 3) > 0.6) grid.setT(x, y, T.DARKGRASS);
-    }
-  }
-  const cob = (x, y, ww, hh) => grid.rect(x, y, ww, hh, (px, py) => { grid.setT(px, py, T.COBBLE); grid.pathMask[grid.i(px, py)] = 1; });
-  // praça e ruas
-  cob(22, 16, 21, 17);
-  cob(42, 22, 22, 4);      // rua leste até o portão dos Campos
-  cob(2, 22, 20, 4);       // rua oeste
-  cob(18, 0, 4, 22);       // rua norte até a Arena
-  cob(31, 11, 3, 5);       // acesso ao Salão
-  cob(31, 33, 3, 6);       // rua sul
-  cob(14, 39, 30, 2);      // travessa sul
-  cob(46, 17, 4, 5);       // frente do mercado
-  cob(48, 26, 3, 9);       // acesso ao cofre
-  cob(8, 26, 3, 9);        // acesso à alquimia
-  cob(7, 20, 3, 2);        // frente da ferraria
-  // cantos arredondados da praça
-  for (const [x, y] of [[22, 16], [42, 16], [22, 32], [42, 32]]) grid.setT(x, y, T.GRASS);
-
-  const building = (x, y, bw, bh, roof, label, kind = 'house') => {
-    grid.structures.push({ x, y, w: bw, h: bh, roof, label, kind });
-    grid.rect(x, y, bw, bh, (px, py) => grid.setO(px, py, O.BUILDING));
-  };
-  building(27, 3, 11, 8, '#2e4a8b', 'Salão dos Guardiões', 'temple');
-  building(4, 13, 9, 7, '#8e3b2e', 'Ferraria', 'smithy');
-  building(4, 28, 8, 6, '#6c3483', 'Alquimia', 'house');
-  building(44, 11, 8, 6, '#c27c0e', 'Mercado', 'house');
-  building(46, 29, 8, 6, '#b7950b', 'Cofre', 'bank');
-  building(54, 4, 9, 7, '#7b4a2a', 'Taverna do Javali Dourado', 'tavern');
-  building(13, 42, 6, 4, '#a93226', null);
-  building(23, 42, 6, 4, '#7d5a3c', null);
-  building(36, 42, 6, 4, '#1e8449', null);
-  building(56, 34, 6, 5, '#2874a6', null);
-  building(56, 41, 5, 4, '#7d5a3c', null);
-
-  // fonte central (3x3) e decoração da praça
-  grid.rect(31, 23, 3, 3, (x, y) => grid.setO(x, y, O.FOUNTAIN));
-  for (const [x, y] of [[24, 18], [40, 18], [24, 30], [40, 30], [44, 21], [52, 21], [60, 21], [44, 26], [52, 26], [60, 26],
-    [17, 4], [22, 4], [17, 12], [22, 12], [4, 21], [12, 26], [30, 36], [34, 36]]) grid.setO(x, y, O.LAMP);
-  grid.setO(45, 19, O.STALL); grid.setO(50, 19, O.STALL);
-  grid.setO(13, 19, O.BARREL); grid.setO(3, 20, O.CRATE); grid.setO(14, 17, O.CRATE);
-  grid.setO(43, 14, O.BARREL); grid.setO(43, 15, O.CRATE); grid.setO(53, 12, O.HAY); grid.setO(53, 13, O.HAY);
-  grid.setO(40, 36, O.WELL);
-  grid.setO(62, 8, O.BARREL); grid.setO(53, 7, O.BARREL); grid.setO(53, 9, O.CRATE);
-  grid.setO(26, 18, O.SIGN);
-  grid.setO(35, 18, O.BANNER); grid.setO(29, 30, O.BANNER);
-  // jardim com cerca
-  grid.rect(14, 29, 6, 6, (x, y) => {
-    const edge = x === 14 || y === 29 || x === 19 || y === 34;
-    if (edge && !(y === 34 && x === 16)) grid.setO(x, y, O.FENCE);
-    else if (!edge) { grid.setT(x, y, T.DIRT); if ((x + y) % 2 === 0) grid.setO(x, y, O.FLOWERS); }
-  });
-  // cemitério
-  grid.rect(44, 40, 9, 6, (x, y) => {
-    const edge = x === 44 || y === 40 || x === 52 || y === 45;
-    if (edge && !(y === 40 && x === 48)) grid.setO(x, y, O.FENCE);
-    else if (!edge && x % 2 === 0 && y % 2 === 1) grid.setO(x, y, O.GRAVE);
-  });
-  // borda de árvores (com aberturas nos portões)
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const d = Math.min(x, y, w - 1 - x, h - 1 - y);
-      const gateE = x >= w - 4 && y >= 21 && y <= 26;
-      const gateN = y <= 3 && x >= 17 && x <= 22;
-      if ((d < 2 || (d === 2 && hash2(x, y, 3) < 0.6)) && !gateE && !gateN) grid.setO(x, y, hash2(x, y, 8) < 0.7 ? O.TREE : O.PINE);
-    }
-  }
-  // árvores e flores espalhadas
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (!grid.free(x, y)) continue;
-      // não colar nas construções
-      let nearB = false;
-      for (let dy = -1; dy <= 1 && !nearB; dy++) for (let dx = -1; dx <= 1; dx++) if (grid.o(x + dx, y + dy) === O.BUILDING) nearB = true;
-      if (nearB) continue;
-      const r = rng();
-      if (r < 0.035) grid.setO(x, y, O.TREE);
-      else if (r < 0.045) grid.setO(x, y, O.BUSH);
-      else if (r < 0.1) grid.setO(x, y, O.FLOWERS);
-    }
-  }
-  for (const p of zone.portals) grid.rect(p.x, p.y, p.w, p.h, (x, y) => { grid.setO(x, y, 0); grid.setT(x, y, T.COBBLE); });
+  const grid = new Grid(zone.w, zone.h, T.GRASS);
+  buildCapital(grid, zone);
   return grid;
 }

@@ -33,6 +33,7 @@ export const O = {
   BUILDING: 18, TENT: 19, SIGN: 20, BARREL: 21, CRATE: 22, GRAVE: 23,
   ALTAR: 24, STALL: 25, BONES: 26, WEB: 27, BIGTREE: 28, REEDS: 29,
   STATUE: 30, BANNER: 31, CART: 32, ORE: 33, BRAZIER: 34, HAY: 35,
+  WALL: 36, TARGET: 37, RACK: 38, SACK: 39, LUMBER: 40,
 };
 
 // block: impede passagem; tall: desenhado ordenado por profundidade junto às entidades;
@@ -74,6 +75,12 @@ OBJ_INFO[O.CART] = { block: true, tall: true };
 OBJ_INFO[O.ORE] = { block: true, tall: true };
 OBJ_INFO[O.BRAZIER] = { block: true, tall: true, light: 5 };
 OBJ_INFO[O.HAY] = { block: true, tall: true };
+// muralhas e torres: a forma 3D vem das estruturas do mapa (kind 'wall'/'tower')
+OBJ_INFO[O.WALL] = { block: true };
+OBJ_INFO[O.TARGET] = { block: true, tall: true };
+OBJ_INFO[O.RACK] = { block: true, tall: true };
+OBJ_INFO[O.SACK] = { block: true, tall: true };
+OBJ_INFO[O.LUMBER] = { block: true, tall: true };
 
 export function encodeLayer(arr) {
   // Cada valor (0-90) vira um caractere imprimível.

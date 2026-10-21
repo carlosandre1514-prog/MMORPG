@@ -490,6 +490,22 @@
     "WoodTrim"
    ]
   },
+  "Roof_RoundTiles_6x6": {
+   "min": [
+    -412.489,
+    -78.213,
+    -393.82
+   ],
+   "max": [
+    412.489,
+    489.005,
+    409.399
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
   "Roof_RoundTiles_6x8": {
    "min": [
     -412.489,
@@ -506,6 +522,22 @@
     "WoodTrim"
    ]
   },
+  "Roof_RoundTiles_6x10": {
+   "min": [
+    -412.489,
+    -78.213,
+    -589.758
+   ],
+   "max": [
+    412.489,
+    489.005,
+    595.461
+   ],
+   "mats": [
+    "WoodTrim",
+    "RoundTiles"
+   ]
+  },
   "Roof_RoundTiles_8x10": {
    "min": [
     -497.6,
@@ -516,6 +548,38 @@
     497.6,
     600.137,
     600.745
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
+  "Roof_RoundTiles_8x12": {
+   "min": [
+    -497.6,
+    -77.996,
+    -711.713
+   ],
+   "max": [
+    497.6,
+    600.137,
+    701.506
+   ],
+   "mats": [
+    "RoundTiles",
+    "WoodTrim"
+   ]
+  },
+  "Roof_RoundTiles_8x14": {
+   "min": [
+    -497.6,
+    -77.996,
+    -787.713
+   ],
+   "max": [
+    497.6,
+    600.137,
+    782.875
    ],
    "mats": [
     "RoundTiles",

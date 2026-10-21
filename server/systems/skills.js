@@ -258,7 +258,7 @@ export function useSkill(world, p, msg) {
   if (!sk || !zone || sk.cls !== p.cls) return;
   if (p.dead) return;
   if (p.level < sk.lvl) return p.err(`Requer nível ${sk.lvl}.`);
-  if (zone.def.safe) return p.err('Você não pode usar habilidades de combate na vila.');
+  if (zone.def.safe) return p.err('Você não pode usar habilidades de combate na cidade.');
   if (hasStatus(p, 'stun')) return p.err('Você está atordoado!');
   const now = Date.now();
   if ((p.cd[sk.id] || 0) > now + 50) return p.err('Habilidade em recarga.');

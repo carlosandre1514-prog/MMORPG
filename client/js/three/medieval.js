@@ -67,6 +67,10 @@ export const OBJECT_MODELS = {
   well: { m: ['building_well_blue'], w: 1.35 },
   cart: { m: ['wheelbarrow'], w: 1.1 },
   banner: { m: ['flag_blue', 'flag_red'], h: 1.75 },
+  target: { m: ['target'], h: 1.45 },
+  rack: { m: ['weaponrack'], h: 1.25 },
+  sack: { m: ['sack'], w: 0.75 },
+  lumber: { m: ['resource_lumber'], w: 1.15 },
 };
 
 // Construções da vila: modelo principal (e acessórios) para cada retângulo do mapa

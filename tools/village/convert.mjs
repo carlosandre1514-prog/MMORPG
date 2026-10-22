@@ -41,6 +41,9 @@ const KEEP = [
   'Roof_RoundTiles_8x10', 'Roof_RoundTiles_8x12', 'Roof_RoundTiles_8x14',
   'Roof_Front_Brick4', 'Roof_Front_Brick6', 'Roof_Front_Brick8',
   'Prop_Chimney', 'Prop_Chimney2', 'Prop_Vine1', 'Prop_Vine2', 'Prop_Vine4',
+  // portas com moldura e pisos dos interiores
+  'DoorFrame_Round_WoodDark', 'DoorFrame_Flat_WoodDark', 'DoorFrame_Round_Brick', 'DoorFrame_Flat_Brick',
+  'Floor_WoodDark', 'Floor_WoodLight', 'Floor_UnevenBrick', 'Floor_Brick', 'Stair_Interior_Simple', 'Wall_Plaster_Straight_Base',
 ];
 const all = fs.readdirSync(SRC).filter((f) => f.toLowerCase().endsWith('.fbx')).sort();
 if (!all.length) { console.error('Nenhum .fbx em', SRC); process.exit(1); }

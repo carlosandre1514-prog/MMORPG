@@ -187,7 +187,7 @@ export function glowTexture() {
 const OBJECT_MODEL_KEY = {
   [O.TREE]: 'tree', [O.PINE]: 'pine', [O.BIGTREE]: 'bigtree', [O.ROCK]: 'rock', [O.BARREL]: 'barrel',
   [O.CRATE]: 'crate', [O.WELL]: 'well', [O.CART]: 'cart', [O.BANNER]: 'banner',
-  [O.TARGET]: 'target', [O.RACK]: 'rack', [O.SACK]: 'sack', [O.LUMBER]: 'lumber', [O.ORE]: 'ore',
+  [O.TARGET]: 'target', [O.RACK]: 'rack', [O.ANVIL]: 'anvil', [O.TOOLS]: 'tools', [O.LANTERN]: 'lantern', [O.SACK]: 'sack', [O.LUMBER]: 'lumber', [O.ORE]: 'ore',
   [O.BARS]: 'bars', [O.CLOTH]: 'cloth', [O.PLANKS]: 'planks', [O.BRICKS]: 'bricks', [O.GOLD]: 'gold',
   [O.PILLAR]: 'pillar', [O.BROKENPILLAR]: 'brokenpillar', [O.TORCH]: 'torch', [O.CHEST]: 'chest', [O.TABLE]: 'table',
   [O.KEG]: 'keg', [O.CANDLE]: 'candle',
@@ -230,6 +230,15 @@ export class ZoneScene {
   }
 
   tile(x, y) { return this.terrain.tile(x, y); }
+
+  // interiores só por perto do jogador (no máximo a cada 200 ms e quando ele se mexeu)
+  cull(px, pz, force = false) {
+    if (!this.propGroup) return;
+    const now = performance.now();
+    if (!force && (now - (this.lastCull || 0) < 200 || (Math.abs(px - this.cullX) < 0.5 && Math.abs(pz - this.cullZ) < 0.5))) return;
+    this.lastCull = now; this.cullX = px; this.cullZ = pz;
+    village.cullProps(this.propGroup, px, pz);
+  }
 
   buildGround() {
     const z = this.zone;
@@ -402,42 +411,63 @@ export class ZoneScene {
     const spec = OBJECT_MODELS[OBJECT_MODEL_KEY[o]];
     const names = spec.m.filter((n) => medieval.has(n));
     if (!names.length) return false;
+    // cada grupo: um modelo e as instâncias dele; "place" calcula a matriz de cada objeto do mapa
     const groups = new Map(names.map((n) => [n, { fit: spec, obs: [] }]));
     for (const ob of list) {
       const pickV = o === O.BANNER ? (ob.v > 0.5 ? 1 : 0) : Math.floor(hash2(ob.x, ob.y, 31) * names.length);
       groups.get(names[Math.min(names.length - 1, pickV)]).obs.push(ob);
     }
-    // peça de base comum a todas as variantes (ex.: monte de pedras sob a pepita de minério)
     if (spec.base && medieval.has(spec.base.m)) groups.set(spec.base.m, { fit: spec.base, obs: list, base: true });
-    const mtx = new THREE.Matrix4();
-    const up = new THREE.Vector3(0, 1, 0);
-    const col = new THREE.Color();
     const nature = NATURE.has(o);
-    const spin = nature || [O.BARREL, O.CRATE, O.ORE, O.GOLD, O.KEG, O.BROKENPILLAR].includes(o);
-    const quarter = [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.SACK, O.LUMBER, O.CHEST, O.TABLE, O.CANDLE].includes(o);
-    for (const [name, g] of groups) {
-      if (!g.obs.length) continue;
-      const base = medieval.fit(name, g.fit.w, g.fit.w, g.fit.h);
+    const spin = nature || [O.BARREL, O.CRATE, O.ORE, O.GOLD, O.KEG, O.BROKENPILLAR, O.TOOLS].includes(o);
+    const quarter = [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.SACK, O.LUMBER, O.CHEST, O.TABLE, O.CANDLE, O.ANVIL].includes(o);
+    const col = new THREE.Color();
+    const rotOf = (ob) => (spin ? ob.v * Math.PI * 2 : quarter ? Math.floor(ob.v * 4) * Math.PI / 2 : o === O.CART ? (ob.v - 0.5) * 0.8 : 0);
+    const build = (name, fit, obs, matFor, tint) => {
+      if (!obs.length) return;
+      const k = medieval.fit(name, fit.w, fit.w, fit.h);
       const box = medieval.geo(name).boundingBox;
-      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), g.obs.length);
-      g.obs.forEach((ob, i) => {
-        const s = base * (nature ? 0.85 + ob.v * 0.3 : 1);
-        let rot = spin ? ob.v * Math.PI * 2 : quarter ? Math.floor(ob.v * 4) * Math.PI / 2 : o === O.CART ? (ob.v - 0.5) * 0.8 : 0;
-        if (g.base) rot += 1.3;
-        // centraliza a pegada do modelo no tile
-        const cx = (box.min.x + box.max.x) / 2 * s, cz = (box.min.z + box.max.z) / 2 * s;
-        const c = Math.cos(rot), sn = Math.sin(rot);
-        mtx.compose(_v.set(ob.x + 0.5 - (cx * c + cz * sn), -box.min.y * s, ob.y + 0.5 - (-cx * sn + cz * c)), _q.setFromAxisAngle(up, rot), _s.set(s, s, s));
-        inst.setMatrixAt(i, mtx);
-        const k = nature ? 0.86 + hash2(ob.x, ob.y, 77) * 0.2 : 1;
-        inst.setColorAt(i, col.setRGB(k, k, k));
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), obs.length);
+      obs.forEach((it, i) => {
+        inst.setMatrixAt(i, matFor(it, k, box));
+        if (tint) { const t = tint(it); inst.setColorAt(i, col.setRGB(t, t, t)); }
       });
       inst.castShadow = true;
       inst.receiveShadow = true;
       inst.frustumCulled = false;
       this.group.add(inst);
+    };
+    // matriz = translação * giro em Y * (deitar em X) * escala, com o modelo centrado no tile e apoiado no chão
+    const _r = new THREE.Matrix4(), _b = new THREE.Box3(), _c = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), ex = new THREE.Vector3(1, 0, 0);
+    const placeMatrix = (cx, cz, k, box, rot, lay, tilt = 0, yBase = null) => {
+      const qy = new THREE.Quaternion().setFromAxisAngle(up, rot);
+      const qx = new THREE.Quaternion().setFromAxisAngle(ex, lay ? -Math.PI / 2 : 0);
+      const qz = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), tilt);
+      const q = new THREE.Quaternion().multiplyQuaternions(qy, qz).multiply(qx);
+      _r.compose(_v.set(0, 0, 0), q, _s.set(k, k, k));
+      _b.copy(box).applyMatrix4(_r);
+      _b.getCenter(_c);
+      return new THREE.Matrix4().compose(
+        new THREE.Vector3(cx - _c.x, yBase == null ? -_b.min.y : yBase - _b.min.y, cz - _c.z), q, new THREE.Vector3(k, k, k));
+    };
+    for (const [name, g] of groups) {
+      build(name, g.fit, g.obs, (ob, k, box) => {
+        const s2 = k * (nature ? 0.85 + ob.v * 0.3 : 1);
+        const rot = rotOf(ob) + (g.base ? 1.3 : 0);
+        return placeMatrix(ob.x + 0.5, ob.y + 0.5, s2, box, rot, !!g.fit.lay);
+      }, nature ? (ob) => 0.86 + hash2(ob.x, ob.y, 77) * 0.2 : null);
     }
-    // chamas das tochas e velas
+    // extras (armas no suporte, martelo e tenazes na bigorna): modelos próprios na mesma posição
+    for (const ex2 of spec.extras || []) {
+      if (!medieval.has(ex2.m)) continue;
+      build(ex2.m, ex2, list, (ob, k, box) => {
+        const rot = rotOf(ob) + (ex2.rot || 0) * (ex2.lay ? 1 : 0);
+        const r0 = rotOf(ob);
+        const dx = Math.cos(r0) * ex2.dx + Math.sin(r0) * (ex2.dz || 0), dz = -Math.sin(r0) * ex2.dx + Math.cos(r0) * (ex2.dz || 0);
+        return placeMatrix(ob.x + 0.5 + dx, ob.y + 0.5 + dz, k, box, ex2.lay ? rot : r0, !!ex2.lay, ex2.tilt || 0, ex2.y);
+      });
+    }
+    // chamas das tochas, velas e lanternas
     if (spec.flame) for (const ob of list) this.addFlame(ob.x + 0.5, spec.flame, ob.y + 0.5, 0xffb347, spec.flameSize || 0.85, true);
     return true;
   }
@@ -545,9 +575,10 @@ export class ZoneScene {
     }
     if (village.ready) {
       // a cidade inteira em um BatchedMesh por material
-      const placements = [];
-      for (const st of houses) village.place(villagePlan(st), village.baseMatrix(st), placements);
+      const placements = [], props = [];
+      for (const st of houses) village.place(villagePlan(st), village.baseMatrix(st), placements, props, st);
       if (placements.length) this.group.add(village.batch(placements));
+      if (props.length) { this.propGroup = village.propMeshes(props); this.group.add(this.propGroup); this.cull(this.terrain.map ? this.zone.w / 2 : 0, this.zone.h / 2, true); }
       for (const st of houses) if (st.label) this.group.add(this.facing(st, (W, D) => this.signboard(st.label, -W / 2 + 1.1, D / 2 + 0.15)));
     } else {
       houses.forEach((st, i) => this.group.add(this.facing(st, (W, D) => {

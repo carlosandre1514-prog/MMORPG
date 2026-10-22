@@ -35,10 +35,10 @@ const DIR_ANGLE = [0, -Math.PI / 2, Math.PI / 2, Math.PI]; // baixo, esquerda, d
 
 // Saque no chão em 3D: armas por classe (comum, nível alto, lendária) e materiais do Resource Bits
 const LOOT_WEAPON = {
-  warrior: ['sword_1handed', 'sword_2handed', 'sword_2handed_color'],
-  mage: ['staff', 'staff', 'staff'],
-  ranger: ['bow_withString', 'bow_withString', 'bow_withString'],
-  cleric: ['axe_1handed', 'axe_1handed', 'wand'],
+  warrior: ['sword_A', 'sword_C', 'sword_E'],
+  mage: ['staff_A', 'staff_B', 'staff_B'],
+  ranger: ['bow_A_withString', 'bow_B_withString', 'bow_B_withString'],
+  cleric: ['hammer_A', 'hammer_B', 'hammer_C'],
 };
 const LOOT_RESOURCE = { mat_ore: 'Iron_Nuggets', enh_stone: 'Silver_Nugget_Large', mat_ember: 'Gold_Nugget_Large' };
 
@@ -224,10 +224,15 @@ export class Renderer3D {
   lootMesh(base) {
     if (!base) return null;
     let model = null;
-    if (base.type === 'weapon' && characters.ready && LOOT_WEAPON[base.cls]) {
+    if (base.type === 'weapon' && LOOT_WEAPON[base.cls]) {
       const list = LOOT_WEAPON[base.cls];
-      model = characters.weaponModel(base.unique ? list[2] : base.tier >= 4 ? list[1] : list[0]);
-      if (model) { const lay = new THREE.Group(); lay.add(model); lay.rotation.z = Math.PI / 2; model = lay; }
+      const name = base.unique ? list[2] : base.tier >= 4 ? list[1] : list[0];
+      if (medieval.has(name)) {
+        const sz = medieval.size(name);
+        model = medieval.mesh(name, medieval.fit(name, 0.85, 0.85, 0.85));
+        // armas altas ficam deitadas no chão
+        if (sz.y > sz.x && sz.y > sz.z) { const lay = new THREE.Group(); lay.add(model); lay.rotation.z = Math.PI / 2; model = lay; }
+      }
     } else if (LOOT_RESOURCE[base.id] && medieval.has(LOOT_RESOURCE[base.id])) {
       const name = LOOT_RESOURCE[base.id];
       model = medieval.mesh(name, medieval.fit(name, 0.45, 0.45, 0.42));
@@ -381,6 +386,7 @@ export class Renderer3D {
     this.updateCamera(dt);
     this.updateLights(now, t);
     this.updateRings(t);
+    this.zoneScene.cull(g.me.x, g.me.y);
     updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist);
     this.renderer.render(this.scene, this.camera);
     this.overlay.draw(t);

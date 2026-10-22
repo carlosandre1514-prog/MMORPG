@@ -335,6 +335,7 @@ function applyFeatures(grid, zone, rng) {
         placeForce(f.x - 1, f.y + 1, O.HAY);
         placeForce(f.x - 1, f.y + 3, O.HAY);
         placeForce(f.x + f.w, f.y + 2, O.CART);
+        placeForce(f.x + f.w, f.y + 5, O.TOOLS);
         break;
       }
       case 'shrine': {
@@ -398,8 +399,10 @@ function applyFeatures(grid, zone, rng) {
           // produção da mina: barras, tijolos e madeira de escoramento
           placeForce(f.x - 6, f.y - 1, O.BARS); placeForce(f.x + 7, f.y + 1, O.BRICKS);
           placeForce(f.x - 2, f.y - 5, O.PLANKS); placeForce(f.x + 2, f.y - 5, O.ORE);
+          placeForce(f.x + 3, f.y - 5, O.TOOLS); placeForce(f.x - 3, f.y - 4, O.LANTERN); placeForce(f.x + 5, f.y + 5, O.ANVIL);
         }
         placeForce(f.x - 3, f.y + 3, O.CRATE); placeForce(f.x + 4, f.y + 3, O.CRATE);
+        if (!f.mine) { placeForce(f.x + 2, f.y + 4, O.LANTERN); placeForce(f.x - 2, f.y - 3, O.RACK); }
         placeForce(f.x + 5, f.y + 3, O.BARREL); placeForce(f.x - 4, f.y + 3, O.BARREL);
         break;
       }
@@ -535,6 +538,9 @@ function genArena(zone) {
   }
   grid.setO(12, 31, O.BRAZIER); grid.setO(27, 31, O.BRAZIER);
   grid.setO(13, 38, O.BARREL); grid.setO(26, 38, O.CRATE);
+  // suportes de armas e bigorna no saguão dos gladiadores
+  for (const [x, y] of [[14, 33], [25, 33], [14, 36], [25, 36]]) grid.setO(x, y, O.RACK);
+  grid.setO(19, 37, O.ANVIL); grid.setO(21, 37, O.TOOLS);
   for (const p of zone.portals) grid.rect(p.x, p.y, p.w, p.h, (x, y) => grid.setT(x, y, T.COBBLE));
   return grid;
 }

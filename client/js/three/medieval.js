@@ -1,12 +1,14 @@
 // Cenário dos packs KayKit (Kay Lousberg, CC0): Medieval Hexagon (árvores, pedras, montanhas, objetos),
 // Resource Bits (minérios, barras, tecidos, madeira, ouro) e Dungeon (pilares, tochas, baús, velas, mesas,
-// estandartes). Cada pack é um GLB gerado por
+// estandartes), Fantasy Weapons Bits (espadas, machados, martelos, lanças, escudos) e RPG Tools Bits (bigorna,
+// pedra de amolar, picaretas, serras, lanternas, diários). Cada pack é um GLB gerado por
 // tools/medieval/convert.mjs, com todos os modelos dividindo um material com atlas.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Packs convertidos por tools/medieval/convert.mjs; cada um tem o próprio atlas
-const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb', '/kaykit/dungeon/dungeon.glb'];
+const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb', '/kaykit/dungeon/dungeon.glb',
+  '/kaykit/weaponbits/weaponbits.glb', '/kaykit/tools/tools.glb'];
 
 export const medieval = {
   ready: false,
@@ -59,6 +61,19 @@ export const medieval = {
     return k;
   },
 
+  // Matriz de um modelo escalado por k, girado (rot em Y, deitado em X se lay, inclinado em Z por tilt), com o centro da
+  // caixa em (x, z) e a base em y, no referencial de quem chama (tiles nos objetos do mapa, cm nas casas).
+  placed(name, k, x, y, z, rot = 0, lay = false, tilt = 0) {
+    const q = new THREE.Quaternion().multiplyQuaternions(
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rot),
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), tilt)).multiply(
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), lay ? -Math.PI / 2 : 0));
+    const sc = new THREE.Vector3(k, k, k);
+    const box = this.geo(name).boundingBox.clone().applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(), q, sc));
+    const c = box.getCenter(new THREE.Vector3());
+    return new THREE.Matrix4().compose(new THREE.Vector3(x - c.x, y - box.min.y, z - c.z), q, sc);
+  },
+
   mesh(name, scale = 1) {
     const m = new THREE.Mesh(this.geo(name), this.mat(name));
     m.scale.setScalar(scale);
@@ -80,7 +95,18 @@ export const OBJECT_MODELS = {
   cart: { m: ['wheelbarrow'], w: 1.1 },
   banner: { m: ['flag_blue', 'flag_red'], h: 1.75 },
   target: { m: ['target'], h: 1.45 },
-  rack: { m: ['weaponrack'], h: 1.25 },
+  // suporte de armas com armas de verdade penduradas (extras em tiles: dx/dz lateral, y altura, h tamanho)
+  rack: {
+    m: ['weaponrack'], h: 1.25,
+    extras: [
+      { m: 'sword_B', dx: -0.28, y: 0.38, dz: 0.02, h: 0.8, rot: 0, tilt: 0.12 },
+      { m: 'axe_A', dx: 0.0, y: 0.42, dz: 0.02, h: 0.7, rot: 0, tilt: -0.05 },
+      { m: 'spear_A', dx: 0.3, y: 0.12, dz: 0.0, h: 1.5, rot: 0, tilt: 0.08 },
+    ],
+  },
+  anvil: { m: ['anvil'], w: 0.95, extras: [{ m: 'hammer', dx: 0.12, y: 0.47, dz: 0.0, h: 0.34, rot: 0.9, lay: true }, { m: 'tongs', dx: -0.2, y: 0.47, dz: 0.06, h: 0.3, rot: 2.2, lay: true }] },
+  tools: { m: ['pickaxe', 'shovel', 'saw', 'mallet', 'handplane'], h: 0.62, lay: true },
+  lantern: { m: ['lantern'], h: 0.55, flame: 0.3, flameSize: 0.9 },
   sack: { m: ['sack'], w: 0.75 },
   lumber: { m: ['resource_lumber'], w: 1.15 },
   // veio de minério: pepita grande sobre um monte de pedras (ferro é o mais comum, ouro o mais raro)

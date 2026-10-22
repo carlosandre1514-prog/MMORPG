@@ -709,6 +709,158 @@
    "mats": [
     "Vine"
    ]
+  },
+  "DoorFrame_Round_WoodDark": {
+   "min": [
+    -70.349,
+    -0.854,
+    -24.003
+   ],
+   "max": [
+    70.349,
+    255.485,
+    29.894
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "DoorFrame_Flat_WoodDark": {
+   "min": [
+    -78.621,
+    -0.854,
+    -24.329
+   ],
+   "max": [
+    78.778,
+    230.371,
+    14.516
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "DoorFrame_Round_Brick": {
+   "min": [
+    -80.412,
+    -0.169,
+    -29.513
+   ],
+   "max": [
+    79.9,
+    258.448,
+    18.204
+   ],
+   "mats": [
+    "RockTrim"
+   ]
+  },
+  "DoorFrame_Flat_Brick": {
+   "min": [
+    -78.821,
+    -0.169,
+    -29.513
+   ],
+   "max": [
+    78.64,
+    237.397,
+    19.919
+   ],
+   "mats": [
+    "RockTrim"
+   ]
+  },
+  "Floor_WoodDark": {
+   "min": [
+    -100,
+    -1,
+    -100
+   ],
+   "max": [
+    100,
+    1,
+    100
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Floor_WoodLight": {
+   "min": [
+    -100,
+    -1,
+    -100
+   ],
+   "max": [
+    100,
+    1,
+    100
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Floor_UnevenBrick": {
+   "min": [
+    -100,
+    -1,
+    -100
+   ],
+   "max": [
+    100,
+    1,
+    100
+   ],
+   "mats": [
+    "UnevenBrick"
+   ]
+  },
+  "Floor_Brick": {
+   "min": [
+    -100,
+    -1,
+    -100
+   ],
+   "max": [
+    100,
+    1,
+    100
+   ],
+   "mats": [
+    "Brick"
+   ]
+  },
+  "Stair_Interior_Simple": {
+   "min": [
+    -83.487,
+    -1.041,
+    -458.481
+   ],
+   "max": [
+    84.131,
+    302.459,
+    3.473
+   ],
+   "mats": [
+    "WoodTrim"
+   ]
+  },
+  "Wall_Plaster_Straight_Base": {
+   "min": [
+    -100,
+    0,
+    -31.404
+   ],
+   "max": [
+    100,
+    312.269,
+    9.245
+   ],
+   "mats": [
+    "WoodTrim",
+    "Brick",
+    "Plaster"
+   ]
   }
  }
 }

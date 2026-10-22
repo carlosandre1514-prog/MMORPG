@@ -57,7 +57,8 @@ export function buildCapital(grid, zone) {
   const gate = (x, y, w, h, dir) => { pave(x, y, w, h); S.push({ kind: 'gate', x, y, w, h, dir }); };
   // casa: face = lado da fachada ('n', 's', 'e', 'w'); andares 1–3
   const house = (x, y, w, h, face, extra = {}) => {
-    grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.pathMask[idx(px, py)] = 0; });
+    // pedra sob a casa: nada de grama aparecendo por baixo
+    grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.setT(px, py, T.STONE); grid.pathMask[idx(px, py)] = 0; });
     const st = { kind: 'house', type: 'house', x, y, w, h, face, seed: houseSeed++, floors: 1, ...extra };
     // casas comuns têm a porta num módulo qualquer da fachada (escolha estável, sem gastar o gerador aleatório)
     if (st.type === 'house') st.door = Math.floor(hash2(x, y, 71) * modules(st));
@@ -192,7 +193,7 @@ export function buildCapital(grid, zone) {
   house(69, 13, 6, 8, 'w', { type: 'armory', label: 'Arsenal', floors: 2 });
   // pátio de treino, estandartes, braseiros e jardim do castelo
   for (const x of [40, 42, 44]) obj(x, 23, O.TARGET);
-  obj(39, 25, O.RACK); obj(46, 25, O.RACK); obj(47, 22, O.BARREL);
+  obj(39, 25, O.RACK); obj(46, 25, O.RACK); obj(47, 22, O.BARREL); obj(42, 26, O.ANVIL); obj(44, 26, O.TOOLS); obj(51, 24, O.LANTERN); obj(62, 24, O.LANTERN);
   obj(52, 13, O.BANNER); obj(61, 13, O.BANNER);
   obj(53, 25, O.BRAZIER); obj(60, 25, O.BRAZIER); obj(50, 16, O.LAMP); obj(63, 16, O.LAMP);
   obj(67, 14, O.BARREL); obj(67, 15, O.CRATE); obj(67, 20, O.RACK);
@@ -241,7 +242,7 @@ export function buildCapital(grid, zone) {
   house(98, 39, 8, 6, 's', { type: 'tavern', label: 'Taverna do Javali Dourado', floors: 2 });
   house(98, 49, 8, 6, 'n', { type: 'guardhouse', label: 'Casa da Guarda', floors: 2 });
   obj(106, 41, O.BRAZIER); obj(106, 52, O.BRAZIER); obj(105, 45, O.BANNER); obj(105, 48, O.BANNER);
-  obj(35, 45, O.RACK); obj(37, 45, O.BARS); obj(42, 45, O.BRICKS); obj(43, 44, O.LUMBER); obj(42, 44, O.BARREL);
+  obj(35, 45, O.RACK); obj(37, 45, O.ANVIL); obj(39, 45, O.TOOLS); obj(42, 45, O.BRICKS); obj(43, 44, O.LUMBER); obj(42, 44, O.BARREL); obj(44, 44, O.TOOLS);
   obj(82, 36, O.GOLD); obj(91, 36, O.GOLD); obj(83, 36, O.CHEST); obj(90, 36, O.CHEST); // o ouro do Cofre, à vista na porta
   obj(68, 16, O.BARS); obj(68, 18, O.BARS);
   obj(29, 48, O.BARREL);

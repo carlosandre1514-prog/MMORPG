@@ -1,8 +1,10 @@
 // Converte packs KayKit (CC0) em um único GLB compacto por pack, com todas as peças dividindo um atlas reduzido.
-//   node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png] [--pack=medieval|resources|dungeon]
+//   node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png] [--pack=medieval|resources|dungeon|weapons|tools]
 //   medieval  -> assets/kaykit/medieval/medieval.glb   (KayKit Medieval Hexagon Pack, FBX)
 //   resources -> assets/kaykit/resources/resources.glb (KayKit Resource Bits, glTF)
 //   dungeon   -> assets/kaykit/dungeon/dungeon.glb     (KayKit Dungeon Remastered, FBX)
+//   weapons   -> assets/kaykit/weaponbits/weaponbits.glb (KayKit Fantasy Weapons Bits, glTF)
+//   tools     -> assets/kaykit/tools/tools.glb         (KayKit RPG Tools Bits, glTF)
 // Requer o three em tools/bake/node_modules (cd tools/bake && npm install) e Playwright com Chromium.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -62,7 +64,24 @@ PACKS.dungeon = {
     'table_medium_tablecloth_decorated_B', 'table_small_decorated_A', 'table_long_decorated_A',
     'banner_triple_blue', 'banner_shield_blue', 'banner_patternA_blue', 'banner_patternC_red', 'banner_shield_red',
     'sword_shield', 'sword_shield_gold', 'crates_stacked', 'box_stacked',
+    // interiores
+    'bed_decorated', 'bed_frame', 'bed_floor', 'chair', 'stool', 'table_medium', 'table_small', 'table_long_tablecloth', 'table_medium_decorated_A',
+    'shelf_large', 'shelf_small', 'shelves', 'box_small', 'box_large', 'trunk_small_A', 'trunk_medium_A', 'barrel_large', 'barrel_small',
+    'bottle_A_green', 'bottle_B_brown', 'bottle_C_green', 'bottle_A_labeled_brown', 'plate_food_A', 'plate_stack', 'candle_thin_lit', 'candle_lit',
+    'keyring_hanging', 'banner_thin_blue', 'banner_blue', 'coin_stack_small', 'torch_mounted',
   ],
+};
+PACKS.weapons = {
+  dir: 'Assets/gltf', ext: '.gltf', atlas: 'Textures/weapons_bits_texture.png', out: 'weaponbits', flipY: false,
+  keep: ['sword_A', 'sword_B', 'sword_C', 'sword_D', 'sword_E', 'axe_A', 'axe_B', 'axe_C', 'hammer_A', 'hammer_B', 'hammer_C', 'spear_A', 'halberd',
+    'shield_A', 'shield_B', 'shield_C', 'dagger_A', 'dagger_B', 'staff_A', 'staff_B', 'bow_A_withString', 'bow_B_withString', 'wand_A', 'arrow_A',
+    'fistweapon_A', 'fistweapon_B'],
+};
+PACKS.tools = {
+  dir: 'Assets/gltf', ext: '.gltf', atlas: 'Textures/tools_bits_texture.png', out: 'tools', flipY: false,
+  keep: ['anvil', 'grindstone', 'hammer', 'tongs', 'pickaxe', 'shovel', 'saw', 'handplane', 'mallet', 'lantern', 'rope_bundle_A', 'rope_bundle_B',
+    'bucket_metal', 'file', 'chisel', 'axe', 'journal_open', 'journal_closed', 'compass_base', 'magnifying_glass', 'knife', 'scissors',
+    'torch', 'wrench_A', 'drafting_compass', 'trowel', 'handdrill', 'screwdriver_A_long'],
 };
 const cfg = PACKS[PACK];
 if (!cfg) { console.error('Pack desconhecido:', PACK); process.exit(1); }

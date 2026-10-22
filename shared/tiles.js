@@ -36,6 +36,7 @@ export const O = {
   WALL: 36, TARGET: 37, RACK: 38, SACK: 39, LUMBER: 40,
   BARS: 41, CLOTH: 42, PLANKS: 43, BRICKS: 44, GOLD: 45,
   CHEST: 46, TABLE: 47, KEG: 48, CANDLE: 49,
+  ANVIL: 50, TOOLS: 51, LANTERN: 52,
 };
 
 // block: impede passagem; tall: desenhado ordenado por profundidade junto às entidades;
@@ -90,6 +91,10 @@ OBJ_INFO[O.CHEST] = { block: true, tall: true };
 OBJ_INFO[O.TABLE] = { block: true, tall: true };
 OBJ_INFO[O.KEG] = { block: true, tall: true };
 OBJ_INFO[O.CANDLE] = { block: false, tall: true, light: 3 };
+// bigorna, ferramentas no chão e lanterna (KayKit RPG Tools / Weapons Bits)
+OBJ_INFO[O.ANVIL] = { block: true, tall: true };
+OBJ_INFO[O.TOOLS] = { block: false, tall: true };
+OBJ_INFO[O.LANTERN] = { block: true, tall: true, light: 4 };
 
 export function encodeLayer(arr) {
   // Cada valor (0-90) vira um caractere imprimível.

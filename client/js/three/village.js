@@ -6,6 +6,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { doorIndex } from '/shared/citygen.js';
+import { medieval } from './medieval.js';
+import { interiorFor } from './interiors.js';
 
 const BASE = '/village/';
 const MOD = 200; // módulo da grade, em cm
@@ -74,11 +76,13 @@ export const village = {
   },
 
   // Acrescenta a `out` as peças da construção descrita por `spec` ({ name, m } com m já no mundo).
-  place(spec, base, out) {
+  // props (opcional): recebe os móveis { m, matrix } da casa; st: estrutura do mapa (tipo da casa)
+  place(spec, base, out, props = null, st = null) {
     const local = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-    const add = (name, x, y, z, rot = 0, scale = null) => {
+    const add = (name, x, y, z, rot = 0, scale = null, depth = 0) => {
       if (!this.pieces.has(name)) return;
-      local.compose(new THREE.Vector3(x, y, z), q.setFromAxisAngle(UP, rot), scale || one);
+      // depth: recuo em cm ao longo da normal da parede (negativo = para dentro)
+      local.compose(new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth), q.setFromAxisAngle(UP, rot), scale || one);
       out.push({ name, m: base.clone().multiply(local) });
     };
     const rnd = mulberry(spec.seed || 1);
@@ -100,7 +104,13 @@ export const village = {
           if (f === 0 && side.front && i === doorAt) {
             const round = spec.doorStyle !== 'flat';
             add(pre + (round ? 'Door_Round' : 'Door_Flat'), x, y, z, side.rot);
-            add(round ? 'Door_1_Round' : 'Door_1_Flat', x - 56, y, z - 2, side.rot);
+            // a porta é esticada para preencher o vão da parede (130 cm de largura) e a moldura cobre as bordas
+            const sx = 136 / 112, sy = round ? 248 / 232 : 218 / 210;
+            const dx = -51.4 * sx;
+            const door = round ? 'Door_1_Round' : 'Door_1_Flat';
+            const c = Math.cos(side.rot), sn = Math.sin(side.rot);
+            add(door, x + dx * c, y - 3.4 * sy, z - dx * sn, side.rot, new THREE.Vector3(sx, sy, 1), -2);
+            add(`DoorFrame_${round ? 'Round' : 'Flat'}_${style === 'stone' ? 'Brick' : 'WoodDark'}`, x, y, z, side.rot);
             continue;
           }
           if (spec.market && f === 0 && !side.back) { add('Wall_Arch', x, y, z, side.rot); continue; }
@@ -120,6 +130,18 @@ export const village = {
       // postes nos cantos cobrem as emendas
       for (const [cx, cz] of [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]]) add('Corner_Exterior_Wood', cx, y, cz);
     });
+    // pisos de cada andar e mobília (a câmera passa por dentro das casas: nada de grama aparecendo)
+    if (props && st) {
+      const inter = interiorFor(spec, st);
+      inter.floorPieces.forEach((piece, f) => {
+        if (!piece) return;
+        for (let i = 0; i < spec.nx; i++) for (let j = 0; j < spec.nz; j++) add(piece, -W / 2 + 100 + i * MOD, f * FLOOR + 2, -D / 2 + 100 + j * MOD);
+      });
+      for (const p of inter.props) {
+        if (!medieval.has(p.m)) continue;
+        props.push({ m: p.m, matrix: base.clone().multiply(medieval.placed(p.m, p.k, p.x, p.y, p.z, p.rot, p.lay, p.tilt)) });
+      }
+    }
     // telhado de telhas com as empenas nas pontas
     const top = spec.floors.length * FLOOR;
     const along = W > D; // cumeeira ao longo de X?
@@ -187,10 +209,61 @@ export const village = {
     return g;
   },
 
+  // Móveis em um BatchedMesh por atlas (material). Cada instância some quando está longe do jogador (cull):
+  // os interiores só aparecem de perto, o que mantém a cidade inteira leve.
+  propMeshes(props) {
+    const g = new THREE.Group();
+    const byMat = new Map();
+    for (const p of props) {
+      const mat = medieval.mat(p.m);
+      if (!byMat.has(mat)) byMat.set(mat, []);
+      byMat.get(mat).push(p);
+    }
+    g.userData.items = [];
+    for (const [mat, list] of byMat) {
+      const geos = new Map();
+      let nv = 0, ni = 0;
+      for (const p of list) {
+        if (geos.has(p.m)) continue;
+        const geo = medieval.geo(p.m);
+        geos.set(p.m, -1);
+        nv += geo.attributes.position.count;
+        ni += geo.index.count;
+      }
+      const bm = new THREE.BatchedMesh(list.length, nv, ni, mat);
+      bm.sortObjects = false;
+      bm.receiveShadow = true;
+      for (const name of geos.keys()) geos.set(name, bm.addGeometry(medieval.geo(name)));
+      const items = [];
+      for (const p of list) {
+        const id = bm.addInstance(geos.get(p.m));
+        bm.setMatrixAt(id, p.matrix);
+        items.push({ id, x: p.matrix.elements[12], z: p.matrix.elements[14], on: true });
+      }
+      g.userData.items.push({ bm, items });
+      g.add(bm);
+    }
+    return g;
+  },
+
+  // Mostra só os móveis a até r tiles de (px, pz)
+  cullProps(group, px, pz, r = 22) {
+    const r2 = r * r;
+    for (const { bm, items } of group.userData.items || []) {
+      for (const it of items) {
+        const on = (it.x - px) * (it.x - px) + (it.z - pz) * (it.z - pz) < r2;
+        if (on !== it.on) { bm.setVisibleAt(it.id, on); it.on = on; }
+      }
+    }
+  },
+
   // Uma construção isolada (prévia/ferramentas), centrada na origem, em metros.
-  build(spec) {
+  build(spec, st = null) {
     const base = new THREE.Matrix4().makeScale(0.01, 0.01, 0.01);
-    return this.batch(this.place(spec, base, []));
+    const props = [];
+    const g = this.batch(this.place(spec, base, [], props, st));
+    if (props.length) g.add(this.propMeshes(props));
+    return g;
   },
 
   ridge(name) {

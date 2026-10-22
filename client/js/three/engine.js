@@ -199,8 +199,9 @@ export class Renderer3D {
       glow.position.y = mesh ? 0.2 : 0.38;
       root.add(glow);
     }
+    let beam = null;
     if (r >= 2) {
-      const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 2.6, 8, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
+      beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 2.6, 8, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
       beam.position.y = 1.3;
       root.add(beam);
     }
@@ -211,7 +212,11 @@ export class Renderer3D {
         if (sp) sp.position.y = 0.38 + Math.sin(st.now / 400 + e.id) * 0.06;
         if (mesh) { mesh.rotation.y += dt * 0.7; mesh.position.y = 0.06 + Math.sin(st.now / 500 + ph) * 0.04; }
       },
-      dispose() {},
+      // só o que é próprio do item: sprites, raio de luz (geometria e texturas de ícone/brilho são compartilhadas)
+      dispose() {
+        root.traverse((o) => { if (o.isSprite) o.material.dispose(); });
+        if (beam) { beam.geometry.dispose(); beam.material.dispose(); }
+      },
     };
   }
 

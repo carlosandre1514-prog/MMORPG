@@ -64,7 +64,7 @@ export const QUESTS = {
       'quando ele bater as patas no chão, saia de perto. E quando ele mirar em você, saia do caminho!',
     progress: 'Presa-de-Ferro ainda vive. Posso sentir a Névoa pulsando a partir da toca dele.',
     complete: 'Sinto... sinto o ar mais leve. Muito bem, Portador. O velho guardião finalmente descansa.\n\n' +
-      'Mas o que vi enquanto você lutava me preocupa. A Névoa não vem daqui. Ela vem do oeste... da Floresta Sussurrante.',
+      'Mas o que vi enquanto você lutava me preocupa. A Névoa não vem daqui. Ela vem do leste... da Floresta Sussurrante.',
     objectives: [{ type: 'kill', target: 'boar_boss', count: 1 }],
     rewards: { xp: 900, gold: 120, items: [['pot_hp_2', 3], ['enh_stone', 1]] },
   },

@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { pipeline } from 'node:stream';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -47,6 +48,8 @@ export function createStaticHandler(mounts) {
     } catch {
       res.writeHead(400); res.end(); return true;
     }
+    // bytes nulos fariam fs.stat lançar e derrubar o servidor
+    if (urlPath.includes('\0')) { res.writeHead(400); res.end(); return true; }
     for (const m of mounts) {
       if (!urlPath.startsWith(m.prefix)) continue;
       let rel = urlPath.slice(m.prefix.length);
@@ -63,7 +66,8 @@ export function createStaticHandler(mounts) {
         if (!gz) {
           res.writeHead(200, { ...head, 'Content-Length': st.size });
           if (req.method === 'HEAD') { res.end(); return; }
-          fs.createReadStream(file).pipe(res);
+          // pipeline fecha o arquivo se o cliente abortar o download no meio
+          pipeline(fs.createReadStream(file), res, () => {});
           return;
         }
         gzipped(file, st, (e, data) => {

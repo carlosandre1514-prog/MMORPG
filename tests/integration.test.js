@@ -241,3 +241,25 @@ test('persistência: o personagem volta com o progresso', async () => {
   assert.equal(w.you.char.gold, 25 + 777);
   again.close();
 });
+
+test('servidor de arquivos: caminho com byte nulo é recusado sem derrubar o servidor e o gzip funciona', async () => {
+  const http = await import('node:http');
+  const get = (path, headers = {}) => new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port: srv.port, path, headers }, (res) => {
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+  assert.equal((await get('/%00')).status, 400);
+  assert.equal((await get('/shared/%00')).status, 400);
+  const page = await get('/', { 'accept-encoding': 'gzip' });
+  assert.equal(page.status, 200);
+  assert.equal(page.headers['content-encoding'], 'gzip');
+  const again = await get('/', { 'if-none-match': page.headers.etag });
+  assert.equal(again.status, 304);
+  assert.equal((await get('/kaykit/medieval/medieval.glb')).status, 200);
+  assert.equal((await get('/nao-existe.png')).status, 404);
+});

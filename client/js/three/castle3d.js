@@ -129,12 +129,6 @@ export function buildFortifications(structs, mats, onFlag) {
         const mx = cx + Math.sin(a) * (r + 0.05), mz = cz + Math.cos(a) * (r + 0.05);
         stone.box(mx - 0.28, H + 0.25, mz - 0.28, mx + 0.28, H + 1.0, mz + 0.28);
       }
-      // janelinhas escuras (seteiras)
-      for (let k = 0; k < 4; k++) {
-        const a = (k / 4) * Math.PI * 2 + 0.4;
-        const wx = cx + Math.sin(a) * (r + 0.02), wz = cz + Math.cos(a) * (r + 0.02);
-        iron.box(wx - 0.09, H * 0.55, wz - 0.09, wx + 0.09, H * 0.55 + 0.8, wz + 0.09);
-      }
       if (s.castle || s.w >= 3) {
         const rh = s.castle ? 4.2 : 3.2;
         roof.cone(cx, cz, r + 0.55, H + 0.9, rh);

@@ -3,8 +3,34 @@
 // capela com cemitério e bairros de casas geminadas com becos. As coordenadas das construções
 // especiais e dos NPCs (shared/data/npcs.js) foram planejadas juntas; os quarteirões são preenchidos
 // por um gerador determinístico.
-import { T, O } from './tiles.js';
-import { mulberry32 } from './rng.js';
+import { T, O, OBJ_INFO } from './tiles.js';
+import { mulberry32, hash2 } from './rng.js';
+
+// Largura da fachada em tiles e número de módulos de 2 m (o cliente monta as paredes nessa grade)
+const frontWidth = (st) => (st.face === 'e' || st.face === 'w' ? st.h : st.w);
+const modules = (st) => Math.max(2, Math.floor(frontWidth(st) / 2));
+const NO_DOOR = new Set(['keeptower', 'belltower', 'market']);
+
+// Módulo da fachada onde fica a porta (-1 se a construção não tem porta); o mesmo valor vale no cliente
+export function doorIndex(st) {
+  if (NO_DOOR.has(st.type)) return -1;
+  return st.door ?? Math.floor((modules(st) - 1) / 2);
+}
+
+// Tiles de rua logo em frente à porta (o módulo de 2 m da porta), em coordenadas do mapa
+export function doorFront(st) {
+  const i = doorIndex(st);
+  if (i < 0) return [];
+  const pad = (frontWidth(st) - modules(st) * 2) / 2;
+  const u0 = pad + i * 2, u1 = u0 + 2; // intervalo ao longo da fachada, a partir da esquerda de quem olha de fora
+  const span = (a, b) => { const lo = Math.floor(Math.min(a, b) + 1e-6), hi = Math.ceil(Math.max(a, b) - 1e-6); const r = []; for (let t = lo; t < hi; t++) r.push(t); return r; };
+  switch (st.face) {
+    case 'n': return span(st.x + st.w - u1, st.x + st.w - u0).map((x) => [x, st.y - 1]);
+    case 'e': return span(st.y + st.h - u1, st.y + st.h - u0).map((y) => [st.x + st.w, y]);
+    case 'w': return span(st.y + u0, st.y + u1).map((y) => [st.x - 1, y]);
+    default: return span(st.x + u0, st.x + u1).map((x) => [x, st.y + st.h]);
+  }
+}
 
 export function buildCapital(grid, zone) {
   const rng = mulberry32(zone.gen.seed);
@@ -32,7 +58,10 @@ export function buildCapital(grid, zone) {
   // casa: face = lado da fachada ('n', 's', 'e', 'w'); andares 1–3
   const house = (x, y, w, h, face, extra = {}) => {
     grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.pathMask[idx(px, py)] = 0; });
-    S.push({ kind: 'house', type: 'house', x, y, w, h, face, seed: houseSeed++, floors: 1, ...extra });
+    const st = { kind: 'house', type: 'house', x, y, w, h, face, seed: houseSeed++, floors: 1, ...extra };
+    // casas comuns têm a porta num módulo qualquer da fachada (escolha estável, sem gastar o gerador aleatório)
+    if (st.type === 'house') st.door = Math.floor(hash2(x, y, 71) * modules(st));
+    S.push(st);
   };
   const floorsFor = () => { const r = rng(); return r < 0.4 ? 1 : r < 0.85 ? 2 : 3; };
   const lamp = (x, y) => obj(x, y, O.LAMP);
@@ -246,6 +275,15 @@ export function buildCapital(grid, zone) {
   obj(89, 74, O.LAMP); obj(89, 62, O.LAMP);
   obj(90, 63, O.CANDLE); obj(90, 68, O.CANDLE); // velas na porta da capela
   grid.rect(92, 76, 13, 13, (x, y) => { if (grid.o(x, y) === O.GRAVE && rng() < 0.3) obj(x, y + 1, O.CANDLE); });
+
+  // nenhuma porta dá para uma árvore, arbusto, poste ou caixote: limpa o que bloqueia a frente dela
+  for (const st of S) {
+    if (st.kind !== 'house') continue;
+    for (const [x, y] of doorFront(st)) {
+      if (!grid.in(x, y) || grid.o(x, y) === O.WALL || grid.o(x, y) === O.BUILDING) continue;
+      if (OBJ_INFO[grid.o(x, y)].block) grid.setO(x, y, 0);
+    }
+  }
 
   // portais: Portão Leste (Campos) e Portão Sul (Arena)
   for (const p of zone.portals) pave(p.x, p.y, p.w, p.h);

@@ -102,8 +102,10 @@ node tools/village/convert.mjs <pasta-com-fbx-e-texturas>          # peças dos 
 
 ## Capturas
 
-![Vila de Alvorada](docs/screenshots/vila.png)
-![Vila à noite, com as janelas acesas](docs/screenshots/noite.png)
+![Pátio do castelo, onde o herói desperta](docs/screenshots/vila.png)
+![A capital murada vista de cima](docs/screenshots/cidade-alto.png)
+![Mercado](docs/screenshots/mercado.png)
+![Praça da Chama à noite, com as janelas acesas](docs/screenshots/noite.png)
 ![Diálogo de missão](docs/screenshots/dialogo.png)
 ![Combate nos Campos](docs/screenshots/combate.png)
 ![Floresta Sussurrante](docs/screenshots/floresta.png)

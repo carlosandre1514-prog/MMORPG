@@ -251,6 +251,10 @@ class CharacterActor {
 
   dispose() {
     this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.model);
+    // textura de ossos do esqueleto e materiais próprios (as geometrias e texturas vêm do modelo compartilhado)
+    this.model.traverse((o) => { if (o.isSkinnedMesh && o.skeleton) o.skeleton.dispose(); });
+    for (const m of this.mats) m.dispose();
   }
 }
 

@@ -5,6 +5,7 @@
 // por material (a geometria de cada peça existe uma vez só e o recorte é feito peça por peça).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { doorIndex } from '/shared/citygen.js';
 
 const BASE = '/village/';
 const MOD = 200; // módulo da grade, em cm
@@ -59,6 +60,10 @@ export const village = {
   },
 
   has(name) { return this.ready && this.pieces.has(name); },
+
+  isSharedTexture(t) {
+    return Object.values(this.mats).some((m) => m.map === t || m.normalMap === t);
+  },
 
   // Matriz base de uma construção do mapa: centro do terreno, fachada virada para st.face, cm -> m.
   baseMatrix(st) {
@@ -201,7 +206,8 @@ export function villagePlan(st) {
   const W = side ? st.h : st.w, D = side ? st.w : st.h;
   const nx = Math.max(2, Math.floor(W / 2)), nz = Math.max(2, Math.floor(D / 2));
   const rnd = mulberry((st.seed || 1) * 977 + 13);
-  const base = { nx, nz, seed: (st.seed || 1) * 31 + 17 };
+  // a porta vem do mapa (o gerador deixa livre a rua em frente a ela)
+  const base = { nx, nz, seed: (st.seed || 1) * 31 + 17, door: Math.max(0, doorIndex(st)) };
   const stacked = (n, ground = 'stone', upper = 'plaster') => Array.from({ length: n || 1 }, (_, i) => (i === 0 ? ground : upper));
   switch (st.type) {
     case 'keep': return { ...base, floors: stacked(st.floors, 'stone', 'stone'), chimneys: 2, vines: 5, windows: 0.9, shutters: true };
@@ -219,7 +225,7 @@ export function villagePlan(st) {
     default: {
       const ground = rnd() < 0.55 ? 'stone' : 'plaster';
       return {
-        ...base, floors: stacked(st.floors || 1, ground, 'plaster'), door: Math.floor(rnd() * nx),
+        ...base, floors: stacked(st.floors || 1, ground, 'plaster'),
         doorStyle: rnd() < 0.5 ? 'flat' : 'round', chimneys: rnd() < 0.65 ? 1 : 0, vines: rnd() < 0.3 ? 2 : 0,
         shutters: rnd() < 0.5, windows: 0.45 + rnd() * 0.3,
       };

@@ -79,7 +79,10 @@ class Creature {
     }
   }
 
-  dispose() {}
+  dispose() {
+    this.root.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+    for (const m of this.mats) m.dispose();
+  }
 }
 
 // ------------------------------------------------------------------ construtores

@@ -480,7 +480,7 @@ export const windowsMixin = {
         Há um mês, <b>Morvath</b>, o Sumo-Guardião da Ordem, traiu seus irmãos: extinguiu a Chama e a partiu em três <b>Brasas</b>, entregando-as a criaturas corrompidas. Desde então, a Névoa avança, e os animais e os mortos se erguem contra os vivos.<br><br>
         Na noite em que a Chama se partiu, uma centelha caiu do céu e atravessou seu peito. Você dormiu por três dias. Agora desperta na <b>Cidade de Alvorada</b>, o último refúgio — e sente a luz ardendo dentro de você.<br><br>
         Você é um <b>Portador</b>, {name}. E Aethra precisa de você.`.replace(/\n\s*/g, ' '), me) }),
-      h('div', { class: 'intro-tip' }, 'Fale com o Ancião Thalric (marcado com ', h('b', { class: 'gold' }, '!'), '), ao norte da praça. Ande com WASD ou clicando no chão. Pressione H a qualquer momento para ver os controles.'),
+      h('div', { class: 'intro-tip' }, 'Fale com o Ancião Thalric (marcado com ', h('b', { class: 'gold' }, '!'), '), logo à sua frente, no pátio do castelo. Ande com WASD ou clicando no chão. Pressione H a qualquer momento para ver os controles.'),
       h('button', { class: 'btn big', onclick: () => { audio.init(); ov.remove(); } }, 'Começar a jornada')));
     document.body.appendChild(ov);
   },

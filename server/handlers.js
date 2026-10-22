@@ -383,12 +383,9 @@ const HANDLERS = {
     if (!z || !p.char.visited.includes(z.id)) return p.err('Você ainda não descobriu este lugar.');
     if (z.id === p.zone.id) return;
     if (p.inCombat()) return p.err('Não é possível viajar em combate.');
-    let dest;
-    if (z.id === 'town') dest = { x: 24.5, y: 26.5 };
-    else {
-      const ws = Object.values(NPCS).find((x) => x.zone === z.id && x.services.includes('teleport'));
-      dest = ws ? { x: ws.x, y: ws.y + 1.5 } : z.spawn;
-    }
+    // chega ao lado do mago do portal da zona (na capital, Ilyas, na Praça da Chama)
+    const ws = Object.values(NPCS).find((x) => x.zone === z.id && x.services.includes('teleport'));
+    const dest = ws ? { x: ws.x, y: ws.y + 1.5 } : z.spawn;
     world.transfer(p, z.id, dest.x, dest.y);
   },
 

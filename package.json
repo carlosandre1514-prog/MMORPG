@@ -1,7 +1,7 @@
 {
   "name": "aethra-mmorpg",
   "version": "1.0.0",
-  "description": "Aethra: A Chama Partida — um MMORPG 2D multiplayer para navegador, com servidor Node.js sem dependências.",
+  "description": "Aethra: A Chama Partida — um MMORPG 3D multiplayer para navegador, com servidor Node.js sem dependências.",
   "type": "module",
   "main": "server/main.js",
   "scripts": {

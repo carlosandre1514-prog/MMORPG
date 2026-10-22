@@ -245,10 +245,14 @@ export class ZoneScene {
         const tex = new THREE.CanvasTexture(cv);
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = Math.min(8, this.maxAniso);
-        const geo = new THREE.PlaneGeometry(CHUNK, CHUNK);
+        // chunks de borda cobrem só os tiles que existem (o resto da textura seria o vazio preto)
+        const wv = Math.min(CHUNK, z.w - cx * CHUNK), hv = Math.min(CHUNK, z.h - cy * CHUNK);
+        const geo = new THREE.PlaneGeometry(wv, hv);
+        const uv = geo.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (wv / CHUNK), 1 - (1 - uv.getY(i)) * (hv / CHUNK));
         geo.rotateX(-Math.PI / 2);
         const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: tex }));
-        m.position.set(cx * CHUNK + CHUNK / 2, 0, cy * CHUNK + CHUNK / 2);
+        m.position.set(cx * CHUNK + wv / 2, 0, cy * CHUNK + hv / 2);
         m.receiveShadow = true;
         this.group.add(m);
       }
@@ -799,7 +803,12 @@ export class ZoneScene {
       if (o.geometry && !objGeoCacheHas(o.geometry)) o.geometry.dispose();
       if (o.material) {
         const ms = Array.isArray(o.material) ? o.material : [o.material];
-        for (const m of ms) { if (m.map && m.map !== glowTex) m.map.dispose(); m.dispose(); }
+        for (const m of ms) {
+          // texturas do pack de prédios são compartilhadas (a pedra das ameias reaproveita a do tijolo)
+          if (m.map && m.map !== glowTex && !village.isSharedTexture(m.map)) m.map.dispose();
+          if (m.normalMap && !village.isSharedTexture(m.normalMap)) m.normalMap.dispose();
+          m.dispose();
+        }
       }
     });
   }

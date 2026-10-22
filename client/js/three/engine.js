@@ -12,6 +12,7 @@ import { medieval } from './medieval.js';
 import { itemIcon } from '../sprites.js';
 import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
+import { roomAt } from '/shared/housegeom.js';
 import { GuideFx } from './guide3d.js';
 import { quality } from '../device.js';
 
@@ -83,6 +84,10 @@ export class Renderer3D {
     }
     this.playerLight = new THREE.PointLight(0xffe0b0, 0, 12, 1.4);
     this.scene.add(this.playerLight);
+    // luz quente dentro das casas (velas e lareira)
+    this.roomLight = new THREE.PointLight(0xffcf94, 0, 7, 1.2);
+    this.scene.add(this.roomLight);
+    this.room = null;
     this.fx = new Effects3D(game, this.scene);
     this.guideFx = new GuideFx(this.scene);
     this.actors = new Map();
@@ -442,10 +447,29 @@ export class Renderer3D {
     this.updateLights(now, t);
     this.updateRings(t);
     this.zoneScene.cull(g.me.x, g.me.y);
+    this.updateRoom(dt, now);
     this.guideFx.update(g.guide, g.me, t, g.zone.id);
-    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist, this.camMode === 'first');
+    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist, this.camMode === 'first', this.room);
     this.renderer.render(this.scene, this.camera);
     this.overlay.draw(t);
+  }
+
+  // Dentro de uma casa: some o telhado (câmera de fora), as portas abrem e uma luz quente acende
+  updateRoom(dt, now) {
+    const g = this.game;
+    const map = g.zone.map;
+    const room = map.rooms ? roomAt(map, g.me.x, g.me.y, this.room ? 0.35 : -0.05) : null;
+    if (room !== this.room) {
+      this.room = room;
+      if (room && room.st.label && now - (this.lastRoomToast || 0) > 4000) { this.lastRoomToast = now; g.ui.toast(`Você entrou: ${room.st.label}`, 'info'); }
+    }
+    this.zoneScene.setIndoor(room, this.camMode !== 'first');
+    this.zoneScene.updateDoors(g.me.x, g.me.y, dt);
+    const L = this.roomLight;
+    if (room) { L.position.set((room.inner[0] + room.inner[2]) / 2, 2.0, (room.inner[1] + room.inner[3]) / 2); L.distance = Math.max(room.inner[2] - room.inner[0], room.inner[3] - room.inner[1]) * 0.8 + 2; }
+    const target = room ? 9 : 0;
+    L.intensity += (target - L.intensity) * Math.min(1, dt * 6);
+    if (L.intensity < 0.02) L.intensity = 0;
   }
 
   // Qualidade automática: se o jogo rodar lento, reduz a resolução e depois desliga as sombras.

@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { doorIndex } from '/shared/citygen.js';
 import { medieval } from './medieval.js';
 import { interiorFor } from './interiors.js';
+import { registerDecor } from './decor.js';
 
 const BASE = '/village/';
 const MOD = 200; // módulo da grade, em cm
@@ -16,6 +17,7 @@ const TEXTURED = {
   Plaster: { normal: true }, UnevenBrick: { normal: true }, Brick: { normal: true }, RoundTiles: { normal: true, rough: 0.75 },
   RockTrim: { normal: true }, WoodTrim: { normal: true }, Vine: { png: true },
 };
+const DOOR_OPEN = 1.5; // rad: a folha gira para dentro da casa
 const FACE_ROT = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 };
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -58,6 +60,7 @@ export const village = {
     }));
     // vidro das janelas: acende à noite (emissiveIntensity é ajustada pela cena)
     this.mats.WindowGlass = new THREE.MeshStandardMaterial({ name: 'WindowGlass', color: 0x9cc0d6, roughness: 0.15, metalness: 0.2, emissive: 0xffc35a, emissiveIntensity: 0 });
+    registerDecor(this);
     for (const m of Object.values(this.mats)) m.userData.shared = true;
   },
 
@@ -76,14 +79,21 @@ export const village = {
   },
 
   // Acrescenta a `out` as peças da construção descrita por `spec` ({ name, m } com m já no mundo).
-  // props (opcional): recebe os móveis { m, matrix } da casa; st: estrutura do mapa (tipo da casa)
-  place(spec, base, out, props = null, st = null) {
+  // props (opcional): recebe os móveis { m, matrix } da casa; st: estrutura do mapa (tipo da casa);
+  // meta (opcional): recebe flames (posições no mundo) e colliders (caixas de móveis em tiles) do térreo.
+  // Cada peça leva o número da casa (bid) e se some quando o jogador está dentro (hide: telhado e andares de cima).
+  place(spec, base, out, props = null, st = null, meta = null) {
     const local = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-    const add = (name, x, y, z, rot = 0, scale = null, depth = 0) => {
+    let hideNow = false;
+    const bid = st ? st.seed || 0 : 0;
+    const add = (name, x, y, z, rot = 0, scale = null, depth = 0, leaf = false) => {
       if (!this.pieces.has(name)) return;
       // depth: recuo em cm ao longo da normal da parede (negativo = para dentro)
-      local.compose(new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth), q.setFromAxisAngle(UP, rot), scale || one);
-      out.push({ name, m: base.clone().multiply(local) });
+      const pos = new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth);
+      local.compose(pos, q.setFromAxisAngle(UP, rot), scale || one);
+      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow };
+      if (leaf) pl.leaf = { base, pos, rot, scale: scale.clone() }; // folha da porta: gira em volta da dobradiça
+      out.push(pl);
     };
     const rnd = mulberry(spec.seed || 1);
     const W = spec.nx * MOD, D = spec.nz * MOD;
@@ -96,6 +106,7 @@ export const village = {
     ];
     const doorAt = spec.noDoor ? -1 : spec.door ?? Math.floor((spec.nx - 1) / 2);
     spec.floors.forEach((style, f) => {
+      hideNow = f >= 1;
       const y = f * FLOOR;
       const pre = style === 'stone' ? 'Wall_UnevenBrick_' : 'Wall_Plaster_';
       sides.forEach((side) => {
@@ -109,7 +120,7 @@ export const village = {
             const dx = -51.4 * sx;
             const door = round ? 'Door_1_Round' : 'Door_1_Flat';
             const c = Math.cos(side.rot), sn = Math.sin(side.rot);
-            add(door, x + dx * c, y - 3.4 * sy, z - dx * sn, side.rot, new THREE.Vector3(sx, sy, 1), -2);
+            add(door, x + dx * c, y - 3.4 * sy, z - dx * sn, side.rot, new THREE.Vector3(sx, sy, 1), -2, true);
             add(`DoorFrame_${round ? 'Round' : 'Flat'}_${style === 'stone' ? 'Brick' : 'WoodDark'}`, x, y, z, side.rot);
             continue;
           }
@@ -130,18 +141,38 @@ export const village = {
       // postes nos cantos cobrem as emendas
       for (const [cx, cz] of [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]]) add('Corner_Exterior_Wood', cx, y, cz);
     });
-    // pisos de cada andar e mobília (a câmera passa por dentro das casas: nada de grama aparecendo)
+    hideNow = false;
+    // pisos de cada andar, teto e mobília (o térreo é visitável; a câmera também passa por dentro)
     if (props && st) {
       const inter = interiorFor(spec, st);
       inter.floorPieces.forEach((piece, f) => {
         if (!piece) return;
+        hideNow = f >= 1;
         for (let i = 0; i < spec.nx; i++) for (let j = 0; j < spec.nz; j++) add(piece, -W / 2 + 100 + i * MOD, f * FLOOR + 2, -D / 2 + 100 + j * MOD);
       });
+      if (inter.floorPieces[0]) {
+        // teto do último andar (visto de dentro, em primeira pessoa)
+        hideNow = true;
+        for (let i = 0; i < spec.nx; i++) for (let j = 0; j < spec.nz; j++) add(inter.ceiling, -W / 2 + 100 + i * MOD, spec.floors.length * FLOOR - 5, -D / 2 + 100 + j * MOD);
+      }
+      for (const d of inter.decor) {
+        hideNow = d.y > 150;
+        add(d.name, d.x, d.y, d.z, d.rot, d.s ? new THREE.Vector3(d.s[0], d.s[1], d.s[2]) : null);
+      }
       for (const p of inter.props) {
         if (!medieval.has(p.m)) continue;
-        props.push({ m: p.m, matrix: base.clone().multiply(medieval.placed(p.m, p.k, p.x, p.y, p.z, p.rot, p.lay, p.tilt)) });
+        props.push({ m: p.m, bid, up: p.y > 150, matrix: base.clone().multiply(medieval.placed(p.m, p.k, p.x, p.y, p.z, p.rot, p.lay, p.tilt)) });
+      }
+      if (meta) {
+        const pa = new THREE.Vector3(), pb = new THREE.Vector3();
+        (meta.flames ||= []).push(...inter.flames.map((f) => new THREE.Vector3(f.x, f.y, f.z).applyMatrix4(base)));
+        (meta.colliders ||= []).push(...inter.solids.map((b) => {
+          pa.set(b[0], 0, b[1]).applyMatrix4(base); pb.set(b[2], 0, b[3]).applyMatrix4(base);
+          return [Math.min(pa.x, pb.x), Math.min(pa.z, pb.z), Math.max(pa.x, pb.x), Math.max(pa.z, pb.z)];
+        }));
       }
     }
+    hideNow = true;
     // telhado de telhas com as empenas nas pontas
     const top = spec.floors.length * FLOOR;
     const along = W > D; // cumeeira ao longo de X?
@@ -185,23 +216,32 @@ export const village = {
   // Junta as peças posicionadas em um BatchedMesh por material.
   batch(placements) {
     const byKey = new Map(); // material -> { geos: Map(geo -> id), list: [[geo, matriz]] }
-    for (const { name, m } of placements) {
+    for (const pl of placements) {
+      const { name, m } = pl;
       for (const p of this.pieces.get(name) || []) {
         const key = this.mats[p.key] ? p.key : 'WoodTrim';
         let e = byKey.get(key);
         if (!e) byKey.set(key, (e = { geos: new Map(), list: [] }));
         e.geos.set(p.geo, -1);
-        e.list.push([p.geo, m]);
+        e.list.push([p.geo, m, pl]);
       }
     }
     const g = new THREE.Group();
+    const hide = new Map(), leaves = new Map(); // casa -> instâncias que somem por dentro / folhas de porta
+    const keep = (map, id, v) => { const l = map.get(id); if (l) l.push(v); else map.set(id, [v]); };
+    g.userData.hide = hide; g.userData.leaves = leaves;
     for (const [key, e] of byKey) {
       let nv = 0, ni = 0;
       for (const geo of e.geos.keys()) { nv += geo.attributes.position.count; ni += geo.index.count; }
       const bm = new THREE.BatchedMesh(e.list.length, nv, ni, this.mats[key]);
       bm.sortObjects = false;
       for (const geo of e.geos.keys()) e.geos.set(geo, bm.addGeometry(geo));
-      for (const [geo, m] of e.list) bm.setMatrixAt(bm.addInstance(e.geos.get(geo)), m);
+      for (const [geo, m, pl] of e.list) {
+        const id = bm.addInstance(e.geos.get(geo));
+        bm.setMatrixAt(id, m);
+        if (pl.bid && pl.hide) keep(hide, pl.bid, { bm, id });
+        if (pl.bid && pl.leaf) keep(leaves, pl.bid, { bm, id, leaf: pl.leaf });
+      }
       bm.castShadow = key !== 'Vine' && key !== 'WindowGlass';
       bm.receiveShadow = true;
       g.add(bm);
@@ -238,7 +278,7 @@ export const village = {
       for (const p of list) {
         const id = bm.addInstance(geos.get(p.m));
         bm.setMatrixAt(id, p.matrix);
-        items.push({ id, x: p.matrix.elements[12], z: p.matrix.elements[14], on: true });
+        items.push({ id, x: p.matrix.elements[12], z: p.matrix.elements[14], on: true, bid: p.bid, up: p.up });
       }
       g.userData.items.push({ bm, items });
       g.add(bm);
@@ -248,11 +288,38 @@ export const village = {
 
   // Mostra só os móveis a até r tiles de (px, pz)
   cullProps(group, px, pz, r = 22) {
-    const r2 = r * r;
+    const r2 = r * r, hidden = group.userData.hidden || 0;
     for (const { bm, items } of group.userData.items || []) {
       for (const it of items) {
-        const on = (it.x - px) * (it.x - px) + (it.z - pz) * (it.z - pz) < r2;
+        // por dentro de uma casa os móveis dos andares de cima também somem
+        const on = (it.x - px) * (it.x - px) + (it.z - pz) * (it.z - pz) < r2 && !(it.up && it.bid === hidden);
         if (on !== it.on) { bm.setVisibleAt(it.id, on); it.on = on; }
+      }
+    }
+  },
+
+  // Esconde (ou mostra) o telhado e os andares de cima da casa `bid` (o jogador está dentro dela)
+  setHidden(batchGroup, propGroup, bid, hidden) {
+    for (const { bm, id } of batchGroup.userData.hide.get(bid) || []) bm.setVisibleAt(id, !hidden);
+    if (propGroup) propGroup.userData.hidden = hidden ? bid : 0;
+  },
+
+  // Porta aberta (em radianos) de cada casa: abre quando o jogador chega perto e fecha quando se afasta
+  updateDoors(batchGroup, rooms, px, py, dt) {
+    const leaves = batchGroup.userData.leaves;
+    if (!leaves || !rooms) return;
+    const m = new THREE.Matrix4(), l = new THREE.Matrix4(), q = new THREE.Quaternion();
+    for (const g of rooms) {
+      const dx = g.door[0] - px, dy = g.door[1] - py, d2 = dx * dx + dy * dy;
+      const cur = g.ang || 0;
+      if (d2 > 144 && cur === 0) continue;
+      const want = d2 < 8.4 ? DOOR_OPEN : 0;
+      if (Math.abs(want - cur) < 1e-3) continue;
+      const next = cur + Math.sign(want - cur) * Math.min(Math.abs(want - cur), dt * 3.4);
+      g.ang = next;
+      for (const { bm, id, leaf } of leaves.get(g.seed) || []) {
+        l.compose(leaf.pos, q.setFromAxisAngle(UP, leaf.rot + next), leaf.scale);
+        bm.setMatrixAt(id, m.copy(leaf.base).multiply(l));
       }
     }
   },

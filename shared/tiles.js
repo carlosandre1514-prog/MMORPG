@@ -109,6 +109,8 @@ export function decodeLayer(str) {
   return arr;
 }
 
+import { applyHouses } from './housegeom.js';
+
 // Monta o objeto de mapa usado pela colisão a partir das camadas.
 export function buildMap(w, h, tiles, objs, structures = []) {
   const block = new Uint8Array(w * h);
@@ -117,5 +119,5 @@ export function buildMap(w, h, tiles, objs, structures = []) {
     const oi = OBJ_INFO[objs[i]];
     block[i] = (!ti || !ti.walk || (oi && oi.block)) ? 1 : 0;
   }
-  return { w, h, tiles, objs, block, structures };
+  return applyHouses({ w, h, tiles, objs, block, structures });
 }

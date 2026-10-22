@@ -1,5 +1,5 @@
 // A* em grade com 8 direções (sem cortar quinas).
-import { isBlocked, lineClear } from './collision.js';
+import { isSolid, lineClear } from './collision.js';
 
 class MinHeap {
   constructor() { this.a = []; }
@@ -44,15 +44,16 @@ const NEIGH = [
 // Retorna lista de pontos (centros de tiles) do início ao destino, ou null.
 export function findPath(map, sx, sy, gx, gy, maxNodes = 4000) {
   const w = map.w;
+  const fp = map.fp;
   const startX = Math.floor(sx), startY = Math.floor(sy);
   let goalX = Math.floor(gx), goalY = Math.floor(gy);
-  if (isBlocked(map, goalX, goalY)) {
+  if (isSolid(map, goalX, goalY)) {
     // procura tile livre adjacente ao destino
     let found = false;
     for (let r = 1; r <= 2 && !found; r++) {
       for (let dy = -r; dy <= r && !found; dy++) {
         for (let dx = -r; dx <= r && !found; dx++) {
-          if (!isBlocked(map, goalX + dx, goalY + dy)) { goalX += dx; goalY += dy; found = true; }
+          if (!isSolid(map, goalX + dx, goalY + dy)) { goalX += dx; goalY += dy; found = true; }
         }
       }
     }
@@ -83,9 +84,14 @@ export function findPath(map, sx, sy, gx, gy, maxNodes = 4000) {
     const gk = g.get(k);
     for (const [dx, dy, cost] of NEIGH) {
       const nx = x + dx, ny = y + dy;
-      if (isBlocked(map, nx, ny)) continue;
-      if (dx !== 0 && dy !== 0 && (isBlocked(map, x + dx, y) || isBlocked(map, x, y + dy))) continue;
+      if (isSolid(map, nx, ny)) continue;
+      if (dx !== 0 && dy !== 0 && (isSolid(map, x + dx, y) || isSolid(map, x, y + dy))) continue;
       const nk = ny * w + nx;
+      // dentro e fora de uma casa só se comunicam pela porta (reta); na diagonal, os quatro tiles são da mesma área
+      if (fp) {
+        if (dx !== 0 && dy !== 0) { if (fp[nk] !== fp[k] || fp[y * w + x + dx] !== fp[k] || fp[(y + dy) * w + x] !== fp[k]) continue; }
+        else if (fp[nk] !== fp[k] && !map.doorEdge.has(k + ':' + nk)) continue;
+      }
       if (closed.has(nk)) continue;
       const ng = gk + cost;
       if (ng < (g.get(nk) ?? Infinity)) {

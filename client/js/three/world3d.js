@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { T, O } from '/shared/tiles.js';
 import { TILE } from '/shared/constants.js';
+import { addBlocker } from '/shared/collision.js';
 import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
@@ -265,10 +266,33 @@ export class ZoneScene {
   // interiores só por perto do jogador (no máximo a cada 200 ms e quando ele se mexeu)
   cull(px, pz, force = false) {
     if (!this.propGroup) return;
+    if (this.hearthFlames) {
+      const r2 = quality().cullR ** 2;
+      for (const f of this.hearthFlames) {
+        const on = (f.position.x - px) ** 2 + (f.position.z - pz) ** 2 < r2;
+        f.visible = on;
+        if (f.userData.core) f.userData.core.visible = on;
+      }
+    }
     const now = performance.now();
     if (!force && (now - (this.lastCull || 0) < 200 || (Math.abs(px - this.cullX) < 0.5 && Math.abs(pz - this.cullZ) < 0.5))) return;
     this.lastCull = now; this.cullX = px; this.cullZ = pz;
     village.cullProps(this.propGroup, px, pz, quality().cullR);
+  }
+
+  // O jogador entrou (ou saiu) de uma casa: com a câmera de fora o telhado e os andares de cima somem
+  setIndoor(room, hide) {
+    if (!this.cityGroup) return;
+    const bid = room && hide ? room.seed : 0;
+    if (bid === (this.hiddenBid || 0)) return;
+    if (this.hiddenBid) village.setHidden(this.cityGroup, this.propGroup, this.hiddenBid, false);
+    if (bid) village.setHidden(this.cityGroup, this.propGroup, bid, true);
+    this.hiddenBid = bid;
+    this.cull(this.cullX || 0, this.cullZ || 0, true);
+  }
+
+  updateDoors(px, py, dt) {
+    if (this.cityGroup) village.updateDoors(this.cityGroup, this.zone.map.rooms, px, py, dt);
   }
 
   buildGround() {
@@ -589,6 +613,7 @@ export class ZoneScene {
       this.group.add(core);
       sp.userData.core = core;
     }
+    return sp;
   }
 
   buildStructures() {
@@ -600,9 +625,13 @@ export class ZoneScene {
     }
     if (village.ready) {
       // a cidade inteira em um BatchedMesh por material
-      const placements = [], props = [];
-      for (const st of houses) village.place(villagePlan(st), village.baseMatrix(st), placements, props, st);
-      if (placements.length) this.group.add(village.batch(placements));
+      const placements = [], props = [], meta = {};
+      for (const st of houses) village.place(villagePlan(st), village.baseMatrix(st), placements, props, st, meta);
+      if (placements.length) { this.cityGroup = village.batch(placements); this.group.add(this.cityGroup); }
+      // móveis são sólidos para o jogador (só no cliente: o servidor só cuida das paredes e do vão da porta)
+      for (const b of meta.colliders || []) addBlocker(this.zone.map, b[0], b[1], b[2], b[3]);
+      // fogo das lareiras: sprites que só aparecem perto do jogador
+      this.hearthFlames = (meta.flames || []).map((v) => this.addFlame(v.x, v.y, v.z, 0xff9a3c, 1.05, true));
       if (props.length) { this.propGroup = village.propMeshes(props); this.group.add(this.propGroup); this.cull(this.terrain.map ? this.zone.w / 2 : 0, this.zone.h / 2, true); }
       for (const st of houses) if (st.label) this.group.add(this.facing(st, (W, D) => this.signboard(st.label, -W / 2 + 1.1, D / 2 + 0.15)));
     } else {

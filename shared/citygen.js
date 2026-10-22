@@ -5,32 +5,9 @@
 // por um gerador determinístico.
 import { T, O, OBJ_INFO } from './tiles.js';
 import { mulberry32, hash2 } from './rng.js';
+import { doorIndex, doorFront, modules } from './housegeom.js';
 
-// Largura da fachada em tiles e número de módulos de 2 m (o cliente monta as paredes nessa grade)
-const frontWidth = (st) => (st.face === 'e' || st.face === 'w' ? st.h : st.w);
-const modules = (st) => Math.max(2, Math.floor(frontWidth(st) / 2));
-const NO_DOOR = new Set(['keeptower', 'belltower', 'market']);
-
-// Módulo da fachada onde fica a porta (-1 se a construção não tem porta); o mesmo valor vale no cliente
-export function doorIndex(st) {
-  if (NO_DOOR.has(st.type)) return -1;
-  return st.door ?? Math.floor((modules(st) - 1) / 2);
-}
-
-// Tiles de rua logo em frente à porta (o módulo de 2 m da porta), em coordenadas do mapa
-export function doorFront(st) {
-  const i = doorIndex(st);
-  if (i < 0) return [];
-  const pad = (frontWidth(st) - modules(st) * 2) / 2;
-  const u0 = pad + i * 2, u1 = u0 + 2; // intervalo ao longo da fachada, a partir da esquerda de quem olha de fora
-  const span = (a, b) => { const lo = Math.floor(Math.min(a, b) + 1e-6), hi = Math.ceil(Math.max(a, b) - 1e-6); const r = []; for (let t = lo; t < hi; t++) r.push(t); return r; };
-  switch (st.face) {
-    case 'n': return span(st.x + st.w - u1, st.x + st.w - u0).map((x) => [x, st.y - 1]);
-    case 'e': return span(st.y + st.h - u1, st.y + st.h - u0).map((y) => [st.x + st.w, y]);
-    case 'w': return span(st.y + u0, st.y + u1).map((y) => [st.x - 1, y]);
-    default: return span(st.x + u0, st.x + u1).map((x) => [x, st.y + st.h]);
-  }
-}
+export { doorIndex, doorFront };
 
 export function buildCapital(grid, zone) {
   const rng = mulberry32(zone.gen.seed);

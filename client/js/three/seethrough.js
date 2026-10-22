@@ -16,6 +16,8 @@ export const seeThrough = {
     uCutR: { value: 8.5 }, // raio do corte de andares (m)
     uCutH: { value: 2.9 }, // altura a partir da qual corta (acima do térreo)
     uNearFade: { value: 5.5 }, // distância da câmera em que começa a sumir
+    uRoom: { value: new THREE.Vector4(0, 0, 0, 0) }, // casa em que o jogador está (x0, z0, x1, z1 no mundo)
+    uIndoor: { value: 0 },
   },
 };
 
@@ -28,6 +30,8 @@ uniform vec2 uCamDir;
 uniform float uCutR;
 uniform float uCutH;
 uniform float uNearFade;
+uniform vec4 uRoom;
+uniform float uIndoor;
 void main() {
   {
     float noise = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
@@ -40,6 +44,8 @@ void main() {
     if (wp.y > uCutH && dot(rel, uCamDir) > -1.5) {
       keep = min(keep, smoothstep(uCutR - 2.5, uCutR, length(rel)));
     }
+    // dentro de uma casa: as paredes do lado da câmera ficam baixas, como num diorama
+    if (uIndoor > 0.5 && wp.y > 1.2 && wp.x > uRoom.x && wp.z > uRoom.y && wp.x < uRoom.z && wp.z < uRoom.w && dot(rel, uCamDir) > 0.25) discard;
     keep = min(keep, smoothstep(uNearFade * 0.55, uNearFade, length(vViewPosition)));
     if (keep < 0.999 && noise >= keep) discard;
   }
@@ -63,7 +69,7 @@ export function applySeeThrough(mat) {
 const _p = new THREE.Vector3(), _q = new THREE.Vector3(), _d = new THREE.Vector3();
 
 // Atualiza a janela e o corte a partir da posição do jogador (x, z no mundo) e da câmera.
-export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15, first = false) {
+export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15, first = false, room = null) {
   const u = seeThrough.uniforms;
   camera.updateMatrixWorld();
   _p.set(x, 0.8, z);
@@ -79,6 +85,8 @@ export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15, first = fal
   u.uPlayer.value.set(x, 0, z);
   u.uCamDir.value.set(camera.position.x - x, camera.position.z - z).normalize();
   u.uNearFade.value = Math.max(4, dist * 0.6);
+  u.uIndoor.value = room && !first ? 1 : 0;
+  if (room) u.uRoom.value.set(room.line[0] - 0.3, room.line[1] - 0.3, room.line[2] + 0.3, room.line[3] + 0.3);
   if (first) {
     // 1ª pessoa: sem janela nem corte de andares; só esmaece o que encosta nos olhos
     u.uSeeRadius.value = 0;

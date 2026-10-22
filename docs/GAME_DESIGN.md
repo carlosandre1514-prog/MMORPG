@@ -63,6 +63,8 @@ A cada nível: crescimento automático por classe + **3 pontos livres** (Força,
 
 - Zonas geradas proceduralmente (ruído + caminhos de custo mínimo + verificação de conectividade), determinísticas por semente.
 - Monstros: perambulam, percebem jogadores, chamam o bando, perseguem com A*, voltam para casa ao passar da coleira (curando-se), escolhem alvo pela tabela de ameaça.
+- Casas visitáveis: cada construção com porta da capital (125) tem paredes finas de colisão e um vão na porta (`shared/housegeom.js`); o servidor valida o movimento contra elas, então não dá para atravessar parede. O A* só entra e sai pela porta. No cliente, os móveis também são sólidos. A porta abre quando o jogador chega perto; por dentro, na 3ª pessoa, o telhado e os andares de cima somem (e as paredes do lado da câmera ficam baixas); em 1ª pessoa aparece o teto. Só o térreo é visitável.
+- Interiores (`client/js/three/interiors.js`): cada tipo de construção tem uma planta própria (casa de moradores, ferraria, alquimia, taverna, cofre, salão do castelo, quartel, arsenal, casa da guarda, capela). Os móveis vêm dos packs KayKit; só o que não existia nos packs foi montado em código (`decor.js`: lareira de pedra com fogo, tapetes tecidos, estante de livros, armário, bancos de igreja e balcão). Um posicionador evita sobreposição e mantém livre o caminho da porta.
 - Chefes: habilidades com aviso no chão (pisada, investida, poças, chuva de meteoros, nova do Vazio), invocações por limiar de vida, fúria, endurecimento e teleporte; reaparecem após alguns minutos.
 
 ## 7. Social

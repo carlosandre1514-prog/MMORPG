@@ -443,7 +443,7 @@ export const windowsMixin = {
       </div>
       <div class="ql-sub">A história até aqui</div>
       <div class="ql-story">Há um mês, Morvath, o Sumo-Guardião da Ordem da Chama, extinguiu a Chama Primordial do Santuário de Lúmen e a partiu em três Brasas — Vida, Terra e Espírito — entregando-as a criaturas corrompidas. Desde então, a Névoa Cinzenta avança sobre Aethra. Quando a Chama se partiu, centelhas caíram do céu e despertaram os Portadores. Você é um deles. Recupere as três Brasas e reacenda a luz.</div>
-      <div class="muted small" style="margin-top:8px">Modelos 3D: KayKit Adventurers e KayKit Medieval Hexagon Pack por Kay Lousberg (www.kaylousberg.com); prédios com o Medieval Village MegaKit por Quaternius (quaternius.com). Todos CC0.</div>
+      <div class="muted small" style="margin-top:8px">Modelos 3D: KayKit Adventurers, Skeletons, Medieval Hexagon, Resource Bits e Dungeon por Kay Lousberg (www.kaylousberg.com); prédios com o Medieval Village MegaKit por Quaternius (quaternius.com). Todos CC0.</div>
       ${this.game.dev ? '<div class="ql-sub">Modo de teste (DEV)</div><div class="muted">/nivel N · /ouro N · /item id [qtd] [raridade] · /ir zona · /tp x y · /curar · /matar · /ids</div>' : ''}`;
   },
 

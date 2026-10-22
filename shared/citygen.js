@@ -20,9 +20,9 @@ export function buildCapital(grid, zone) {
   });
   const ground = (x, y, w, h, t) => grid.rect(x, y, w, h, (px, py) => grid.setT(px, py, t));
   const obj = (x, y, o) => { if (grid.in(x, y) && grid.o(x, y) !== O.BUILDING && grid.o(x, y) !== O.WALL) grid.setO(x, y, o); };
-  const wall = (x, y, w, h) => {
+  const wall = (x, y, w, h, extra = {}) => {
     grid.rect(x, y, w, h, (px, py) => { grid.setT(px, py, T.STONE); grid.setO(px, py, O.WALL); grid.pathMask[idx(px, py)] = 0; });
-    S.push({ kind: 'wall', x, y, w, h });
+    S.push({ kind: 'wall', x, y, w, h, ...extra });
   };
   const tower = (x, y, size = 3, extra = {}) => {
     grid.rect(x, y, size, size, (px, py) => { grid.setT(px, py, T.STONE); grid.setO(px, py, O.WALL); grid.pathMask[idx(px, py)] = 0; });
@@ -151,8 +151,9 @@ export function buildCapital(grid, zone) {
 
   // ------------------------------------------------------------ castelo
   pave(37, 1, 38, 27, T.STONE);
-  wall(36, 1, 1, 27); wall(75, 1, 1, 27);
-  wall(36, 28, 19, 1); gate(55, 28, 3, 1, 's'); wall(58, 28, 18, 1);
+  const castle = { castle: true };
+  wall(36, 1, 1, 27, castle); wall(75, 1, 1, 27, castle);
+  wall(36, 28, 19, 1, castle); gate(55, 28, 3, 1, 's'); wall(58, 28, 18, 1, castle);
   for (const [x, y] of [[35, 0], [74, 0], [35, 27], [74, 27], [52, 27], [58, 27]]) tower(x, y, 3, { castle: true });
   pave(34, 3, 2, 34, T.DIRT); pave(76, 3, 2, 25, T.DIRT); // vielas ao longo das muralhas do castelo
   house(49, 5, 15, 8, 's', { type: 'keep', label: 'Salão dos Guardiões', floors: 3 });
@@ -197,9 +198,11 @@ export function buildCapital(grid, zone) {
   obj(51, 41, O.SIGN);
 
   // Mercado: duas fileiras de barracas, caixotes e sacos
-  for (const x of [79, 83, 87, 91, 95]) { obj(x, 41, O.STALL); obj(x, 52, O.STALL); }
-  for (const [x, y, o] of [[80, 42, O.CLOTH], [84, 40, O.SACK], [88, 42, O.BARS], [92, 40, O.PLANKS], [96, 42, O.CLOTH],
-    [80, 51, O.BRICKS], [84, 53, O.CRATE], [88, 51, O.CLOTH], [92, 53, O.PLANKS], [96, 51, O.BARS], [78, 43, O.BARREL], [94, 50, O.SACK]]) obj(x, y, o);
+  for (const x of [79, 83, 87, 91]) { obj(x, 41, O.STALL); obj(x, 52, O.STALL); }
+  // terraço da taverna: mesas postas e barris de cerveja
+  for (const [x, y, o] of [[95, 40, O.TABLE], [95, 43, O.TABLE], [97, 41, O.KEG], [93, 39, O.KEG], [95, 51, O.TABLE], [97, 53, O.KEG]]) obj(x, y, o);
+  for (const [x, y, o] of [[80, 42, O.CLOTH], [84, 40, O.SACK], [88, 42, O.BARS], [92, 40, O.PLANKS], [90, 43, O.CLOTH],
+    [80, 51, O.BRICKS], [84, 53, O.CRATE], [88, 51, O.CLOTH], [92, 53, O.PLANKS], [90, 50, O.BARS], [78, 43, O.BARREL], [94, 50, O.SACK]]) obj(x, y, o);
   lamp(77, 40); lamp(96, 40); lamp(77, 53); lamp(96, 53);
 
   // ------------------------------------------------------------ construções especiais
@@ -210,7 +213,7 @@ export function buildCapital(grid, zone) {
   house(98, 49, 8, 6, 'n', { type: 'guardhouse', label: 'Casa da Guarda', floors: 2 });
   obj(106, 41, O.BRAZIER); obj(106, 52, O.BRAZIER); obj(105, 45, O.BANNER); obj(105, 48, O.BANNER);
   obj(35, 45, O.RACK); obj(37, 45, O.BARS); obj(42, 45, O.BRICKS); obj(43, 44, O.LUMBER); obj(42, 44, O.BARREL);
-  obj(82, 36, O.GOLD); obj(91, 36, O.GOLD); obj(83, 36, O.CRATE); // o ouro do Cofre, à vista na porta
+  obj(82, 36, O.GOLD); obj(91, 36, O.GOLD); obj(83, 36, O.CHEST); obj(90, 36, O.CHEST); // o ouro do Cofre, à vista na porta
   obj(68, 16, O.BARS); obj(68, 18, O.BARS);
   obj(29, 48, O.BARREL);
 
@@ -241,6 +244,8 @@ export function buildCapital(grid, zone) {
   });
   pave(90, 81, 1, 2, T.DIRT);
   obj(89, 74, O.LAMP); obj(89, 62, O.LAMP);
+  obj(90, 63, O.CANDLE); obj(90, 68, O.CANDLE); // velas na porta da capela
+  grid.rect(92, 76, 13, 13, (x, y) => { if (grid.o(x, y) === O.GRAVE && rng() < 0.3) obj(x, y + 1, O.CANDLE); });
 
   // portais: Portão Leste (Campos) e Portão Sul (Arena)
   for (const p of zone.portals) pave(p.x, p.y, p.w, p.h);

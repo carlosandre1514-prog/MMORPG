@@ -1,7 +1,8 @@
 // Converte packs KayKit (CC0) em um único GLB compacto por pack, com todas as peças dividindo um atlas reduzido.
-//   node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png] [--pack=medieval|resources]
+//   node tools/medieval/convert.mjs <pasta-extraída-do-pack> [folha.png] [--pack=medieval|resources|dungeon]
 //   medieval  -> assets/kaykit/medieval/medieval.glb   (KayKit Medieval Hexagon Pack, FBX)
 //   resources -> assets/kaykit/resources/resources.glb (KayKit Resource Bits, glTF)
+//   dungeon   -> assets/kaykit/dungeon/dungeon.glb     (KayKit Dungeon Remastered, FBX)
 // Requer o three em tools/bake/node_modules (cd tools/bake && npm install) e Playwright com Chromium.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -53,6 +54,16 @@ const PACKS = {
     ],
   },
 };
+PACKS.dungeon = {
+  dir: 'fbx', ext: '.fbx', atlas: 'textures/dungeon_texture.png', out: 'dungeon',
+  keep: process.env.ALL ? null : [
+    'pillar', 'pillar_decorated', 'column', 'rubble_half', 'torch_lit', 'chest', 'chest_gold', 'coin_stack_large', 'coin_stack_medium',
+    'candle_triple', 'candle_melted', 'shelf_small_candles', 'keg_decorated', 'barrel_small_stack', 'barrel_large_decorated',
+    'table_medium_tablecloth_decorated_B', 'table_small_decorated_A', 'table_long_decorated_A',
+    'banner_triple_blue', 'banner_shield_blue', 'banner_patternA_blue', 'banner_patternC_red', 'banner_shield_red',
+    'sword_shield', 'sword_shield_gold', 'crates_stacked', 'box_stacked',
+  ],
+};
 const cfg = PACKS[PACK];
 if (!cfg) { console.error('Pack desconhecido:', PACK); process.exit(1); }
 const OUT = path.join(ROOT, 'assets', 'kaykit', cfg.out);
@@ -72,7 +83,7 @@ const all = new Map();
     }
   }
 })(path.join(SRC, cfg.dir));
-for (const k of cfg.keep) {
+for (const k of cfg.keep || [...all.keys()].sort()) {
   if (all.has(k)) files.push(all.get(k));
   else console.warn('Modelo não encontrado no pack:', k);
 }

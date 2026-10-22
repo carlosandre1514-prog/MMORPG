@@ -7,7 +7,7 @@ import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
-import { buildFortifications } from './castle3d.js';
+import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 
 const CHUNK = 16;
 const GROUND_RES = 0.75; // pixels de textura por pixel de mundo 2D (32 px por tile)
@@ -189,6 +189,8 @@ const OBJECT_MODEL_KEY = {
   [O.CRATE]: 'crate', [O.WELL]: 'well', [O.CART]: 'cart', [O.BANNER]: 'banner',
   [O.TARGET]: 'target', [O.RACK]: 'rack', [O.SACK]: 'sack', [O.LUMBER]: 'lumber', [O.ORE]: 'ore',
   [O.BARS]: 'bars', [O.CLOTH]: 'cloth', [O.PLANKS]: 'planks', [O.BRICKS]: 'bricks', [O.GOLD]: 'gold',
+  [O.PILLAR]: 'pillar', [O.BROKENPILLAR]: 'brokenpillar', [O.TORCH]: 'torch', [O.CHEST]: 'chest', [O.TABLE]: 'table',
+  [O.KEG]: 'keg', [O.CANDLE]: 'candle',
 };
 const NATURE = new Set([O.TREE, O.PINE, O.BIGTREE, O.ROCK]);
 
@@ -407,8 +409,8 @@ export class ZoneScene {
     const up = new THREE.Vector3(0, 1, 0);
     const col = new THREE.Color();
     const nature = NATURE.has(o);
-    const spin = nature || [O.BARREL, O.CRATE, O.ORE, O.GOLD].includes(o);
-    const quarter = [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.SACK, O.LUMBER].includes(o);
+    const spin = nature || [O.BARREL, O.CRATE, O.ORE, O.GOLD, O.KEG, O.BROKENPILLAR].includes(o);
+    const quarter = [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.SACK, O.LUMBER, O.CHEST, O.TABLE, O.CANDLE].includes(o);
     for (const [name, g] of groups) {
       if (!g.obs.length) continue;
       const base = medieval.fit(name, g.fit.w, g.fit.w, g.fit.h);
@@ -431,6 +433,8 @@ export class ZoneScene {
       inst.frustumCulled = false;
       this.group.add(inst);
     }
+    // chamas das tochas e velas
+    if (spec.flame) for (const ob of list) this.addFlame(ob.x + 0.5, spec.flame, ob.y + 0.5, 0xffb347, spec.flameSize || 0.85, true);
     return true;
   }
 
@@ -531,7 +535,10 @@ export class ZoneScene {
   buildStructures() {
     const forts = [], houses = [];
     for (const st of this.zone.structures) (st.kind === 'wall' || st.kind === 'tower' || st.kind === 'gate' ? forts : houses).push(st);
-    if (forts.length) this.group.add(buildFortifications(forts, this.fortMaterials(), (x, y, z, castle) => this.towerFlag(x, y, z, castle)));
+    if (forts.length) {
+      this.group.add(buildFortifications(forts, this.fortMaterials(), (x, y, z, castle) => this.towerFlag(x, y, z, castle)));
+      if (medieval.ready) this.wallBanners(bannerSpots(forts, { x: this.zone.w / 2, y: this.zone.h / 2 }));
+    }
     if (village.ready) {
       // a cidade inteira em um BatchedMesh por material
       const placements = [];
@@ -571,6 +578,37 @@ export class ZoneScene {
       roof: new THREE.MeshStandardMaterial({ color: 0xa8432e, roughness: 0.9 }),
       iron: new THREE.MeshStandardMaterial({ color: 0x2b2a2e, roughness: 0.5, metalness: 0.6 }),
     };
+  }
+
+  // Estandartes e escudos pendurados nas muralhas (KayKit Dungeon), instanciados por modelo
+  wallBanners(spots) {
+    const groups = new Map();
+    for (const sp of spots) {
+      const name = sp.castle ? ['banner_triple_blue', 'banner_shield_blue', 'sword_shield', 'banner_patternA_blue'][sp.i % 4] : ['banner_patternC_red', 'banner_shield_red'][sp.i % 2];
+      if (!medieval.has(name)) continue;
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push(sp);
+    }
+    const mtx = new THREE.Matrix4();
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const [name, list] of groups) {
+      const shield = name.startsWith('sword');
+      const s = medieval.fit(name, null, null, shield ? 1.0 : 2.3);
+      const box = medieval.geo(name).boundingBox;
+      const inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), list.length);
+      list.forEach((sp, i) => {
+        // topo logo abaixo das ameias, encostado na face da muralha
+        const y = (shield ? WALL_H - 1.9 : WALL_H - 0.3 - (box.max.y - box.min.y) * s) - box.min.y * s;
+        const off = -box.min.z * s;
+        const fx = Math.sin(sp.rot), fz = Math.cos(sp.rot);
+        mtx.compose(_v.set(sp.x + fx * off, y, sp.z + fz * off), _q.setFromAxisAngle(up, sp.rot), _s.set(s, s, s));
+        inst.setMatrixAt(i, mtx);
+      });
+      inst.castShadow = true;
+      inst.receiveShadow = true;
+      inst.frustumCulled = false;
+      this.group.add(inst);
+    }
   }
 
   // bandeira no topo das torres (azul no castelo, vermelha nas muralhas)

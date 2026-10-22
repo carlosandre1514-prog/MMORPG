@@ -2,7 +2,7 @@
 // telhas do Medieval Village MegaKit. Toda a fortificação vira poucas malhas: pedra, cornijas, telhados e ferro.
 import * as THREE from 'three';
 
-const WALL_H = 4.6;
+export const WALL_H = 4.6;
 const TEX = 2; // metros por repetição de textura
 
 // Acumula triângulos com normais e UVs para uma malha
@@ -65,6 +65,32 @@ class Builder {
     m.receiveShadow = true;
     return m;
   }
+}
+
+// Pontos para pendurar estandartes nas muralhas: castelo nas duas faces, cidade só na face de dentro.
+// Devolve [{ x, z, rot, castle, i }] com x/z na face da muralha e rot virando a frente do estandarte para fora dela.
+export function bannerSpots(structs, center) {
+  const towers = structs.filter((s) => s.kind === 'tower');
+  const nearTower = (x, z) => towers.some((t) => x > t.x - 0.8 && x < t.x + t.w + 0.8 && z > t.y - 0.8 && z < t.y + t.h + 0.8);
+  const out = [];
+  let i = 0;
+  for (const s of structs) {
+    if (s.kind !== 'wall') continue;
+    const horiz = s.w >= s.h;
+    const len = horiz ? s.w : s.h;
+    const step = s.castle ? 5 : 11;
+    for (let t = step / 2; t < len - 0.5; t += step) {
+      for (const side of [1, -1]) {
+        if (!s.castle && side !== (horiz ? (center.y > s.y ? 1 : -1) : (center.x > s.x ? 1 : -1))) continue;
+        const x = horiz ? s.x + t : side > 0 ? s.x + s.w + 0.03 : s.x - 0.03;
+        const z = horiz ? (side > 0 ? s.y + s.h + 0.03 : s.y - 0.03) : s.y + t;
+        if (nearTower(x, z)) continue;
+        const rot = horiz ? (side > 0 ? 0 : Math.PI) : (side > 0 ? Math.PI / 2 : -Math.PI / 2);
+        out.push({ x, z, rot, castle: !!s.castle, i: i++ });
+      }
+    }
+  }
+  return out;
 }
 
 // mats: { stone, trim, roof, iron } (materiais compartilhados ou simples, se o kit não carregou)

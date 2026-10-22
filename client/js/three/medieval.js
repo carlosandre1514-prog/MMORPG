@@ -1,11 +1,12 @@
-// Cenário dos packs KayKit (Kay Lousberg, CC0): Medieval Hexagon (árvores, pedras, montanhas, objetos) e
-// Resource Bits (minérios, barras, tecidos, madeira, ouro). Cada pack é um GLB gerado por
+// Cenário dos packs KayKit (Kay Lousberg, CC0): Medieval Hexagon (árvores, pedras, montanhas, objetos),
+// Resource Bits (minérios, barras, tecidos, madeira, ouro) e Dungeon (pilares, tochas, baús, velas, mesas,
+// estandartes). Cada pack é um GLB gerado por
 // tools/medieval/convert.mjs, com todos os modelos dividindo um material com atlas.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Packs convertidos por tools/medieval/convert.mjs; cada um tem o próprio atlas
-const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb'];
+const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb', '/kaykit/dungeon/dungeon.glb'];
 
 export const medieval = {
   ready: false,
@@ -88,7 +89,14 @@ export const OBJECT_MODELS = {
   cloth: { m: ['Textiles_Stack_Large_Colored', 'Textiles_Stack_Small', 'Textiles_A'], w: 0.95 },
   planks: { m: ['Wood_Planks_Stack_Medium', 'Wood_Planks_Stack_Small', 'Wood_Log_Stack'], w: 1.1 },
   bricks: { m: ['Stone_Bricks_Stack_Small', 'Stone_Bricks_Stack_Medium'], w: 1.0 },
-  gold: { m: ['Gold_Bars_Stack_Medium', 'Gold_Bars', 'Gold_Bars_Stack_Small', 'Gold_Nuggets'], w: 0.8 },
+  gold: { m: ['Gold_Bars_Stack_Medium', 'coin_stack_large', 'Gold_Bars', 'coin_stack_medium', 'Gold_Nuggets'], w: 0.8 },
+  pillar: { m: ['pillar', 'pillar', 'pillar_decorated'], h: 2.7 },
+  brokenpillar: { m: ['column', 'rubble_half'], w: 0.95 },
+  torch: { m: ['torch_lit'], h: 1.15, flame: 1.02 },
+  chest: { m: ['chest_gold', 'chest'], w: 0.9 },
+  table: { m: ['table_medium_tablecloth_decorated_B', 'table_long_decorated_A', 'table_small_decorated_A'], w: 1.45 },
+  keg: { m: ['keg_decorated', 'barrel_small_stack', 'barrel_large_decorated'], w: 0.95 },
+  candle: { m: ['candle_triple', 'candle_melted', 'shelf_small_candles'], h: 0.45, flame: 0.48, flameSize: 0.45 },
 };
 
 // Construções da vila: modelo principal (e acessórios) para cada retângulo do mapa

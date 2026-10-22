@@ -2,7 +2,7 @@
 
 Um **MMORPG 3D multiplayer para navegador**, feito do zero: servidor autoritativo em Node.js (sem nenhuma dependência), mundo persistente, combate em tempo real, 4 classes, 6 regiões, 20 missões de campanha com história completa, chefes com mecânicas, itens com raridade e afixos aleatórios, aprimoramento, criação, grupos, clãs, comércio entre jogadores, arena JxJ e ranking.
 
-O mundo é renderizado em **3D com Three.js** (câmera orbital, sombras, ciclo dia/noite, luzes dinâmicas, partículas). Personagens, NPCs e inimigos humanoides são os modelos animados **KayKit Adventurers 2.0**; os prédios da vila são montados peça por peça (paredes de pedra e enxaimel, portas, janelas que acendem à noite, telhados de telha, chaminés, trepadeiras) com o **Medieval Village MegaKit** da Quaternius; árvores, pedras, montanhas e objetos vêm do **KayKit Medieval Hexagon Pack** (todos CC0). Criaturas, efeitos, ícones e todo o áudio são gerados por código.
+O mundo é renderizado em **3D com Three.js** (câmera orbital, sombras, ciclo dia/noite, luzes dinâmicas, partículas). Personagens, NPCs e inimigos humanoides são os modelos animados **KayKit Adventurers 2.0**; os mortos-vivos (esqueletos mineiros, arqueiros, guardas e espectros) usam o **KayKit Skeletons**; a capital murada é montada peça por peça (paredes de pedra e enxaimel, portas, janelas que acendem à noite, telhados de telha, chaminés, trepadeiras) com o **Medieval Village MegaKit** da Quaternius, mais muralhas, torres e portões gerados por código; árvores, pedras, montanhas e objetos vêm do **KayKit Medieval Hexagon Pack**; minérios, barras, tecidos e madeira do **KayKit Resource Bits**; pilares, tochas, baús, velas, mesas e estandartes do **KayKit Dungeon** (todos CC0). Criaturas, efeitos, ícones e todo o áudio são gerados por código.
 
 ## Como jogar (2 minutos)
 
@@ -76,10 +76,10 @@ Cobre fórmulas, itens, inventário, consistência dos dados, geração e conect
 server/   servidor (WebSocket próprio, mundo, zonas, IA, combate, missões, social)
 shared/   dados e regras usados pelos dois lados (classes, itens, monstros, missões, mapas)
 client/   jogo no navegador (Three.js em client/vendor, cena 3D em client/js/three, interface, áudio procedural)
-assets/kaykit/   modelos 3D KayKit (CC0): personagens, armas e animações; medieval/medieval.glb com natureza e objetos
+assets/kaykit/   modelos 3D KayKit (CC0): personagens (aventureiros e esqueletos), armas e animações; medieval/, resources/ e dungeon/ com os GLB do cenário
 assets/village/  peças modulares e texturas do Medieval Village MegaKit (CC0) para os prédios
 tools/bake/      gera os retratos 2D dos personagens a partir dos modelos 3D (Three.js + Chromium)
-tools/medieval/  converte o KayKit Medieval Hexagon Pack (FBX) no medieval.glb usado pelo jogo
+tools/medieval/  converte os packs KayKit Medieval Hexagon, Resource Bits e Dungeon em GLB compactos para o jogo
 tools/village/   converte o Medieval Village MegaKit (FBX + texturas) em assets/village
 docs/GAME_DESIGN.md   documento de design: história, mecânicas e fórmulas
 ```
@@ -88,14 +88,14 @@ docs/GAME_DESIGN.md   documento de design: história, mecânicas e fórmulas
 
 ```bash
 cd tools/bake && npm install && node bake.mjs                     # retratos dos personagens
-node tools/medieval/convert.mjs <pasta-do-Medieval-Hexagon-Pack>   # natureza e objetos (usa o three de tools/bake)
+node tools/medieval/convert.mjs <pasta-do-pack> [folha.png] --pack=medieval|resources|dungeon   # natureza, recursos e masmorra
 node tools/village/convert.mjs <pasta-com-fbx-e-texturas>          # peças dos prédios
 ```
 
 ## Créditos
 
 - Personagens 3D: **KayKit Adventurers 2.0** por Kay Lousberg — www.kaylousberg.com (licença CC0).
-- Cenário 3D: **KayKit Medieval Hexagon Pack** por Kay Lousberg — www.kaylousberg.com (licença CC0).
+- Cenário 3D: **KayKit Medieval Hexagon Pack**, **Resource Bits**, **Dungeon** e **Skeletons** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Prédios: **Medieval Village MegaKit** por Quaternius — quaternius.com (licença CC0).
 - Motor 3D: **Three.js** (licença MIT).
 - Fontes: Cinzel e Alegreya Sans (Google Fonts).

@@ -35,6 +35,7 @@ export const O = {
   STATUE: 30, BANNER: 31, CART: 32, ORE: 33, BRAZIER: 34, HAY: 35,
   WALL: 36, TARGET: 37, RACK: 38, SACK: 39, LUMBER: 40,
   BARS: 41, CLOTH: 42, PLANKS: 43, BRICKS: 44, GOLD: 45,
+  CHEST: 46, TABLE: 47, KEG: 48, CANDLE: 49,
 };
 
 // block: impede passagem; tall: desenhado ordenado por profundidade junto às entidades;
@@ -84,6 +85,11 @@ OBJ_INFO[O.SACK] = { block: true, tall: true };
 OBJ_INFO[O.LUMBER] = { block: true, tall: true };
 // mercadorias e tesouros (barras de metal, tecidos, tábuas, tijolos, ouro)
 for (const o of [O.BARS, O.CLOTH, O.PLANKS, O.BRICKS, O.GOLD]) OBJ_INFO[o] = { block: true, tall: true };
+// baús, mesas postas, barris de cerveja e velas (KayKit Dungeon)
+OBJ_INFO[O.CHEST] = { block: true, tall: true };
+OBJ_INFO[O.TABLE] = { block: true, tall: true };
+OBJ_INFO[O.KEG] = { block: true, tall: true };
+OBJ_INFO[O.CANDLE] = { block: false, tall: true, light: 3 };
 
 export function encodeLayer(arr) {
   // Cada valor (0-90) vira um caractere imprimível.

@@ -358,6 +358,12 @@ function applyFeatures(grid, zone, rng) {
           if (grid.in(x, y)) { grid.setO(x, y, a % 3 === 0 ? O.BROKENPILLAR : O.PILLAR); }
         }
         for (const [dx, dy] of [[-6, -6], [6, -6], [-6, 6], [6, 6]]) grid.setO(f.x + dx, f.y + dy, O.BRAZIER);
+        // velas acesas pelos cultistas em volta do círculo
+        for (let a = 0; a < 12; a++) {
+          const ang = (a / 12) * Math.PI * 2 + 0.26;
+          const x = Math.round(f.x + Math.cos(ang) * (f.r - 2)), y = Math.round(f.y + Math.sin(ang) * (f.r - 2));
+          if (grid.o(x, y) === 0) grid.setO(x, y, O.CANDLE);
+        }
         break;
       }
       case 'ring': {
@@ -402,7 +408,7 @@ function applyFeatures(grid, zone, rng) {
         for (let i = 0; i < f.n; i++) {
           const ang = rng() * Math.PI * 2, d = f.r * (0.6 + rng() * 0.4);
           const x = Math.round(f.x + Math.cos(ang) * d), y = Math.round(f.y + Math.sin(ang) * d);
-          if (grid.o(x, y) === 0) placeForce(x, y, i % 3 === 2 ? O.ORE : O.GOLD);
+          if (grid.o(x, y) === 0) placeForce(x, y, i === 0 ? O.CHEST : i % 3 === 2 ? O.ORE : O.GOLD);
         }
         break;
       }

@@ -26,7 +26,7 @@ export const windowsMixin = {
     W('character', 'Personagem', { w: 520 });
     W('skills', 'Habilidades', { w: 470 });
     W('quests', 'Diário de Missões', { w: 640 });
-    W('map', 'Mapa', { w: 640 });
+    W('map', 'Mapa', { w: 740 });
     W('social', 'Grupo', { w: 340 });
     W('guild', 'Clã', { w: 360 });
     W('ranking', 'Quadro de Honra', { w: 420 });
@@ -312,7 +312,7 @@ export const windowsMixin = {
         ctx.font = 'bold 10px sans-serif';
         ctx.strokeText(d.name, x, y - 9); ctx.fillText(d.name, x, y - 9);
       } else {
-        ctx.fillStyle = 'rgba(231,76,60,0.25)'; ctx.beginPath(); ctx.ellipse(x, y, s.r * unit, s.r * unit * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(231,76,60,0.25)'; ctx.beginPath(); ctx.arc(x, y, s.r * unit, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#fadbd8';
         ctx.strokeText(`${d.name} ${d.lvl[0]}-${d.lvl[1]}`, x, y); ctx.fillText(`${d.name} ${d.lvl[0]}-${d.lvl[1]}`, x, y);
       }
@@ -346,30 +346,43 @@ export const windowsMixin = {
     const g = this.game;
     const body = clear(this.wins.map.body);
     const z = g.zone;
-    let cv;
-    this.mapCv = null;
-    if (this.mapView) {
-      // mapa 3D: arrastar gira, a roda aproxima (em volta do personagem), duplo clique volta ao início
-      const size = 440, dpr = Math.min(2, window.devicePixelRatio || 1);
-      cv = h('canvas', { width: Math.round(size * dpr), height: Math.round(size * dpr), class: 'map-cv', style: { width: size + 'px', height: size + 'px', imageRendering: 'auto', cursor: 'grab' } });
-      this.mapCv = cv; this.mapDpr = dpr; this.mapSize = size;
-      this.mapCam ||= { yaw: 0, zoom: 1 };
-      let drag = null;
-      cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, yaw: this.mapCam.yaw }; try { cv.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético */ } cv.style.cursor = 'grabbing'; });
-      cv.addEventListener('pointermove', (e) => { if (drag) { this.mapCam.yaw = drag.yaw - (e.clientX - drag.x) * 0.01; this.drawWorldMap(); } });
-      const end = () => { drag = null; cv.style.cursor = 'grab'; };
-      cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
-      cv.addEventListener('wheel', (e) => { e.preventDefault(); this.mapCam.zoom = Math.max(1, Math.min(4, this.mapCam.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); this.drawWorldMap(); }, { passive: false });
-      cv.addEventListener('dblclick', () => { this.mapCam = { yaw: 0, zoom: 1 }; this.drawWorldMap(); });
-    } else {
-      const size = 420;
-      const scale = size / Math.max(z.w, z.h);
-      cv = h('canvas', { width: Math.round(z.w * scale), height: Math.round(z.h * scale), class: 'map-cv' });
-      const ctx = cv.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(this.mmImage, 0, 0, cv.width, cv.height);
-      this.drawMapMarkers(ctx, (x, y) => [x * scale, y * scale], scale, cv.width);
-    }
+    // mapa detalhado: arrastar move, a roda aproxima (em volta do cursor), duplo clique volta ao início
+    const size = 500, dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cv = h('canvas', { width: Math.round(size * dpr), height: Math.round(size * dpr), class: 'map-cv', style: { width: size + 'px', height: size + 'px', imageRendering: 'auto', cursor: 'grab' } });
+    this.mapCv = cv; this.mapDpr = dpr; this.mapSize = size;
+    this.mapCam = { zoom: 1, cx: z.w / 2, cy: z.h / 2 };
+    let drag = null;
+    const view = () => {
+      const side = Math.max(z.w, z.h) * 1.04 / this.mapCam.zoom;
+      return { side, scale: size / side };
+    };
+    const clampCam = () => {
+      const c = this.mapCam, { side } = view();
+      c.cx = side >= z.w ? z.w / 2 : Math.max(side / 2, Math.min(z.w - side / 2, c.cx));
+      c.cy = side >= z.h ? z.h / 2 : Math.max(side / 2, Math.min(z.h - side / 2, c.cy));
+    };
+    cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, cx: this.mapCam.cx, cy: this.mapCam.cy }; try { cv.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético */ } cv.style.cursor = 'grabbing'; });
+    cv.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const { scale } = view();
+      this.mapCam.cx = drag.cx - (e.clientX - drag.x) / scale;
+      this.mapCam.cy = drag.cy - (e.clientY - drag.y) / scale;
+      clampCam(); this.drawWorldMap();
+    });
+    const end = () => { drag = null; cv.style.cursor = 'grab'; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    cv.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = cv.getBoundingClientRect();
+      const before = view(), c = this.mapCam;
+      // ponto do mapa sob o cursor continua sob o cursor depois do zoom
+      const mx = c.cx + ((e.clientX - r.left) - size / 2) / before.scale, my = c.cy + ((e.clientY - r.top) - size / 2) / before.scale;
+      c.zoom = Math.max(1, Math.min(5, c.zoom * (e.deltaY < 0 ? 1.18 : 1 / 1.18)));
+      const after = view();
+      c.cx = mx - ((e.clientX - r.left) - size / 2) / after.scale; c.cy = my - ((e.clientY - r.top) - size / 2) / after.scale;
+      clampCam(); this.drawWorldMap();
+    }, { passive: false });
+    cv.addEventListener('dblclick', () => { this.mapCam = { zoom: 1, cx: z.w / 2, cy: z.h / 2 }; this.drawWorldMap(); });
     const side = h('div', { class: 'map-side' }, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
     for (const id of ZONE_ORDER) {
       const zd = ZONES[id];
@@ -378,27 +391,35 @@ export const windowsMixin = {
         h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
     }
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ● azul: portal · ☠ chefe'));
-    if (this.mapCv) side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para girar · roda para aproximar · duplo clique para voltar.'));
+    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para mover · roda para aproximar · duplo clique para voltar.'));
     body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
-    if (this.mapCv) this.drawWorldMap();
+    this.drawWorldMap();
   },
 
-  // Redesenha o mapa 3D da janela (chamado várias vezes por segundo enquanto ela está aberta)
+  // Redesenha o mapa da janela (chamado várias vezes por segundo enquanto ela está aberta)
   drawWorldMap() {
     const g = this.game, z = g.zone, cv = this.mapCv;
-    if (!cv || !this.mapView || !cv.isConnected) return;
+    if (!cv || !cv.isConnected) return;
     const ctx = cv.getContext('2d');
-    const dpr = this.mapDpr, size = this.mapSize;
-    const cam = this.mapCam;
-    const base = Math.max(z.w, z.h) * (1.1 + 0.3 * Math.abs(Math.sin(2 * cam.yaw)));
-    const zoomed = cam.zoom > 1.02;
-    const view = { cx: zoomed ? g.me.x : z.w / 2, cz: zoomed ? g.me.y : z.h / 2, yaw: cam.yaw, pitch: 0.95, span: base / cam.zoom, dark: g.renderer.darkness() };
+    const dpr = this.mapDpr, size = this.mapSize, cam = this.mapCam;
+    if (!(cam.zoom >= 1)) cam.zoom = 1;
+    if (!Number.isFinite(cam.cx) || !Number.isFinite(cam.cy)) { cam.cx = z.w / 2; cam.cy = z.h / 2; }
+    const art = this.mapArt && this.mapArt.ready ? this.mapArt : null;
+    const side = Math.max(z.w, z.h) * 1.04 / cam.zoom, scale = size / side;
+    const ox = cam.cx - side / 2, oy = cam.cy - side / 2;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    const proj = this.mapView.draw('world', ctx, cv.width, cv.height, view);
+    ctx.fillStyle = '#0b1018'; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const P = (x, y, hh = 0) => { const q = proj(x, y, hh); return [q[0] / dpr, q[1] / dpr]; };
-    const a = P(z.w / 2, z.h / 2), b = P(z.w / 2 + 1, z.h / 2);
-    this.drawMapMarkers(ctx, P, Math.hypot(b[0] - a[0], b[1] - a[1]), size, true);
+    // só a parte do mapa que cai dentro da imagem
+    const k = art ? art.S : 2;
+    const src = art ? art.canvas : this.mmImage;
+    const sx0 = Math.max(0, ox), sy0 = Math.max(0, oy), sx1 = Math.min(z.w, ox + side), sy1 = Math.min(z.h, oy + side);
+    ctx.imageSmoothingEnabled = !!art;
+    if (art) ctx.imageSmoothingQuality = 'high';
+    if (sx1 > sx0 && sy1 > sy0) ctx.drawImage(src, sx0 * k, sy0 * k, (sx1 - sx0) * k, (sy1 - sy0) * k, (sx0 - ox) * scale, (sy0 - oy) * scale, (sx1 - sx0) * scale, (sy1 - sy0) * scale);
+    const dark = g.renderer.darkness();
+    if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.45})`; ctx.fillRect(0, 0, size, size); }
+    this.drawMapMarkers(ctx, (x, y) => [(x - ox) * scale, (y - oy) * scale], scale, size, true);
   },
 
   // ================================================================ social / grupo

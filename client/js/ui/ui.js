@@ -17,11 +17,8 @@ import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
 import { MobileControls } from './mobile.js';
-import { MapView3D } from '../three/mapview.js';
+import { MapArt } from '../mapart.js';
 import { quality } from '../device.js';
-
-// direção em que o personagem olha (0 sul, 1 leste, 2 oeste, 3 norte), como o servidor numera
-const FACING = [[0, 1], [1, 0], [-1, 0], [0, -1]];
 
 const CHANNEL_NAMES = { zona: 'Zona', mundo: 'Mundo', grupo: 'Grupo', cla: 'Clã', sussurro: 'Sussurro', sistema: 'Sistema', grito: 'Grito', npc: 'NPC' };
 
@@ -69,6 +66,8 @@ export class UI {
     this.mmInfo = h('div', { class: 'mm-info' });
     R.appendChild(h('div', { id: 'minimap', class: 'frame' }, this.mmZone, this.mmCanvas, this.mmInfo));
     this.mmCanvas.addEventListener('click', () => this.toggle('map'));
+    this.mmSpan = 34; // tiles na largura do minimapa
+    this.mmCanvas.addEventListener('wheel', (e) => { e.preventDefault(); this.mmSpan = Math.max(18, Math.min(90, this.mmSpan * (e.deltaY < 0 ? 0.87 : 1.15))); this.drawMinimap(); }, { passive: false });
     // rastreador de missões
     this.tracker = h('div', { id: 'tracker' });
     R.appendChild(this.tracker);
@@ -395,14 +394,10 @@ export class UI {
       }
     }
     this.mmImage = cv;
-    // maquete 3D da zona para o minimapa e o mapa; se o navegador não der outro contexto WebGL, fica o mapa 2D
-    try {
-      this.mapView ||= new MapView3D();
-      this.mapView.setZone(z);
-    } catch (e) {
-      console.warn('[mapa] 3D indisponível, usando o mapa 2D', e);
-      this.mapView = null;
-    }
+    // mapa detalhado com relevo, pintado aos poucos (até ficar pronto vale o desenho simples acima)
+    if (this.mapArt) this.mapArt.cancel();
+    this.mapArt = new MapArt(z, Math.max(6, Math.min(10, Math.floor(1600 / Math.max(z.w, z.h)))));
+    this.mapArt.start(() => { if (this.wins.map?.isOpen) this.drawWorldMap(); });
     this.mmZone.textContent = z.def.name;
     if (this.wins.map?.isOpen) this.renderMap();
   }
@@ -414,32 +409,22 @@ export class UI {
     const ctx = this.mmCanvas.getContext('2d');
     const S = 180, me = g.me;
     const dark = g.renderer.darkness();
-    let P, arrow;
-    if (this.mapView) {
-      // maquete 3D: câmera inclinada que gira junto com a câmera do jogo (o alto do mapa é para onde você olha)
-      const dpr = this.mmDpr;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      const span = Math.min(46, Math.max(z.w, z.h) * 1.1);
-      const proj = this.mapView.draw('mini', ctx, this.mmCanvas.width, this.mmCanvas.height, { cx: me.x, cz: me.y, yaw: g.renderer.yaw, pitch: 0.95, span, dark });
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      P = (x, y, hh = 0) => { const q = proj(x, y, hh); return [q[0] / dpr, q[1] / dpr]; };
-      const f = FACING[me.dir || 0];
-      const a = P(me.x, me.y), b = P(me.x + f[0], me.y + f[1]);
-      arrow = Math.atan2(b[1] - a[1], b[0] - a[0]) + Math.PI / 2;
-    } else {
-      const scale = Math.max(2.2, S / Math.min(z.w, z.h)); // px por tile
-      const half = S / 2 / scale;
-      const cx = Math.max(half, Math.min(z.w - half, me.x)), cy = Math.max(half, Math.min(z.h - half, me.y));
-      const ox = cx - half, oy = cy - half;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, this.mmCanvas.width, this.mmCanvas.height);
-      ctx.setTransform(this.mmDpr, 0, 0, this.mmDpr, 0, 0);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(this.mmImage, ox * 2, oy * 2, S / scale * 2, S / scale * 2, 0, 0, S, S);
-      if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.5})`; ctx.fillRect(0, 0, S, S); }
-      P = (x, y) => [(x - ox) * scale, (y - oy) * scale];
-      arrow = [Math.PI, Math.PI / 2, -Math.PI / 2, 0][me.dir || 0];
-    }
+    // recorte do mapa detalhado em volta do jogador (a roda do mouse aproxima e afasta)
+    const art = this.mapArt && this.mapArt.ready ? this.mapArt : null;
+    const span = Math.min(this.mmSpan, Math.max(z.w, z.h));
+    const scale = S / span, half = span / 2;
+    const cx = z.w <= span ? z.w / 2 : Math.max(half, Math.min(z.w - half, me.x));
+    const cy = z.h <= span ? z.h / 2 : Math.max(half, Math.min(z.h - half, me.y));
+    const ox = cx - half, oy = cy - half;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#0b1018'; ctx.fillRect(0, 0, this.mmCanvas.width, this.mmCanvas.height);
+    ctx.setTransform(this.mmDpr, 0, 0, this.mmDpr, 0, 0);
+    ctx.imageSmoothingEnabled = !!art;
+    if (art) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(art.canvas, ox * art.S, oy * art.S, span * art.S, span * art.S, 0, 0, S, S); }
+    else ctx.drawImage(this.mmImage, ox * 2, oy * 2, span * 2, span * 2, 0, 0, S, S);
+    if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.5})`; ctx.fillRect(0, 0, S, S); }
+    const P = (x, y) => [(x - ox) * scale, (y - oy) * scale];
+    const arrow = [Math.PI, Math.PI / 2, -Math.PI / 2, 0][me.dir || 0];
     for (const p of z.def.portals) {
       const [px, py] = P(p.x + p.w / 2, p.y + p.h / 2);
       ctx.fillStyle = '#5dade2'; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();

@@ -4,19 +4,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WSServer } from './net/websocket.js';
 import { createStaticHandler } from './net/static.js';
-import { Database } from './db.js';
+import { Database, remoteConfig, restoreRemote } from './db.js';
 import { World } from './world.js';
 import { Session } from './session.js';
 import { GAME_NAME } from '../shared/constants.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export function startServer(opts = {}) {
+export async function startServer(opts = {}) {
   const port = opts.port ?? Number(process.env.PORT || 3000);
   const dataDir = opts.dataDir ?? process.env.DATA_DIR ?? path.join(ROOT, 'save');
   const dev = opts.dev ?? (process.env.DEV === '1' || process.env.DEV === 'true');
   const xpRate = opts.xpRate ?? Number(process.env.XP_RATE || 1);
-  const db = new Database(dataDir);
+  // com SUPABASE_URL/SUPABASE_KEY o estado vem do Supabase (disco efêmero) e é salvo lá também
+  const remote = remoteConfig(opts.remote);
+  if (remote && (await restoreRemote(dataDir, remote)) && !opts.quiet) console.log('  Estado restaurado do Supabase');
+  const db = new Database(dataDir, remote);
   const world = new World(db, { dev, xpRate });
   const serveStatic = createStaticHandler([
     { prefix: '/shared/', dir: path.join(ROOT, 'shared') },
@@ -41,12 +44,15 @@ export function startServer(opts = {}) {
       if (!opts.quiet) {
         console.log(`\n  ${GAME_NAME}`);
         console.log(`  Servidor rodando em http://localhost:${actual}`);
-        console.log(`  Dados salvos em ${dataDir}`);
+        console.log(`  Dados salvos em ${dataDir}${remote ? ' + Supabase' : ''}`);
         console.log(`  Modo DEV: ${dev ? 'ATIVADO (comandos /nivel, /ouro, /item, /ir...)' : 'desativado'} | Taxa de XP: ${xpRate}x\n`);
       }
       resolve({
         port: actual, world, db, server,
-        close: () => new Promise((r) => { world.stop(); wss.close(); server.close(() => r()); setTimeout(r, 500); }),
+        close: async () => {
+          await new Promise((r) => { world.stop(); wss.close(); server.close(() => r()); setTimeout(r, 500); });
+          await db.flushRemote();
+        },
       });
     });
   });

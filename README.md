@@ -31,7 +31,7 @@ No modo DEV, use no chat:
 | `/tp x y` | teleporta dentro da zona |
 | `/curar`, `/matar` | cura total / mata o alvo |
 
-Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`.
+Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase).
 
 Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
 
@@ -62,13 +62,13 @@ Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e d
 - **Social**: grupos (XP e saque compartilhados), clãs, chat com canais, comércio seguro em duas etapas, arena JxJ e ranking.
 - **Persistência**: contas com senha (scrypt), personagens salvos em `save/world.json` automaticamente.
 
-## Colocar online
+## Colocar online (de graça)
 
-O jogo precisa de um servidor Node sempre ligado (WebSocket) e de um disco que não apague (`save/`). Hospedagem só de site estático não serve.
-
-- **Render**: crie um *Blueprint* apontando para este repositório; o `render.yaml` já configura o serviço e um disco de 1 GB em `/data` (plano `starter`, pago). No plano gratuito o disco é apagado a cada reinício e as contas se perdem.
-- **VPS** (Hetzner, DigitalOcean...): instale o Node 18+, descompacte o projeto e rode `PORT=3000 npm start` (use `pm2` para reiniciar sozinho). Para HTTPS, ponha o Caddy na frente: `seujogo.com { reverse_proxy localhost:3000 }`; o cliente passa a usar `wss` automaticamente.
-- Não ligue `DEV=1` em produção e faça backup da pasta `save/` (ou do disco) de vez em quando.
+O jogo precisa de um servidor Node sempre ligado (WebSocket); hospedagem só de site estático não serve. O caminho gratuito é
+**Render** (roda o jogo) + **Supabase** (guarda contas e personagens, porque o disco do Render gratuito é apagado a cada reinício),
+com um monitor do UptimeRobot para o serviço não dormir. Passo a passo em [`docs/HOSPEDAGEM.md`](docs/HOSPEDAGEM.md); o `render.yaml` e o
+`docs/supabase.sql` já estão prontos. Numa VPS comum basta `PORT=3000 npm start` (HTTPS com Caddy; o cliente usa `wss` sozinho).
+Não ligue `DEV=1` em produção.
 
 ## Testes
 

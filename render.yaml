@@ -1,17 +1,15 @@
-# Publicação no Render (https://render.com): New + > Blueprint, apontando para este repositório.
-# O jogo precisa de um servidor Node sempre ligado e de um disco para guardar contas e personagens.
+# Publicação gratuita: Render (servidor do jogo) + Supabase (contas e personagens). Passo a passo em docs/HOSPEDAGEM.md.
+# Render: New + > Blueprint, apontando para este repositório; depois preencha SUPABASE_URL e SUPABASE_KEY.
 services:
   - type: web
     name: aethra
     runtime: node
-    plan: starter            # o plano gratuito não tem disco: as contas se perderiam a cada reinício
+    plan: free               # o disco do plano gratuito é apagado a cada reinício: por isso os dados vão para o Supabase
     buildCommand: echo "sem dependências para instalar"
     startCommand: npm start
     healthCheckPath: /status
     envVars:
-      - key: DATA_DIR
-        value: /data
-    disk:
-      name: aethra-save
-      mountPath: /data
-      sizeGB: 1
+      - key: SUPABASE_URL    # https://xxxx.supabase.co
+        sync: false
+      - key: SUPABASE_KEY    # chave "service_role" (secreta, nunca vai para o navegador)
+        sync: false

@@ -32,6 +32,7 @@ export class Overlay {
     for (const e of g.entities.values()) {
       const a = this.r.actors.get(e.id);
       if (!a) continue;
+      if (this.r.first && e.id === g.me.id) continue;
       const head = this.r.worldToScreen(e.rx, e.ry, a.height + (a.float || 0) + 0.15);
       if (head.behind || head.x < -80 || head.y < -80 || head.x > this.r.W + 80 || head.y > this.r.H + 80) continue;
       list.push({ e, a, head });
@@ -42,6 +43,45 @@ export class Overlay {
       else this.entityLabel(it.e, it.head, t);
     }
     this.texts();
+    this.guide();
+  }
+
+  // Destino da missão: rótulo com a distância sobre o raio de luz ou, fora da tela, uma seta na borda apontando o caminho
+  guide() {
+    const g = this.game;
+    const gd = g.guide;
+    if (!gd.active || !gd.wp) return;
+    const ctx = this.ctx;
+    const W = this.r.W, H = this.r.H;
+    const col = gd.wp.portal ? '#5dade2' : '#ffd34d';
+    const dist = Math.max(0, Math.round(gd.dist));
+    const p = this.r.worldToScreen(gd.wp.x, gd.wp.y, 3.4);
+    const margin = 34;
+    const on = !p.behind && p.x > margin && p.x < W - margin && p.y > margin + 40 && p.y < H - margin - 70;
+    ctx.save();
+    ctx.textAlign = 'center';
+    if (on) {
+      label(ctx, gd.wp.label, p.x, p.y - 16, col, 12 * this.k, true);
+      label(ctx, `${dist} m`, p.x, p.y, '#fff', 11 * this.k);
+    } else {
+      // direção na tela do ponto (se está atrás da câmera, inverte)
+      let dx = p.x - W / 2, dy = p.y - H / 2;
+      if (p.behind) { dx = -dx; dy = -dy; }
+      const ang = Math.atan2(dy, dx);
+      const ex = Math.cos(ang), ey = Math.sin(ang);
+      const k = Math.min((W / 2 - margin) / Math.abs(ex || 1e-6), (H / 2 - margin - 60) / Math.abs(ey || 1e-6));
+      const x = W / 2 + ex * k;
+      let y = H / 2 + ey * k - 20;
+      // no celular, a seta não fica escondida atrás dos botões de ação
+      if (document.body.classList.contains('touch-ui') && x > W - 290 && y > H - 240) y = H - 240;
+      ctx.translate(x, y);
+      ctx.rotate(ang);
+      ctx.fillStyle = col; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(-10, 11); ctx.lineTo(-4, 0); ctx.lineTo(-10, -11); ctx.closePath(); ctx.stroke(); ctx.fill();
+      ctx.rotate(-ang);
+      label(ctx, `${dist} m`, 0, ey > 0 ? -20 : 22, '#fff', 12);
+    }
+    ctx.restore();
   }
 
   entityLabel(e, p, t) {

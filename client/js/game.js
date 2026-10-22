@@ -13,12 +13,15 @@ import { findPath } from '/shared/pathfinding.js';
 import { itemName } from '/shared/itemgen.js';
 import { Terrain } from './terrain.js';
 import { Renderer3D } from './three/engine.js';
+import { Guide } from './navigation.js';
 import { Input } from './input.js';
 import { audio } from './audio.js';
 import { canAccept, isComplete } from './questlogic.js';
 
 const INTERP_DELAY = 110;
 const DIR_ANGLE = [0, -Math.PI / 2, Math.PI / 2, Math.PI];
+
+const CAM_NAMES = { far: 'Câmera: 3ª pessoa (longe)', near: 'Câmera: 3ª pessoa (perto)', first: 'Câmera: 1ª pessoa' };
 
 export class Game {
   constructor(net, canvas, overlayCanvas, ui) {
@@ -33,6 +36,7 @@ export class Game {
     this.input = new Input(canvas);
     this.renderer = new Renderer3D(canvas, overlayCanvas, this);
     this.fx = this.renderer.fx;
+    this.guide = new Guide(this);
     this.target = null;
     this.hover = null;
     this.cooldowns = {};
@@ -181,6 +185,7 @@ export class Game {
     audio.startMusic(this.zone.def.music || 'town');
     if (prevZone && prevZone !== z.id) audio.play('portal');
     this.ui.onWorld(m.first, prevZone !== z.id);
+    this.guide.update(performance.now(), true); // continua a rota depois de atravessar um portal
   }
 
   onSnapshot(m) {
@@ -369,6 +374,7 @@ export class Game {
         case 'Tab': this.cycleTarget(); break;
         case 'f': case ' ': this.interactNearest(); break;
         case 'z': this.showItemNames = !this.showItemNames; break;
+        case 'v': this.ui.toast(CAM_NAMES[this.renderer.cycleCam()], 'info'); break;
         case 'Escape': if (this.target) this.target = null; break;
         default: break;
       }
@@ -377,6 +383,7 @@ export class Game {
       if (!this.zone || this.me.dead) return;
       audio.init();
       this.ui.closeMenus();
+      if (this.guide.auto) this.guide.setAuto(false);
       const e = this.renderer.pick(inp.mouse.x, inp.mouse.y);
       const wp = this.renderer.screenToWorld(inp.mouse.x, inp.mouse.y);
       if (button === 2 && e && e.k === 'p' && e.id !== this.me.id) { this.ui.playerMenu(e, inp.mouse.x, inp.mouse.y); return; }
@@ -399,13 +406,36 @@ export class Game {
     });
     inp.on('drag', (dx, dy) => {
       // arrastar com o botão direito/do meio gira e inclina a câmera
-      const r = this.renderer;
-      r.yaw -= dx * 0.008;
-      r.pitch = Math.max(0.45, Math.min(1.35, r.pitch + dy * 0.005));
+      this.renderer.rotate(dx, dy);
+    });
+    inp.on('zoom', (ratio) => {
+      // pinça no celular: afastar os dedos aproxima a câmera
+      this.zoom = Math.max(1, Math.min(3.6, this.zoom * ratio));
     });
     inp.on('wheel', (d) => {
       this.zoom = Math.max(1, Math.min(3.6, this.zoom * (d > 0 ? 0.9 : 1.1)));
     });
+  }
+
+  // Botão de ataque do celular: mira o inimigo vivo mais próximo (ou mantém o alvo atual) e começa a atacar
+  attackNearest() {
+    const me = this.me;
+    if (me.dead) return;
+    const cur = this.entities.get(this.target);
+    let t = cur && cur.k === 'm' && !(cur.f & F.DEAD) ? cur : null;
+    if (!t) {
+      let best = 16;
+      for (const e of this.entities.values()) {
+        if (e.k !== 'm' || (e.f & F.DEAD)) continue;
+        const d = Math.hypot(e.rx - me.x, e.ry - me.y);
+        if (d < best) { best = d; t = e; }
+      }
+    }
+    if (!t) { this.ui.toast('Nenhum inimigo por perto.', 'err'); return; }
+    this.target = t.id;
+    this.action = { type: 'attack', id: t.id };
+    this.path = null;
+    if (this.guide.auto) this.guide.setAuto(false);
   }
 
   isHostile(e) {
@@ -567,6 +597,7 @@ export class Game {
     this.processAction(now);
     this.updateMovement(dt, now);
     this.interpolate(dt, now);
+    this.guide.update(now);
     this.fx.update(dt);
   }
 
@@ -636,6 +667,9 @@ export class Game {
       if (inp.down('s') || inp.down('ArrowDown')) fwd -= 1;
       if (inp.down('a') || inp.down('ArrowLeft')) side -= 1;
       if (inp.down('d') || inp.down('ArrowRight')) side += 1;
+      // direcional virtual (toque): analógico, o módulo não passa de 1
+      const st = inp.stick;
+      if (st && (Math.abs(st.x) > 0.12 || Math.abs(st.y) > 0.12)) { side += st.x; fwd -= st.y; }
       // relativo à câmera
       const yaw = this.renderer.yaw;
       dx = Math.cos(yaw) * side - Math.sin(yaw) * fwd;
@@ -645,6 +679,7 @@ export class Game {
     }
     this.keyMoving = !!(dx || dy);
     if (this.keyMoving) {
+      if (this.guide.auto) this.guide.setAuto(false);
       this.path = null;
       if (this.action && this.action.type !== 'attack') this.action = null;
     } else if (this.path && this.path.length) {

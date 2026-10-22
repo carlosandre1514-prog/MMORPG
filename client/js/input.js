@@ -41,13 +41,48 @@ export class Input {
     });
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     canvas.addEventListener('wheel', (e) => { this.emit('wheel', Math.sign(e.deltaY), e); e.preventDefault(); }, { passive: false });
-    // toque: toque simples = clique
+    // toque: um toque curto = clique; arrastar com um dedo gira a câmera; pinça = zoom
+    this.stick = { x: 0, y: 0 }; // direcional virtual (preenchido pelos controles de toque)
+    const touches = new Map();
+    let pinch = 0;
+    const dist2 = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
     canvas.addEventListener('touchstart', (e) => {
-      const t = e.touches[0];
-      this.mouse.x = t.clientX; this.mouse.y = t.clientY;
-      this.emit('click', 0, e);
+      for (const t of e.changedTouches) touches.set(t.identifier, { x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, t0: performance.now(), moved: 0 });
+      if (touches.size === 2) pinch = dist2();
       e.preventDefault();
     }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+      for (const t of e.changedTouches) {
+        const p = touches.get(t.identifier);
+        if (!p) continue;
+        const dx = t.clientX - p.x, dy = t.clientY - p.y;
+        p.x = t.clientX; p.y = t.clientY;
+        p.moved += Math.abs(dx) + Math.abs(dy);
+        if (touches.size === 1 && p.moved > 12) { this.dragging = true; this.emit('drag', dx * 1.1, dy * 1.1); }
+      }
+      if (touches.size === 2) {
+        const d = dist2();
+        if (pinch > 0) this.emit('zoom', d / pinch);
+        pinch = d;
+        this.dragging = true;
+      }
+      e.preventDefault();
+    }, { passive: false });
+    const endTouch = (e) => {
+      for (const t of e.changedTouches) {
+        const p = touches.get(t.identifier);
+        if (!p) continue;
+        touches.delete(t.identifier);
+        if (e.type === 'touchend' && p.moved <= 12 && performance.now() - p.t0 < 400 && !this.dragging) {
+          this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.inside = true;
+          this.emit('click', 0, e);
+        }
+      }
+      if (!touches.size) this.dragging = false;
+      pinch = 0;
+    };
+    canvas.addEventListener('touchend', endTouch);
+    canvas.addEventListener('touchcancel', endTouch);
   }
 
   on(ev, fn) { (this.listeners[ev] ||= []).push(fn); }

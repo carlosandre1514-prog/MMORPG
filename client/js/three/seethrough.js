@@ -63,7 +63,7 @@ export function applySeeThrough(mat) {
 const _p = new THREE.Vector3(), _q = new THREE.Vector3(), _d = new THREE.Vector3();
 
 // Atualiza a janela e o corte a partir da posição do jogador (x, z no mundo) e da câmera.
-export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15) {
+export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15, first = false) {
   const u = seeThrough.uniforms;
   camera.updateMatrixWorld();
   _p.set(x, 0.8, z);
@@ -79,4 +79,10 @@ export function updateSeeThrough(camera, x, z, W, H, dpr, dist = 15) {
   u.uPlayer.value.set(x, 0, z);
   u.uCamDir.value.set(camera.position.x - x, camera.position.z - z).normalize();
   u.uNearFade.value = Math.max(4, dist * 0.6);
+  if (first) {
+    // 1ª pessoa: sem janela nem corte de andares; só esmaece o que encosta nos olhos
+    u.uSeeRadius.value = 0;
+    u.uCutH.value = 1e6;
+    u.uNearFade.value = 0.28;
+  } else u.uCutH.value = 2.9;
 }

@@ -12,6 +12,7 @@ import { h, clear, esc, Win, fmt } from './dom.js';
 import { slotEl } from './itemview.js';
 import { skillIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { audio } from '../audio.js';
+import { prefs, qualityMode, touchUiMode } from '../device.js';
 import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
 
@@ -251,6 +252,9 @@ export const windowsMixin = {
         h('div', { class: 'ql-sub' }, 'Recompensas'),
         rewardsEl(q.rewards, this.game.dev),
         h('div', { class: 'ql-story' }, fill(q.offer, me)),
+        h('div', { class: 'row' },
+          h('button', { class: 'btn small', onclick: () => { this.goToQuest(q.id); this.wins.quests.close(); } }, '📍 Ir até o local'),
+          h('button', { class: 'btn ghost small', onclick: () => { this.game.guide.track(q.id, false); this.onGuide(); } }, 'Mostrar caminho')),
         h('div', { class: 'row' }, h('button', { class: 'btn ghost small', onclick: () => this.confirm(`Abandonar a missão <b>${esc(q.name)}</b>?`, () => this.send({ t: 'qx', q: q.id }), { yes: 'Abandonar' }) }, 'Abandonar')));
     }
     body.appendChild(h('div', { class: 'ql-wrap' }, list, det));
@@ -422,6 +426,8 @@ export const windowsMixin = {
             <tr><td>Enter</td><td>Chat</td></tr>
             <tr><td>Roda do mouse</td><td>Zoom</td></tr>
             <tr><td>Botão direito (arrastar)</td><td>Girar e inclinar a câmera</td></tr>
+            <tr><td>V</td><td>Alternar câmera: 3ª pessoa longe / perto / 1ª pessoa</td></tr>
+            <tr><td>Toque (celular)</td><td>Direcional à esquerda, botões à direita; arraste na tela para girar, pinça para zoom</td></tr>
             <tr><td>I C K J M P G O</td><td>Inventário, Personagem, Habilidades, Missões, Mapa, Grupo, Clã, Ranking</td></tr>
             <tr><td>Esc</td><td>Fechar janela / Opções</td></tr>
           </table>
@@ -456,6 +462,12 @@ export const windowsMixin = {
       cb.addEventListener('change', () => fn(cb.checked));
       return h('label', { class: 'opt-row' }, cb, ' ', label);
     };
+    const select = (label, val, opts, fn) => {
+      const sel = h('select', { class: 'opt-select' }, ...opts.map(([v, n]) => h('option', { value: v }, n)));
+      sel.value = val;
+      sel.addEventListener('change', () => fn(sel.value));
+      return h('label', { class: 'opt-row' }, label + ' ', sel);
+    };
     const zoom = h('input', { type: 'range', min: '1', max: '3.6', step: '0.05', value: String(this.game.zoom) });
     zoom.addEventListener('input', () => { this.game.zoom = parseFloat(zoom.value); });
     body.append(
@@ -463,7 +475,11 @@ export const windowsMixin = {
       toggle('Música ambiente', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); if (v) audio.startMusic(this.game.zone.def.music); }),
       toggle('Mostrar nomes dos itens no chão (Z)', this.game.showItemNames, (v) => { this.game.showItemNames = v; }),
       toggle('Sombras (desative se o jogo ficar lento)', this.game.renderer.shadows, (v) => this.game.renderer.setShadows(v)),
+      select('Câmera (V)', this.game.renderer.camMode, [['far', '3ª pessoa · longe'], ['near', '3ª pessoa · perto'], ['first', '1ª pessoa']], (v) => this.game.renderer.setCamMode(v)),
       h('label', { class: 'opt-row' }, 'Zoom ', zoom),
+      select('Qualidade gráfica (recarrega)', qualityMode(), [['auto', 'Automática'], ['high', 'Alta'], ['low', 'Leve (celular)']], (v) => { prefs.set('quality', v); this.toast('Qualidade salva: recarregue a página para aplicar.', 'info'); }),
+      select('Controles de toque', touchUiMode(), [['auto', 'Automático'], ['on', 'Sempre ligados'], ['off', 'Desligados']], (v) => this.mobile.set(v)),
+      h('button', { class: 'btn small', onclick: () => this.mobile.fullscreen() }, 'Tela cheia'),
       h('div', { class: 'row' },
         h('button', { class: 'btn small', onclick: () => { this.wins.options.close(); this.send({ t: 'logout' }); } }, 'Trocar personagem'),
         h('button', { class: 'btn ghost small', onclick: () => location.reload() }, 'Sair')),

@@ -12,8 +12,11 @@ import { medieval } from './medieval.js';
 import { itemIcon } from '../sprites.js';
 import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
+import { GuideFx } from './guide3d.js';
+import { quality } from '../device.js';
 
-const LIGHT_POOL = 6;
+const Q = quality();
+const LIGHT_POOL = Q.lights;
 
 // Atmosfera por zona: céu de dia/noite, névoa
 const ATMOS = {
@@ -46,21 +49,27 @@ export class Renderer3D {
   constructor(canvas, overlayCanvas, game) {
     this.game = game;
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: Q.antialias, powerPreference: 'high-performance' });
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
-    this.shadows = loadPref('shadows', true);
+    this.shadows = loadPref('shadows', Q.shadows);
     this.renderer.shadowMap.enabled = this.shadows;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(40, 1, 0.3, 220);
     this.yaw = 0;
-    this.pitch = 0.92;
+    // câmera: 'far' (3ª pessoa longe), 'near' (3ª pessoa perto) ou 'first' (1ª pessoa); cada modo lembra a própria inclinação
+    this.pitches = { far: 0.92, near: 0.34, first: 0.05 };
+    this.camMode = loadStr('cam', 'far');
+    if (!this.pitches[this.camMode]) this.camMode = 'far';
+    this.camera.fov = this.camMode === 'first' ? 72 : this.camMode === 'near' ? 52 : 40;
+    this.camera.near = this.camMode === 'first' ? 0.08 : 0.3;
+    this.camera.updateProjectionMatrix();
     this.camTarget = new THREE.Vector3();
     this.hemi = new THREE.HemisphereLight(0xfff4e0, 0x4a5a3a, 1.6);
     this.sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.mapSize.set(Q.shadowMap, Q.shadowMap);
     const sc = this.sun.shadow.camera;
     sc.left = -22; sc.right = 22; sc.top = 22; sc.bottom = -22; sc.near = 1; sc.far = 80;
     this.sun.shadow.bias = -0.0006;
@@ -75,6 +84,7 @@ export class Renderer3D {
     this.playerLight = new THREE.PointLight(0xffe0b0, 0, 12, 1.4);
     this.scene.add(this.playerLight);
     this.fx = new Effects3D(game, this.scene);
+    this.guideFx = new GuideFx(this.scene);
     this.actors = new Map();
     this.zoneScene = null;
     this.overlay = new Overlay(overlayCanvas, this, game);
@@ -100,7 +110,7 @@ export class Renderer3D {
   }
 
   resize() {
-    this.dpr = Math.min(this.maxDpr || 1.6, window.devicePixelRatio || 1);
+    this.dpr = Math.min(this.maxDpr || Q.dprMax, window.devicePixelRatio || 1);
     this.W = window.innerWidth; this.H = window.innerHeight;
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.setSize(this.W, this.H, false);
@@ -126,7 +136,38 @@ export class Renderer3D {
     this.camTarget.set(me.x, 0.8, me.y);
   }
 
-  get dist() { return 30 / this.game.zoom; }
+  get dist() {
+    const z = this.game.zoom;
+    if (this.camMode === 'near') return 7.5 * Math.sqrt(2 / z);
+    if (this.camMode === 'first') return 0.5;
+    return 30 / z;
+  }
+
+  get pitch() { return this.pitches[this.camMode]; }
+  set pitch(v) { this.pitches[this.camMode] = v; }
+  get first() { return this.camMode === 'first'; }
+
+  setCamMode(mode) {
+    if (!this.pitches[mode]) return;
+    this.camMode = mode;
+    saveStr('cam', mode);
+    this.camera.fov = mode === 'first' ? 72 : mode === 'near' ? 52 : 40;
+    this.camera.near = mode === 'first' ? 0.08 : 0.3;
+    this.camera.updateProjectionMatrix();
+  }
+
+  cycleCam() {
+    const order = ['far', 'near', 'first'];
+    this.setCamMode(order[(order.indexOf(this.camMode) + 1) % order.length]);
+    return this.camMode;
+  }
+
+  // girar a câmera com o dedo/mouse (limites de inclinação por modo)
+  rotate(dx, dy) {
+    this.yaw -= dx * 0.008;
+    const [lo, hi] = this.camMode === 'far' ? [0.45, 1.35] : this.camMode === 'near' ? [0.02, 1.2] : [-1.25, 1.25];
+    this.pitch = Math.max(lo, Math.min(hi, this.pitch + dy * 0.005 * (this.camMode === 'first' ? 0.8 : 1)));
+  }
 
   darkness() {
     const g = this.game;
@@ -267,6 +308,7 @@ export class Renderer3D {
       if (!a) a = this.createActor(e);
       if (!a) continue;
       const root = a.model.root;
+      root.visible = !(this.camMode === 'first' && e.id === g.me.id);
       root.position.set(e.rx, (a.float || 0) + (e.lift || 0), e.ry);
       if (a.kind === 'item') { a.model.update(dt, { now }); continue; }
       // orientação
@@ -298,14 +340,24 @@ export class Renderer3D {
     const me = g.myEntity();
     const tx = me ? me.rx : g.me.x, tz = me ? me.ry : g.me.y;
     const k = 1 - Math.exp(-dt * 10);
-    this.camTarget.x = lerp(this.camTarget.x, tx, k);
-    this.camTarget.z = lerp(this.camTarget.z, tz, k);
-    this.camTarget.y = 0.8;
-    const d = this.dist;
+    // em 1ª pessoa a câmera cola no personagem (sem atraso); nos outros modos ela o segue suavemente
+    const kk = this.camMode === 'first' ? 1 : k;
+    this.camTarget.x = lerp(this.camTarget.x, tx, kk);
+    this.camTarget.z = lerp(this.camTarget.z, tz, kk);
     const c = this.camTarget;
-    this.camera.position.set(c.x + Math.sin(this.yaw) * Math.cos(this.pitch) * d, c.y + Math.sin(this.pitch) * d, c.z + Math.cos(this.yaw) * Math.cos(this.pitch) * d);
+    if (this.camMode === 'first') {
+      // olhos do personagem: câmera na cabeça, olhando na direção do giro
+      c.x = tx; c.z = tz; c.y = 1.32;
+      const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+      this.camera.position.set(c.x - Math.sin(this.yaw) * 0.12, c.y, c.z - Math.cos(this.yaw) * 0.12);
+      this.camera.lookAt(this.camera.position.x - Math.sin(this.yaw) * cp, this.camera.position.y - sp, this.camera.position.z - Math.cos(this.yaw) * cp);
+    } else {
+      c.y = this.camMode === 'near' ? 1.15 : 0.8;
+      const d = this.dist;
+      this.camera.position.set(c.x + Math.sin(this.yaw) * Math.cos(this.pitch) * d, c.y + Math.sin(this.pitch) * d, c.z + Math.cos(this.yaw) * Math.cos(this.pitch) * d);
+      this.camera.lookAt(c);
+    }
     if (g.shake > 0) this.camera.position.add(new THREE.Vector3((Math.random() - 0.5) * g.shake * 0.02, (Math.random() - 0.5) * g.shake * 0.02, 0));
-    this.camera.lookAt(c);
   }
 
   updateLights(now, t) {
@@ -315,8 +367,11 @@ export class Renderer3D {
     this.scene.background = sky;
     this.scene.fog.color.copy(sky);
     const zoomK = this.dist / 15;
-    this.scene.fog.near = at.fog[0] * Math.max(1, zoomK * 0.9);
-    this.scene.fog.far = at.fog[1] * Math.max(1, zoomK * 0.9);
+    this.scene.fog.near = at.fog[0] * Math.max(1, zoomK * 0.9) * Q.farMul;
+    this.scene.fog.far = at.fog[1] * Math.max(1, zoomK * 0.9) * Q.farMul;
+    // nada além da névoa precisa ser desenhado
+    const far = this.scene.fog.far + 25;
+    if (Math.abs(this.camera.far - far) > 2) { this.camera.far = far; this.camera.updateProjectionMatrix(); }
     const cave = this.game.zone.def.gen.type === 'cave';
     this.hemi.intensity = lerp(cave ? 0.9 : 1.7, 0.45, dark);
     this.hemi.color.set(0xfff4e0).lerp(new THREE.Color(0x7080c0), dark);
@@ -387,7 +442,8 @@ export class Renderer3D {
     this.updateLights(now, t);
     this.updateRings(t);
     this.zoneScene.cull(g.me.x, g.me.y);
-    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist);
+    this.guideFx.update(g.guide, g.me, t, g.zone.id);
+    updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist, this.camMode === 'first');
     this.renderer.render(this.scene, this.camera);
     this.overlay.draw(t);
   }
@@ -454,6 +510,12 @@ export class Renderer3D {
   }
 }
 
+function loadStr(k, def) {
+  try { return localStorage.getItem('aethra_' + k) || def; } catch { return def; }
+}
+function saveStr(k, v) {
+  try { localStorage.setItem('aethra_' + k, v); } catch { /* ignorado */ }
+}
 function loadPref(k, def) {
   try { const v = localStorage.getItem('aethra_' + k); return v == null ? def : v === '1'; } catch { return def; }
 }

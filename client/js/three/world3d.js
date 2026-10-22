@@ -7,10 +7,11 @@ import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
+import { quality } from '../device.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 
 const CHUNK = 16;
-const GROUND_RES = 0.75; // pixels de textura por pixel de mundo 2D (32 px por tile)
+const GROUND_RES = quality().groundRes; // pixels de textura por pixel de mundo 2D (32 px por tile)
 
 // ------------------------------------------------------------------ geometrias com cor por vértice
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3();
@@ -231,13 +232,43 @@ export class ZoneScene {
 
   tile(x, y) { return this.terrain.tile(x, y); }
 
+  // Divide uma InstancedMesh em pedaços de 12 × 12 tiles, cada um com a própria esfera de corte: o que está fora da tela
+  // (ou da sombra) não é desenhado. A malha original só serviu de molde e não chega a ir para a GPU.
+  addInst(inst) {
+    const CH = 12;
+    const groups = new Map();
+    const m = new THREE.Matrix4(), col = new THREE.Color();
+    const hasColor = !!inst.instanceColor;
+    for (let i = 0; i < inst.count; i++) {
+      inst.getMatrixAt(i, m);
+      const key = Math.floor(m.elements[12] / CH) + ',' + Math.floor(m.elements[14] / CH);
+      let g = groups.get(key);
+      if (!g) groups.set(key, (g = []));
+      g.push(i);
+    }
+    for (const ids of groups.values()) {
+      const part = new THREE.InstancedMesh(inst.geometry, inst.material, ids.length);
+      ids.forEach((id, j) => {
+        inst.getMatrixAt(id, m);
+        part.setMatrixAt(j, m);
+        if (hasColor) { inst.getColorAt(id, col); part.setColorAt(j, col); }
+      });
+      part.castShadow = inst.castShadow;
+      part.receiveShadow = inst.receiveShadow;
+      part.computeBoundingSphere();
+      part.computeBoundingBox();
+      this.group.add(part);
+    }
+    inst.dispose();
+  }
+
   // interiores só por perto do jogador (no máximo a cada 200 ms e quando ele se mexeu)
   cull(px, pz, force = false) {
     if (!this.propGroup) return;
     const now = performance.now();
     if (!force && (now - (this.lastCull || 0) < 200 || (Math.abs(px - this.cullX) < 0.5 && Math.abs(pz - this.cullZ) < 0.5))) return;
     this.lastCull = now; this.cullX = px; this.cullZ = pz;
-    village.cullProps(this.propGroup, px, pz);
+    village.cullProps(this.propGroup, px, pz, quality().cullR);
   }
 
   buildGround() {
@@ -330,8 +361,7 @@ export class ZoneScene {
     });
     inst.castShadow = true;
     inst.receiveShadow = true;
-    inst.frustumCulled = false;
-    this.group.add(inst);
+    this.addInst(inst);
     if (medieval.ready) this.caveRocks(list);
   }
 
@@ -364,8 +394,7 @@ export class ZoneScene {
       });
       inst.castShadow = true;
       inst.receiveShadow = true;
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     }
   }
 
@@ -401,8 +430,7 @@ export class ZoneScene {
       });
       inst.castShadow = o !== O.FENCE;
       inst.receiveShadow = true;
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     }
   }
 
@@ -434,8 +462,7 @@ export class ZoneScene {
       });
       inst.castShadow = true;
       inst.receiveShadow = true;
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     };
     // matriz = translação * giro em Y * (deitar em X) * escala, com o modelo centrado no tile e apoiado no chão
     const _r = new THREE.Matrix4(), _b = new THREE.Box3(), _c = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), ex = new THREE.Vector3(1, 0, 0);
@@ -515,8 +542,7 @@ export class ZoneScene {
       });
       inst.castShadow = false;
       inst.receiveShadow = true;
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     }
   }
 
@@ -546,8 +572,7 @@ export class ZoneScene {
         mtx.compose(_v.set(x + 0.2 + hash2(x, y, 56) * 0.6, lily ? 0.06 : 0, y + 0.2 + hash2(x, y, 57) * 0.6), _q.setFromAxisAngle(up, r * 60), _s.set(s, s, s));
         inst.setMatrixAt(i, mtx);
       });
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     }
   }
 
@@ -641,8 +666,7 @@ export class ZoneScene {
       });
       inst.castShadow = true;
       inst.receiveShadow = true;
-      inst.frustumCulled = false;
-      this.group.add(inst);
+      this.addInst(inst);
     }
   }
 

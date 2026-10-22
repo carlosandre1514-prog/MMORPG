@@ -33,7 +33,9 @@ No modo DEV, use no chat:
 
 Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase).
 
-Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
+**Celular:** ao abrir em uma tela de toque aparecem os controles virtuais: direcional flutuante (toque e arraste na metade esquerda), botões de ataque, interagir, alvo e câmera, habilidades em grade à direita, atalhos de menu/chat/missões/tela cheia no topo; arraste na tela para girar a câmera e use a pinça para o zoom. Gire o celular para a horizontal. Dá para forçar ou desligar os controles de toque em Opções.
+
+Desempenho: o jogo precisa de WebGL. Em celulares e aparelhos fracos ele usa o modo leve sozinho (resolução menor, sem sombras, névoa mais curta, interiores só por perto); em Opções dá para escolher a qualidade. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
 
 ## Controles
 
@@ -50,6 +52,8 @@ Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e d
 | Opções de jogador | botão direito sobre outro jogador (grupo, comércio, sussurro) |
 | Zoom | roda do mouse |
 | Girar / inclinar câmera | arrastar com o botão direito (ou do meio) |
+| Câmera | **V** alterna 3ª pessoa longe → 3ª pessoa perto → 1ª pessoa (também em Opções) |
+| Ir até a missão | botão **📍 Ir** no rastreador ou na janela de missões: o personagem anda sozinho (inclusive atravessando portais); setas douradas no chão, raio de luz, seta na borda da tela e linha no minimapa mostram o caminho |
 
 ## O que existe no jogo
 

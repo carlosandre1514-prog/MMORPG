@@ -1,5 +1,6 @@
 // Efeitos visuais 3D: projéteis, golpes, explosões, avisos de área, partículas e textos flutuantes.
 import * as THREE from 'three';
+import { quality } from '../device.js';
 import { glowTexture } from './world3d.js';
 
 export const STYLE_COLORS = {
@@ -16,7 +17,7 @@ export const STYLE_COLORS = {
   enrage: ['#ff5252', '#b71c1c'], harden: ['#b39ddb', '#4527a0'], arcane_shield: ['#e1bee7', '#7b1fa2'],
 };
 const LIT_STYLES = new Set(['fire', 'holy', 'arcane', 'frost', 'ash', 'shadow', 'meteor', 'void', 'heal', 'poison']);
-const MAX_PARTICLES = 1600;
+const MAX_PARTICLES = quality().particles;
 
 const col = (c) => new THREE.Color(c);
 

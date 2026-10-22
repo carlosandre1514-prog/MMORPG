@@ -16,6 +16,7 @@ import { charSprites } from '../charsprites.js';
 import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
+import { MobileControls } from './mobile.js';
 
 const CHANNEL_NAMES = { zona: 'Zona', mundo: 'Mundo', grupo: 'Grupo', cla: 'Clã', sussurro: 'Sussurro', sistema: 'Sistema', grito: 'Grito', npc: 'NPC' };
 
@@ -65,6 +66,14 @@ export class UI {
     // rastreador de missões
     this.tracker = h('div', { id: 'tracker' });
     R.appendChild(this.tracker);
+    // barra do guia de missão: destino, distância e botões Ir / Parar
+    this.guideLabel = h('span', { class: 'gb-label' });
+    this.guideDist = h('span', { class: 'gb-dist' });
+    this.guideGo = h('button', { class: 'gb-btn go', onclick: () => this.guideToggleAuto() }, '▶ Ir');
+    this.guideBar = h('div', { id: 'guidebar', style: { display: 'none' } },
+      h('span', { class: 'gb-pin' }, '📍'), h('div', { class: 'gb-text' }, this.guideLabel, this.guideDist), this.guideGo,
+      h('button', { class: 'gb-btn', title: 'Ocultar a sinalização', onclick: () => this.game.guide.stop(true) }, '✕'));
+    R.appendChild(this.guideBar);
     // chat
     this.chatLog = h('div', { id: 'chat-log' });
     this.chatInput = h('input', { id: 'chat-input', maxlength: 200, placeholder: 'Enter para conversar · /ajuda para comandos', autocomplete: 'off' });
@@ -117,6 +126,7 @@ export class UI {
     R.append(this.toasts, this.banner, this.castEl, this.deathEl, this.invitesEl, this.lootEl);
     this.menuEl = null;
     this.buildWindows();
+    this.mobile = new MobileControls(this);
   }
 
   skillSlot(key, onclick) {
@@ -331,7 +341,7 @@ export class UI {
     // conjuração
     const c = this.me.casting;
     if (c) this.castEl.firstChild.style.width = Math.min(100, ((now - c.start) / c.dur) * 100) + '%';
-    if (now - this.lastMini > 100) { this.lastMini = now; this.drawMinimap(); }
+    if (now - this.lastMini > 100) { this.lastMini = now; this.drawMinimap(); this.updateGuideBar(); }
     if (this.deathEl.style.display !== 'none' && this.deathAt) {
       const left = Math.max(0, 3 - (now - this.deathAt) / 1000);
       const btn = this.deathEl.querySelector('button');
@@ -419,6 +429,27 @@ export class UI {
         ctx.fillStyle = RARITY[e.r].color; ctx.fillRect(px - 1, py - 1, 2, 2);
       }
     }
+    const gd = g.guide;
+    if (gd.active && gd.wp) {
+      if (gd.path.length) {
+        ctx.save();
+        ctx.strokeStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        const [sx0, sy0] = P(me.x, me.y);
+        ctx.moveTo(sx0, sy0);
+        for (const p of gd.path) { const [qx, qy] = P(p.x, p.y); ctx.lineTo(qx, qy); }
+        ctx.stroke();
+        ctx.restore();
+      }
+      // destino: se estiver fora do quadro, o marcador gruda na borda
+      let [dx2, dy2] = P(gd.wp.x, gd.wp.y);
+      const cl = (v) => Math.max(8, Math.min(S - 8, v));
+      const out = dx2 < 6 || dy2 < 6 || dx2 > S - 6 || dy2 > S - 6;
+      dx2 = cl(dx2); dy2 = cl(dy2);
+      const pulse = 4.5 + Math.sin(performance.now() / 220) * 1.5;
+      ctx.fillStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(dx2, dy2, out ? 5 : pulse, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
     const [mx, my] = P(me.x, me.y);
     ctx.save();
     ctx.translate(mx, my);
@@ -442,8 +473,13 @@ export class UI {
     }
     for (const q of qs) {
       const done = isComplete(this.me, q);
-      const el = h('div', { class: 'tr-quest' + (done ? ' done' : '') },
-        h('div', { class: 'tr-name' }, (q.main ? '★ ' : q.repeatable ? '↻ ' : '• ') + q.name));
+      const tracked = this.game.guide.questId === q.id;
+      const go = h('button', {
+        class: 'tr-go' + (tracked && this.game.guide.auto ? ' on' : ''), title: 'Ir até o local da missão (anda sozinho)',
+        onclick: (ev) => { ev.stopPropagation(); this.goToQuest(q.id); },
+      }, '📍 Ir');
+      const el = h('div', { class: 'tr-quest' + (done ? ' done' : '') + (tracked ? ' tracked' : '') },
+        h('div', { class: 'tr-head' }, h('div', { class: 'tr-name' }, (q.main ? '★ ' : q.repeatable ? '↻ ' : '• ') + q.name), go));
       if (done) el.appendChild(h('div', { class: 'tr-obj ok' }, `Volte para ${NPCS[q.turnIn].name}`));
       else {
         q.objectives.forEach((o, i) => {
@@ -451,9 +487,43 @@ export class UI {
           el.appendChild(h('div', { class: 'tr-obj' + (p >= n ? ' ok' : '') }, objectiveText(o) + (o.type === 'talk' ? '' : ` ${p}/${n}`)));
         });
       }
-      el.addEventListener('click', () => { this.openWin('quests'); this.selectedQuest = q.id; this.renderQuests(); });
+      el.addEventListener('click', () => { this.game.guide.track(q.id, false); this.renderTracker(); });
       box.appendChild(el);
     }
+  }
+
+  // ------------------------------------------------------------------ guia de missão
+  goToQuest(id) {
+    const g = this.game.guide;
+    if (g.questId === id && g.auto) { g.setAuto(false); this.game.path = null; return; }
+    g.track(id, true);
+    audio.play('click');
+    this.onGuide();
+  }
+
+  guideToggleAuto() {
+    const g = this.game.guide;
+    if (!g.questId) return;
+    if (g.auto) { g.setAuto(false); this.game.path = null; } else g.track(g.questId, true);
+    this.onGuide();
+  }
+
+  onGuide() {
+    this.renderTracker();
+    this.updateGuideBar();
+    if (this.wins.quests?.isOpen) this.renderQuests();
+  }
+
+  updateGuideBar() {
+    const gd = this.game.guide;
+    const show = gd.active && gd.dest;
+    this.guideBar.style.display = show ? 'flex' : 'none';
+    if (!show) return;
+    const where = gd.dest.zone !== this.game.zone.id ? ` · ${ZONES[gd.dest.zone].name}` : '';
+    this.guideLabel.textContent = (gd.wp?.portal ? gd.wp.label : gd.dest.label) + where;
+    this.guideDist.textContent = gd.arrived ? 'Você chegou' : `${Math.round(gd.dist)} m`;
+    this.guideGo.textContent = gd.auto ? '■ Parar' : '▶ Ir';
+    this.guideGo.classList.toggle('on', gd.auto);
   }
 
   // ------------------------------------------------------------------ chat e avisos

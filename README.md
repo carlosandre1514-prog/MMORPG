@@ -62,6 +62,14 @@ Desempenho: o jogo precisa de WebGL. Se rodar lento, ele reduz a resolução e d
 - **Social**: grupos (XP e saque compartilhados), clãs, chat com canais, comércio seguro em duas etapas, arena JxJ e ranking.
 - **Persistência**: contas com senha (scrypt), personagens salvos em `save/world.json` automaticamente.
 
+## Colocar online
+
+O jogo precisa de um servidor Node sempre ligado (WebSocket) e de um disco que não apague (`save/`). Hospedagem só de site estático não serve.
+
+- **Render**: crie um *Blueprint* apontando para este repositório; o `render.yaml` já configura o serviço e um disco de 1 GB em `/data` (plano `starter`, pago). No plano gratuito o disco é apagado a cada reinício e as contas se perdem.
+- **VPS** (Hetzner, DigitalOcean...): instale o Node 18+, descompacte o projeto e rode `PORT=3000 npm start` (use `pm2` para reiniciar sozinho). Para HTTPS, ponha o Caddy na frente: `seujogo.com { reverse_proxy localhost:3000 }`; o cliente passa a usar `wss` automaticamente.
+- Não ligue `DEV=1` em produção e faça backup da pasta `save/` (ou do disco) de vez em quando.
+
 ## Testes
 
 ```bash

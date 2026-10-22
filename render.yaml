@@ -1,0 +1,17 @@
+# Publicação no Render (https://render.com): New + > Blueprint, apontando para este repositório.
+# O jogo precisa de um servidor Node sempre ligado e de um disco para guardar contas e personagens.
+services:
+  - type: web
+    name: aethra
+    runtime: node
+    plan: starter            # o plano gratuito não tem disco: as contas se perderiam a cada reinício
+    buildCommand: echo "sem dependências para instalar"
+    startCommand: npm start
+    healthCheckPath: /status
+    envVars:
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: aethra-save
+      mountPath: /data
+      sizeGB: 1

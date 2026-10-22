@@ -261,26 +261,35 @@ export const windowsMixin = {
   },
 
   // ================================================================ mapa
-  renderMap() {
+  // Marcadores do mapa: portais, NPCs, áreas de caça, chefes, grupo e o jogador. P projeta (x, y) do mapa em px;
+  // unit é o tamanho de um tile em px (raio das áreas de caça); W, a largura do canvas (alinhamento dos nomes).
+  drawMapMarkers(ctx, P, unit, W, labels = null) {
     const g = this.game;
-    const body = clear(this.wins.map.body);
     const z = g.zone;
-    const size = 420;
-    const scale = size / Math.max(z.w, z.h);
-    const cv = h('canvas', { width: Math.round(z.w * scale), height: Math.round(z.h * scale), class: 'map-cv' });
-    const ctx = cv.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(this.mmImage, 0, 0, cv.width, cv.height);
-    const P = (x, y) => [x * scale, y * scale];
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    // nomes dos lugares (casas e prédios especiais) sobre o telhado
+    if (labels) {
+      ctx.font = 'bold 10px Georgia, serif';
+      for (const st of z.structures) {
+        if (st.kind !== 'house' || !st.label) continue;
+        let [x, y] = P(st.x + st.w / 2, st.y + st.h / 2, (st.floors || 1) * 3 + 3);
+        const half = ctx.measureText(st.label).width / 2 + 3;
+        x = Math.max(half, Math.min(W - half, x)); // o nome nunca sai do mapa
+        ctx.fillStyle = '#fdf2e9'; ctx.strokeStyle = 'rgba(30,18,10,0.95)'; ctx.lineWidth = 3;
+        ctx.strokeText(st.label, x, y); ctx.fillText(st.label, x, y);
+      }
+      ctx.font = 'bold 10px sans-serif';
+    }
+    ctx.strokeStyle = '#000';
     for (const p of z.def.portals) {
       const [x, y] = P(p.x + p.w / 2, p.y + p.h / 2);
       ctx.fillStyle = '#5dade2'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#d6eaf8'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
+      ctx.fillStyle = '#d6eaf8'; ctx.lineWidth = 3;
       const ty = y < 20 ? y + 16 : y - 8;
-      ctx.textAlign = x > cv.width - 70 ? 'right' : x < 70 ? 'left' : 'center';
-      const tx = x > cv.width - 70 ? x - 6 : x < 70 ? x + 6 : x;
+      ctx.textAlign = x > W - 70 ? 'right' : x < 70 ? 'left' : 'center';
+      const tx = x > W - 70 ? x - 6 : x < 70 ? x + 6 : x;
       ctx.strokeText(p.label, tx, ty); ctx.fillText(p.label, tx, ty);
       ctx.textAlign = 'center';
     }
@@ -290,18 +299,20 @@ export const windowsMixin = {
       const mark = g.questMarker(n.id);
       ctx.fillStyle = n.services.includes('teleport') ? '#85c1e9' : '#f7dc6f';
       ctx.fillRect(x - 2.5, y - 2.5, 5, 5);
-      if (mark) { ctx.fillStyle = mark.c; ctx.strokeText(mark.s, x + 6, y - 2); ctx.fillText(mark.s, x + 6, y - 2); }
+      ctx.strokeRect(x - 2.5, y - 2.5, 5, 5);
+      if (mark) { ctx.fillStyle = mark.c; ctx.lineWidth = 3; ctx.strokeText(mark.s, x + 6, y - 2); ctx.fillText(mark.s, x + 6, y - 2); }
     }
     for (const s of z.def.spawns || []) {
       const d = MONSTERS[s.m];
       const [x, y] = P(s.x, s.y);
+      ctx.lineWidth = 3;
       if (d.boss) {
         ctx.fillStyle = '#ff9a1f'; ctx.font = 'bold 14px sans-serif';
         ctx.strokeText('☠', x, y + 5); ctx.fillText('☠', x, y + 5);
         ctx.font = 'bold 10px sans-serif';
         ctx.strokeText(d.name, x, y - 9); ctx.fillText(d.name, x, y - 9);
       } else {
-        ctx.fillStyle = 'rgba(231,76,60,0.25)'; ctx.beginPath(); ctx.arc(x, y, s.r * scale, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(231,76,60,0.25)'; ctx.beginPath(); ctx.ellipse(x, y, s.r * unit, s.r * unit * 0.8, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#fadbd8';
         ctx.strokeText(`${d.name} ${d.lvl[0]}-${d.lvl[1]}`, x, y); ctx.fillText(`${d.name} ${d.lvl[0]}-${d.lvl[1]}`, x, y);
       }
@@ -314,6 +325,51 @@ export const windowsMixin = {
     const [mx, my] = P(g.me.x, g.me.y);
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // rota da missão
+    const gd = g.guide;
+    if (gd.active && gd.wp) {
+      ctx.save();
+      ctx.strokeStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]);
+      if (gd.path.length) {
+        ctx.beginPath(); ctx.moveTo(mx, my);
+        for (const p of gd.path) { const [qx, qy] = P(p.x, p.y); ctx.lineTo(qx, qy); }
+        ctx.stroke();
+      }
+      ctx.restore();
+      const [dx, dy] = P(gd.wp.x, gd.wp.y);
+      ctx.fillStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(dx, dy, 5 + Math.sin(performance.now() / 220) * 1.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+  },
+
+  renderMap() {
+    const g = this.game;
+    const body = clear(this.wins.map.body);
+    const z = g.zone;
+    let cv;
+    this.mapCv = null;
+    if (this.mapView) {
+      // mapa 3D: arrastar gira, a roda aproxima (em volta do personagem), duplo clique volta ao início
+      const size = 440, dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv = h('canvas', { width: Math.round(size * dpr), height: Math.round(size * dpr), class: 'map-cv', style: { width: size + 'px', height: size + 'px', imageRendering: 'auto', cursor: 'grab' } });
+      this.mapCv = cv; this.mapDpr = dpr; this.mapSize = size;
+      this.mapCam ||= { yaw: 0, zoom: 1 };
+      let drag = null;
+      cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, yaw: this.mapCam.yaw }; try { cv.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético */ } cv.style.cursor = 'grabbing'; });
+      cv.addEventListener('pointermove', (e) => { if (drag) { this.mapCam.yaw = drag.yaw - (e.clientX - drag.x) * 0.01; this.drawWorldMap(); } });
+      const end = () => { drag = null; cv.style.cursor = 'grab'; };
+      cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+      cv.addEventListener('wheel', (e) => { e.preventDefault(); this.mapCam.zoom = Math.max(1, Math.min(4, this.mapCam.zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); this.drawWorldMap(); }, { passive: false });
+      cv.addEventListener('dblclick', () => { this.mapCam = { yaw: 0, zoom: 1 }; this.drawWorldMap(); });
+    } else {
+      const size = 420;
+      const scale = size / Math.max(z.w, z.h);
+      cv = h('canvas', { width: Math.round(z.w * scale), height: Math.round(z.h * scale), class: 'map-cv' });
+      const ctx = cv.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this.mmImage, 0, 0, cv.width, cv.height);
+      this.drawMapMarkers(ctx, (x, y) => [x * scale, y * scale], scale, cv.width);
+    }
     const side = h('div', { class: 'map-side' }, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
     for (const id of ZONE_ORDER) {
       const zd = ZONES[id];
@@ -322,7 +378,27 @@ export const windowsMixin = {
         h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
     }
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ● azul: portal · ☠ chefe'));
+    if (this.mapCv) side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para girar · roda para aproximar · duplo clique para voltar.'));
     body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
+    if (this.mapCv) this.drawWorldMap();
+  },
+
+  // Redesenha o mapa 3D da janela (chamado várias vezes por segundo enquanto ela está aberta)
+  drawWorldMap() {
+    const g = this.game, z = g.zone, cv = this.mapCv;
+    if (!cv || !this.mapView || !cv.isConnected) return;
+    const ctx = cv.getContext('2d');
+    const dpr = this.mapDpr, size = this.mapSize;
+    const cam = this.mapCam;
+    const base = Math.max(z.w, z.h) * (1.1 + 0.3 * Math.abs(Math.sin(2 * cam.yaw)));
+    const zoomed = cam.zoom > 1.02;
+    const view = { cx: zoomed ? g.me.x : z.w / 2, cz: zoomed ? g.me.y : z.h / 2, yaw: cam.yaw, pitch: 0.95, span: base / cam.zoom, dark: g.renderer.darkness() };
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const proj = this.mapView.draw('world', ctx, cv.width, cv.height, view);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const P = (x, y, hh = 0) => { const q = proj(x, y, hh); return [q[0] / dpr, q[1] / dpr]; };
+    const a = P(z.w / 2, z.h / 2), b = P(z.w / 2 + 1, z.h / 2);
+    this.drawMapMarkers(ctx, P, Math.hypot(b[0] - a[0], b[1] - a[1]), size, true);
   },
 
   // ================================================================ social / grupo

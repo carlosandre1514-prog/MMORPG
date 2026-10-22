@@ -173,7 +173,7 @@ input { font-family: var(--font); user-select: text; }
 .pm-zone { font-size: 10px; color: #f5b041; }
 
 #minimap { position: absolute; right: 10px; top: 10px; padding: 6px; width: 194px; }
-#minimap canvas { display: block; border-radius: 4px; cursor: pointer; }
+#minimap canvas { display: block; border-radius: 4px; cursor: pointer; width: 180px; height: 180px; }
 .mm-zone { font-family: var(--font-title); font-size: 13px; text-align: center; color: #ffd27a; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mm-info { font-size: 11px; color: var(--muted); text-align: center; margin-top: 3px; }
 
@@ -346,7 +346,7 @@ input { font-family: var(--font); user-select: text; }
 .rw.xp { color: #c39bd3; } .rw.flag { color: #ff9f43; } .rw.title { color: var(--gold); }
 
 .map-wrap { display: flex; gap: 12px; }
-.map-cv { border: 1px solid #444; border-radius: 4px; image-rendering: pixelated; max-width: 420px; }
+.map-cv { border: 1px solid #444; border-radius: 4px; image-rendering: pixelated; max-width: 100%; }
 .map-side { flex: 1; }
 .map-zone { padding: 4px 6px; border-radius: 3px; margin: 2px 0; }
 .map-zone.cur { background: rgba(201, 162, 74, 0.2); }

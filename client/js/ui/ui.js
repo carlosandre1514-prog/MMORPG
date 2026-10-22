@@ -17,6 +17,11 @@ import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
 import { MobileControls } from './mobile.js';
+import { MapView3D } from '../three/mapview.js';
+import { quality } from '../device.js';
+
+// direção em que o personagem olha (0 sul, 1 leste, 2 oeste, 3 norte), como o servidor numera
+const FACING = [[0, 1], [1, 0], [-1, 0], [0, -1]];
 
 const CHANNEL_NAMES = { zona: 'Zona', mundo: 'Mundo', grupo: 'Grupo', cla: 'Clã', sussurro: 'Sussurro', sistema: 'Sistema', grito: 'Grito', npc: 'NPC' };
 
@@ -59,7 +64,8 @@ export class UI {
     R.appendChild(this.partyEl);
     // minimapa
     this.mmZone = h('div', { class: 'mm-zone' });
-    this.mmCanvas = h('canvas', { width: 180, height: 180 });
+    this.mmDpr = Math.min(2, window.devicePixelRatio || 1);
+    this.mmCanvas = h('canvas', { width: Math.round(180 * this.mmDpr), height: Math.round(180 * this.mmDpr) });
     this.mmInfo = h('div', { class: 'mm-info' });
     R.appendChild(h('div', { id: 'minimap', class: 'frame' }, this.mmZone, this.mmCanvas, this.mmInfo));
     this.mmCanvas.addEventListener('click', () => this.toggle('map'));
@@ -341,7 +347,11 @@ export class UI {
     // conjuração
     const c = this.me.casting;
     if (c) this.castEl.firstChild.style.width = Math.min(100, ((now - c.start) / c.dur) * 100) + '%';
-    if (now - this.lastMini > 100) { this.lastMini = now; this.drawMinimap(); this.updateGuideBar(); }
+    if (now - this.lastMini > (quality().low ? 200 : 100)) {
+      this.lastMini = now;
+      this.drawMinimap(); this.updateGuideBar();
+      if (this.wins.map?.isOpen && this.mapCv) this.drawWorldMap();
+    }
     if (this.deathEl.style.display !== 'none' && this.deathAt) {
       const left = Math.max(0, 3 - (now - this.deathAt) / 1000);
       const btn = this.deathEl.querySelector('button');
@@ -385,6 +395,14 @@ export class UI {
       }
     }
     this.mmImage = cv;
+    // maquete 3D da zona para o minimapa e o mapa; se o navegador não der outro contexto WebGL, fica o mapa 2D
+    try {
+      this.mapView ||= new MapView3D();
+      this.mapView.setZone(z);
+    } catch (e) {
+      console.warn('[mapa] 3D indisponível, usando o mapa 2D', e);
+      this.mapView = null;
+    }
     this.mmZone.textContent = z.def.name;
     if (this.wins.map?.isOpen) this.renderMap();
   }
@@ -394,17 +412,34 @@ export class UI {
     const z = g.zone;
     if (!this.mmImage) return;
     const ctx = this.mmCanvas.getContext('2d');
-    const S = 180, scale = Math.max(2.2, S / Math.min(z.w, z.h)); // px por tile
-    const me = g.me;
-    const half = S / 2 / scale;
-    const cx = Math.max(half, Math.min(z.w - half, me.x)), cy = Math.max(half, Math.min(z.h - half, me.y));
-    const ox = cx - half, oy = cy - half;
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, S, S);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(this.mmImage, ox * 2, oy * 2, S / scale * 2, S / scale * 2, 0, 0, S, S);
+    const S = 180, me = g.me;
     const dark = g.renderer.darkness();
-    if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.5})`; ctx.fillRect(0, 0, S, S); }
-    const P = (x, y) => [(x - ox) * scale, (y - oy) * scale];
+    let P, arrow;
+    if (this.mapView) {
+      // maquete 3D: câmera inclinada que gira junto com a câmera do jogo (o alto do mapa é para onde você olha)
+      const dpr = this.mmDpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      const span = Math.min(46, Math.max(z.w, z.h) * 1.1);
+      const proj = this.mapView.draw('mini', ctx, this.mmCanvas.width, this.mmCanvas.height, { cx: me.x, cz: me.y, yaw: g.renderer.yaw, pitch: 0.95, span, dark });
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      P = (x, y, hh = 0) => { const q = proj(x, y, hh); return [q[0] / dpr, q[1] / dpr]; };
+      const f = FACING[me.dir || 0];
+      const a = P(me.x, me.y), b = P(me.x + f[0], me.y + f[1]);
+      arrow = Math.atan2(b[1] - a[1], b[0] - a[0]) + Math.PI / 2;
+    } else {
+      const scale = Math.max(2.2, S / Math.min(z.w, z.h)); // px por tile
+      const half = S / 2 / scale;
+      const cx = Math.max(half, Math.min(z.w - half, me.x)), cy = Math.max(half, Math.min(z.h - half, me.y));
+      const ox = cx - half, oy = cy - half;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, this.mmCanvas.width, this.mmCanvas.height);
+      ctx.setTransform(this.mmDpr, 0, 0, this.mmDpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this.mmImage, ox * 2, oy * 2, S / scale * 2, S / scale * 2, 0, 0, S, S);
+      if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.5})`; ctx.fillRect(0, 0, S, S); }
+      P = (x, y) => [(x - ox) * scale, (y - oy) * scale];
+      arrow = [Math.PI, Math.PI / 2, -Math.PI / 2, 0][me.dir || 0];
+    }
     for (const p of z.def.portals) {
       const [px, py] = P(p.x + p.w / 2, p.y + p.h / 2);
       ctx.fillStyle = '#5dade2'; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
@@ -453,7 +488,7 @@ export class UI {
     const [mx, my] = P(me.x, me.y);
     ctx.save();
     ctx.translate(mx, my);
-    ctx.rotate([Math.PI, Math.PI / 2, -Math.PI / 2, 0][me.dir || 0]);
+    ctx.rotate(arrow);
     ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(4, 4); ctx.lineTo(0, 2); ctx.lineTo(-4, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();

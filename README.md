@@ -53,6 +53,7 @@ Desempenho: o jogo precisa de WebGL. Em celulares e aparelhos fracos ele usa o m
 | Zoom | roda do mouse |
 | Girar / inclinar câmera | arrastar com o botão direito (ou do meio) |
 | Entrar nas casas | ande até a porta: ela abre sozinha. Por dentro o telhado some (3ª pessoa) ou aparece o teto (1ª pessoa) e a luz da lareira acende |
+| Mapa em 3D | o minimapa (canto superior direito) e a janela **M** mostram uma maquete 3D da zona com casas, telhados, portas, muralhas e árvores; o minimapa gira junto com a câmera, e na janela do mapa dá para arrastar (girar) e usar a roda (aproximar) |
 | Câmera | **V** alterna 3ª pessoa longe → 3ª pessoa perto → 1ª pessoa (também em Opções) |
 | Ir até a missão | botão **📍 Ir** no rastreador ou na janela de missões: o personagem anda sozinho (inclusive atravessando portais); setas douradas no chão, raio de luz, seta na borda da tela e linha no minimapa mostram o caminho |
 

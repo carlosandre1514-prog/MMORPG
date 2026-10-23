@@ -138,3 +138,33 @@ test('a cena de abertura só usa modelos que existem nos packs do KayKit', () =>
   }
   for (const n of all) assert.ok(have.has(n), `modelo ${n} não existe nos packs`);
 });
+
+test('logotipo em relevo e cartões no estilo do login', () => {
+  const logo = read('client/js/ui/logo.js'), main = read('client/js/main.js'), ui = read('client/js/ui/loginui.js'), css = read('client/style.css'), win = read('client/js/ui/windows.js');
+  assert.match(logo, /export function logoMark/);
+  assert.match(logo, /feSpecularLighting/); // bisel de luz nas letras
+  assert.match(logo, /aw-flame/); // chama no vão dos A
+  assert.match(ui, /logoMark\('lg'\)/);
+  assert.match(main, /logoMark\(\)/); // tela de carregamento
+  assert.match(win, /logoMark\('intro'\)/); // cartão de introdução ao entrar no mundo
+  assert.ok(!/logo-main/.test(main), 'o texto simples do logotipo saiu das telas');
+  // todo cartão do jogo usa a mesma moldura: painéis, janelas, diálogos e convites, com cantos e losango
+  assert.match(css, /\.menu-panel, \.win, \.modal, \.invite \{\s*background:/);
+  assert.match(css, /\.menu-panel::after, \.win::after, \.modal::after, \.invite::after/);
+  assert.match(css, /\.relief::before, \.relief::after/);
+  // as molduras pequenas do HUD não pisam nos cartões
+  assert.match(css, /\.frame:not\(\.modal\):not\(\.invite\)/);
+  // não pode haver desfoque de fundo nas janelas (custa quadros por segundo sobre o jogo 3D)
+  const card = css.slice(css.indexOf('Cartões: a mesma moldura'));
+  assert.ok(!/backdrop-filter/.test(card), 'sem backdrop-filter nos cartões');
+});
+
+test('minimapa redondo gira com a câmera e a seta usa a direção real', () => {
+  const ui = read('client/js/ui/ui.js'), win = read('client/js/ui/windows.js');
+  assert.match(ui, /Math\.PI - \(me\.facing \|\| 0\) \+ rot/);
+  assert.ok(!/\[Math\.PI, Math\.PI \/ 2, -Math\.PI \/ 2, 0\]\[me\.dir/.test(ui), 'a seta antiga de 4 lados saiu');
+  assert.match(ui, /g\.renderer\.yaw/);
+  assert.match(ui, /aethra_mm_north/);
+  assert.match(ui, /lastMiniMap > \(quality\(\)\.low \? 66 : 33\)/);
+  assert.match(win, /Math\.PI - \(g\.me\.facing \|\| 0\)/);
+});

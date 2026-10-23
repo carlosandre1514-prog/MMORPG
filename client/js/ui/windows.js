@@ -18,6 +18,7 @@ import { touchUiMode } from '../device.js';
 import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
+import { logoMark } from './logo.js';
 import { altarList, altarsIn, altarNear, travelFee } from '/shared/altars.js';
 
 const SLOT_ICONS = { weapon: '⚔', head: '⛑', chest: '👕', legs: '👖', feet: '👢', ring: '💍', amulet: '📿' };
@@ -623,7 +624,8 @@ export const windowsMixin = {
     const me = this.me;
     const ov = h('div', { class: 'modal-bg' });
     ov.appendChild(h('div', { class: 'modal intro frame' },
-      h('div', { class: 'intro-title' }, 'Aethra: A Chama Partida'),
+      logoMark('intro'),
+      h('div', { class: 'intro-sub' }, 'A Chama Partida'),
       h('div', { class: 'ql-story', html: fill(`Por mil anos, a <b>Chama Primordial</b> ardeu no Santuário de Lúmen, mantendo a Névoa Cinzenta longe de Aethra.<br><br>
         Há um mês, <b>Morvath</b>, o Sumo-Guardião da Ordem, traiu seus irmãos: extinguiu a Chama e a partiu em três <b>Brasas</b>, entregando-as a criaturas corrompidas. Desde então, a Névoa avança, e os animais e os mortos se erguem contra os vivos.<br><br>
         Na noite em que a Chama se partiu, uma centelha caiu do céu e atravessou seu peito. Você dormiu por três dias. Agora desperta na <b>Cidade de Alvorada</b>, o último refúgio — e sente a luz ardendo dentro de você.<br><br>

@@ -6,6 +6,7 @@ import { themeMusic } from '../music.js';
 import { PRESET_ORDER, PRESET_NAMES, gfxState, setGfxPreset } from '../device.js';
 import { GAME_VERSION } from '/shared/constants.js';
 import { FIREBASE_CONFIG } from '/shared/firebase.js';
+import { logoMark } from './logo.js';
 
 // Ícones próprios (24x24, preenchidos com a cor do texto); o "G" do Google segue as cores oficiais da marca
 const ICONS = {
@@ -121,7 +122,7 @@ export function loginStage(info, card) {
     h('div', { class: 'lg-top-right' }, gear, pop),
     h('div', { class: 'lg-main' },
       h('header', { class: 'lg-logo' },
-        h('div', { class: 'lg-wordmark' }, 'AETHRA'),
+        logoMark('lg'),
         h('div', { class: 'lg-subtitle' }, h('i'), h('span', {}, 'A Chama Partida'), h('i'))),
       card),
     h('div', { class: 'lg-version' }, icon('crest', 'sm'), 'v' + GAME_VERSION));

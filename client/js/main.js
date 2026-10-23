@@ -16,6 +16,7 @@ import { setupLandscape } from './orientation.js';
 import { title } from './three/title.js';
 import { themeMusic } from './music.js';
 import { firebaseAuth, errorText } from './auth.js';
+import { logoMark } from './ui/logo.js';
 import { icon, lgField, peekButton, lgTabs, lgSubmit, lgNotice, lgCheck, lgCard, loginStage } from './ui/loginui.js';
 
 setupLandscape();
@@ -284,7 +285,7 @@ function selectScreen(selectId) {
   };
   render();
   const panel = h('div', { class: 'menu-panel select' },
-    h('div', { class: 'menu-title' }, 'Escolha seu Portador'),
+    h('div', { class: 'menu-title relief', 'data-t': 'Escolha seu Portador' }, 'Escolha seu Portador'),
     h('div', { class: 'muted small center' }, `Conta: ${esc(account)}`),
     notice ? h('div', { class: 'form-ok' }, notice) : null,
     list, err,
@@ -343,7 +344,7 @@ function createScreen() {
   };
   name.addEventListener('keydown', (e) => { if (e.key === 'Enter') create(); });
   const panel = h('div', { class: 'menu-panel create' },
-    h('div', { class: 'menu-title' }, 'Criar Portador'),
+    h('div', { class: 'menu-title relief', 'data-t': 'Criar Portador' }, 'Criar Portador'),
     h('div', { class: 'create-wrap' },
       h('div', { class: 'create-left' }, preview, h('div', { class: 'muted small center' }, 'Clique para girar'),
         ...(charSprites.ready ? [] : [h('div', { class: 'lbl' }, 'Pele'), skinBox, h('div', { class: 'lbl' }, 'Cabelo'), hairBox])),
@@ -398,7 +399,7 @@ async function boot() {
   firebaseAuth.preload(); // o SDK do Firebase carrega junto com o resto, para a tela de login já aparecer pronta
   const fill = h('div');
   const status = h('div', { class: 'muted center' }, 'Carregando modelos 3D...');
-  show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')), status, h('div', { class: 'load-bar' }, fill))));
+  show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, logoMark()), status, h('div', { class: 'load-bar' }, fill))));
   const prog = [0, 0];
   const bar = () => { fill.style.width = Math.round(prog.reduce((a, b) => a + b, 0) / prog.length * 100) + '%'; };
   try {
@@ -412,7 +413,7 @@ async function boot() {
     const hello = await net.request({ t: 'hello' }, (m) => m.t === 'hello');
     loginScreen(hello);
   } catch (e) {
-    show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')),
+    show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, logoMark()),
       h('div', { class: 'form-err' }, 'Não foi possível conectar ao servidor. Verifique se ele está rodando (npm start).'),
       h('button', { class: 'btn', onclick: () => location.reload() }, 'Tentar novamente'))));
   }

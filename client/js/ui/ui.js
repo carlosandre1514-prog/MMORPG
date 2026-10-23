@@ -629,7 +629,7 @@ export class UI {
     this.hideTransition();
     this.transEl = h('div', { id: 'kingdom-transition' },
       h('div', { class: 'kt-label' }, 'Atravessando a fronteira'),
-      h('div', { class: 'kt-title' }, title),
+      h('div', { class: 'kt-title relief', 'data-t': title }, title),
       h('div', { class: 'kt-text' }, text || ''),
       h('div', { class: 'load-bar' }, this.transFill = h('div')));
     document.body.appendChild(this.transEl);
@@ -652,7 +652,7 @@ export class UI {
   showBanner(title, sub, kind = 'zone') {
     const b = this.banner;
     b.className = 'show b-' + kind;
-    b.innerHTML = `<div class="bn-title">${esc(title)}</div>${sub ? `<div class="bn-sub">${esc(sub)}</div>` : ''}`;
+    b.innerHTML = `<div class="bn-title relief" data-t="${esc(title)}">${esc(title)}</div>${sub ? `<div class="bn-sub">${esc(sub)}</div>` : ''}`;
     clearTimeout(this.bannerTimer);
     this.bannerTimer = setTimeout(() => { b.className = ''; }, 3200);
   }

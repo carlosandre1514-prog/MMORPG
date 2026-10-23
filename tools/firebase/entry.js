@@ -3,5 +3,5 @@ export { initializeApp } from 'firebase/app';
 export {
   getAuth, onAuthStateChanged, signOut,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification,
-  GoogleAuthProvider, signInWithPopup,
+  GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence, browserSessionPersistence,
 } from 'firebase/auth';

@@ -16,6 +16,7 @@ import { setupLandscape } from './orientation.js';
 import { title } from './three/title.js';
 import { themeMusic } from './music.js';
 import { firebaseAuth, errorText } from './auth.js';
+import { icon, lgField, peekButton, lgTabs, lgSubmit, lgNotice, lgCheck, lgCard, loginStage } from './ui/loginui.js';
 
 setupLandscape();
 const net = new Net();
@@ -78,142 +79,147 @@ function startBackdrop() {
 }
 
 // ------------------------------------------------------------------ login
-const logoBlock = () => h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA'), h('div', { class: 'logo-sub' }, 'A Chama Partida'));
-const loreBlock = () => h('div', { class: 'lore-blurb' }, 'A Chama Primordial foi partida. A Névoa Cinzenta avança. Das cinzas, despertam os Portadores...');
-const onlineLine = (info) => h('div', { class: 'muted small center' }, info.online != null ? `${info.online} jogador(es) online` : '');
-
 // Sai da conta: encerra a sessão do Firebase (senão o próximo acesso entra sozinho) e recarrega
 async function logout() {
   await firebaseAuth.signOut();
   location.reload();
 }
 
+const LORE = 'Embarque nesta jornada. A Chama ainda arde.';
+const store = {
+  get: (k, d = '') => { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
+  set: (k, v) => { try { if (v == null || v === '') localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* sem armazenamento */ } },
+};
+
 // Entra no servidor com o login do Firebase: pega o token e manda em `fblogin`; quem confere a assinatura é o servidor
-async function enterWithFirebase(err) {
+async function enterWithFirebase() {
   const token = await firebaseAuth.token();
   const r = await net.request({ t: 'fblogin', token }, (m) => m.t === 'chars' || m.t === 'err');
-  if (r.t === 'err') { err.textContent = r.m; return false; }
+  if (r.t === 'err') throw new Error(r.m);
   onChars(r);
-  return true;
 }
 
 function loginScreen(info = {}, legacy = false) {
   if (!info.fb || legacy) return legacyLoginScreen(info);
   let mode = 'login';
-  const email = h('input', { class: 'inp', type: 'email', placeholder: 'E-mail', maxlength: 120, autocomplete: 'email' });
-  const pass = h('input', { class: 'inp', type: 'password', placeholder: 'Senha', maxlength: 64, autocomplete: 'current-password' });
-  const pass2 = h('input', { class: 'inp', type: 'password', placeholder: 'Confirme a senha', maxlength: 64, autocomplete: 'new-password', style: { display: 'none' } });
-  const err = errorBox();
-  const ok = h('div', { class: 'form-ok' });
-  const btn = h('button', { class: 'btn big' }, 'Entrar');
-  const tabLogin = h('button', { class: 'tab on' }, 'Entrar');
-  const tabReg = h('button', { class: 'tab' }, 'Criar conta');
-  const forgot = h('button', { class: 'linkbtn' }, 'Esqueci a senha');
-  const cont = h('div', { class: 'fb-continue' });
-  const setMode = (m) => {
+  const email = h('input', { type: 'email', placeholder: 'Seu e-mail', maxlength: 120, autocomplete: 'email', 'aria-label': 'E-mail' });
+  const pass = h('input', { type: 'password', placeholder: 'Sua senha', maxlength: 64, autocomplete: 'current-password', 'aria-label': 'Senha' });
+  const pass2 = h('input', { type: 'password', placeholder: 'Confirme a senha', maxlength: 64, autocomplete: 'new-password', 'aria-label': 'Confirme a senha' });
+  const remember = h('input', { type: 'checkbox' });
+  remember.checked = store.get('aethra_remember', '1') === '1';
+  const terms = h('input', { type: 'checkbox' });
+  const note = lgNotice();
+  const submit = lgSubmit('Entrar');
+  const forgot = h('button', { class: 'lg-link', type: 'button' }, 'Esqueceu sua senha?');
+  const confirmField = lgField('lock', pass2);
+  const loginRow = h('div', { class: 'lg-options' }, lgCheck('Lembrar de mim', remember), forgot);
+  const termsRow = h('div', { class: 'lg-options' }, lgCheck('Aceito os termos do reino', terms));
+  const tabs = lgTabs([{ id: 'login', icon: 'user', label: 'Entrar' }, { id: 'register', icon: 'userPlus', label: 'Criar conta' }], (m) => setMode(m));
+  const cont = h('div', { class: 'lg-continue' });
+  function setMode(m) {
     mode = m;
-    tabLogin.classList.toggle('on', m === 'login');
-    tabReg.classList.toggle('on', m === 'register');
-    pass2.style.display = m === 'register' ? '' : 'none';
-    pass.autocomplete = m === 'login' ? 'current-password' : 'new-password';
-    forgot.style.display = m === 'login' ? '' : 'none';
-    btn.textContent = m === 'login' ? 'Entrar' : 'Criar conta e entrar';
-    err.textContent = ''; ok.textContent = '';
-  };
-  tabLogin.onclick = () => setMode('login');
-  tabReg.onclick = () => setMode('register');
-  // roda uma ação de login mostrando o erro em português e travando os botões enquanto espera
+    const login = m === 'login';
+    tabs.set(m);
+    confirmField.style.display = login ? 'none' : '';
+    loginRow.style.display = login ? '' : 'none';
+    termsRow.style.display = login ? 'none' : '';
+    pass.autocomplete = login ? 'current-password' : 'new-password';
+    submit.setText(login ? 'Entrar' : 'Criar conta');
+    note.clear();
+  }
+  // roda uma ação de login: erro em português no aviso e botão travado enquanto espera
   const run = async (fn) => {
     audio.init();
-    err.textContent = ''; ok.textContent = '';
-    btn.disabled = true;
-    try {
-      await fn();
-    } catch (e) { const t = errorText(e); if (t) err.textContent = t; }
-    btn.disabled = false;
+    note.clear();
+    submit.btn.disabled = true;
+    try { await fn(); } catch (e) { const t = e && e.code ? errorText(e) : (e && e.message) || errorText(e); if (t) note.error(t); }
+    submit.btn.disabled = false;
   };
-  const submit = () => run(async () => {
-    if (mode === 'register' && pass.value !== pass2.value) throw new Error('As senhas não conferem.');
+  const rememberNow = () => {
+    store.set('aethra_remember', remember.checked ? '1' : '0');
+    store.set('aethra_email', remember.checked ? email.value.trim() : '');
+    return remember.checked;
+  };
+  const go = () => run(async () => {
+    if (!email.value.trim()) throw new Error('Digite o e-mail.');
+    if (!pass.value) throw new Error('Digite a senha.');
     if (mode === 'register') {
-      await firebaseAuth.signUp(email.value, pass.value);
+      if (pass.value.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+      if (pass.value !== pass2.value) throw new Error('As senhas não conferem.');
+      if (!terms.checked) throw new Error('Aceite os termos do reino para continuar.');
+      await firebaseAuth.signUp(email.value, pass.value, rememberNow());
       notice = `Enviamos um link de confirmação para ${email.value.trim()} (olhe também o spam).`;
-    } else await firebaseAuth.signIn(email.value, pass.value);
-    try { localStorage.setItem('aethra_email', email.value.trim()); } catch { /* */ }
-    await enterWithFirebase(err);
+    } else await firebaseAuth.signIn(email.value, pass.value, rememberNow());
+    await enterWithFirebase();
   });
-  btn.onclick = submit;
-  for (const el of [email, pass, pass2]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
-  const google = h('button', { class: 'btn google', onclick: () => run(async () => { await firebaseAuth.google(); await enterWithFirebase(err); }) },
-    h('span', { class: 'g-mark' }, 'G'), 'Entrar com o Google');
+  submit.btn.addEventListener('click', (e) => { e.preventDefault(); go(); });
+  const form = h('form', { novalidate: true, onsubmit: (e) => { e.preventDefault(); go(); } },
+    lgField('mail', email), lgField('lock', pass, peekButton(pass, pass2)), confirmField, loginRow, termsRow, submit.el);
   forgot.onclick = () => run(async () => {
-    if (!email.value.trim()) throw new Error('Digite o seu e-mail e clique em "Esqueci a senha".');
+    if (!email.value.trim()) throw new Error('Digite o seu e-mail e clique em "Esqueceu sua senha?".');
     await firebaseAuth.reset(email.value);
-    ok.textContent = `Se ${email.value.trim()} tem conta, enviamos um link para criar uma nova senha (olhe também o spam).`;
+    note.ok(`Se ${email.value.trim()} tem conta, enviamos um link para criar uma nova senha (olhe também o spam).`);
   });
-  const old = h('button', { class: 'linkbtn', onclick: () => loginScreen(info, true) }, 'Tenho uma conta antiga (usuário e senha)');
-  try { email.value = localStorage.getItem('aethra_email') || ''; } catch { /* */ }
-  const panel = h('div', { class: 'menu-panel login' }, logoBlock(), cont,
-    h('div', { class: 'tabs' }, tabLogin, tabReg),
-    email, pass, pass2, err, ok, btn,
-    h('div', { class: 'or' }, h('span', {}, 'ou')), google,
-    h('div', { class: 'row center small' }, forgot, old),
-    onlineLine(info), loreBlock());
-  show(h('div', { class: 'screen' }, panel));
+  const google = h('button', { class: 'lg-social', type: 'button', title: 'Entrar com o Google', 'aria-label': 'Entrar com o Google' }, icon('google'));
+  google.onclick = () => run(async () => { await firebaseAuth.google(remember.checked); store.set('aethra_remember', remember.checked ? '1' : '0'); await enterWithFirebase(); });
+  const old = h('button', { class: 'lg-link small', type: 'button', onclick: () => loginScreen(info, true) }, 'Tenho uma conta antiga (usuário e senha)');
+  email.value = store.get('aethra_email');
+  const card = lgCard(tabs.el, cont, note.el, form,
+    h('div', { class: 'lg-or' }, h('span', {}, 'OU')), h('div', { class: 'lg-socials' }, google),
+    h('p', { class: 'lg-lore' }, LORE), h('div', { class: 'lg-legacy' }, old));
+  setMode('login');
+  show(loginStage(info, card));
   setTimeout(() => (email.value ? pass : email).focus(), 50);
   // quem já entrou neste navegador pode continuar com um clique
   firebaseAuth.current().then((u) => {
     if (!u || !cont.isConnected) return;
     const who = u.email || u.displayName || 'sua conta';
     cont.append(
-      h('button', { class: 'btn big', onclick: () => run(async () => { await enterWithFirebase(err); }) }, `Continuar como ${who}`),
-      h('button', { class: 'linkbtn', onclick: logout }, 'Usar outra conta'));
+      h('button', { class: 'lg-continue-btn', type: 'button', onclick: () => run(enterWithFirebase) }, icon('user'), h('span', {}, `Continuar como ${who}`)),
+      h('button', { class: 'lg-link small', type: 'button', onclick: logout }, 'Usar outra conta'));
   });
 }
 
 // Login antigo (usuário e senha): contas criadas antes do Firebase e servidores sem Firebase. Criar conta por aqui só no modo DEV.
 function legacyLoginScreen(info = {}) {
   let mode = 'login';
-  const user = h('input', { class: 'inp', placeholder: 'Usuário', maxlength: 16, autocomplete: 'username' });
-  const pass = h('input', { class: 'inp', type: 'password', placeholder: 'Senha', maxlength: 64, autocomplete: 'current-password' });
-  const pass2 = h('input', { class: 'inp', type: 'password', placeholder: 'Confirme a senha', maxlength: 64, style: { display: 'none' } });
-  const err = errorBox();
-  const btn = h('button', { class: 'btn big' }, 'Entrar');
-  const tabLogin = h('button', { class: 'tab on' }, 'Entrar');
-  const tabReg = h('button', { class: 'tab' }, 'Criar conta');
-  const setMode = (m) => {
-    mode = m;
-    tabLogin.classList.toggle('on', m === 'login');
-    tabReg.classList.toggle('on', m === 'register');
-    pass2.style.display = m === 'register' ? '' : 'none';
-    btn.textContent = m === 'login' ? 'Entrar' : 'Criar conta e entrar';
-    err.textContent = '';
-  };
-  tabLogin.onclick = () => setMode('login');
-  tabReg.onclick = () => setMode('register');
-  const submit = async () => {
-    audio.init();
-    err.textContent = '';
-    if (mode === 'register' && pass.value !== pass2.value) { err.textContent = 'As senhas não conferem.'; return; }
-    btn.disabled = true;
-    try {
-      const r = await net.request({ t: mode, user: user.value.trim(), pass: pass.value }, (m) => m.t === 'chars' || m.t === 'err');
-      if (r.t === 'err') err.textContent = r.m;
-      else { try { localStorage.setItem('aethra_user', user.value.trim()); } catch { /* */ } onChars(r); }
-    } catch (e) { err.textContent = e.message; }
-    btn.disabled = false;
-  };
-  btn.onclick = submit;
-  for (const el of [user, pass, pass2]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
-  try { user.value = localStorage.getItem('aethra_user') || ''; } catch { /* */ }
+  const user = h('input', { placeholder: 'Nome do aventureiro', maxlength: 16, autocomplete: 'username', 'aria-label': 'Nome do aventureiro' });
+  const pass = h('input', { type: 'password', placeholder: 'Sua senha', maxlength: 64, autocomplete: 'current-password', 'aria-label': 'Senha' });
+  const pass2 = h('input', { type: 'password', placeholder: 'Confirme a senha', maxlength: 64, autocomplete: 'new-password', 'aria-label': 'Confirme a senha' });
+  const note = lgNotice();
+  const submit = lgSubmit('Entrar');
+  const confirmField = lgField('lock', pass2);
   // com Firebase no servidor, criar conta é pelo e-mail; o cadastro por usuário só existe no modo DEV (testes)
   const canRegister = !info.fb || info.dev;
-  const panel = h('div', { class: 'menu-panel login' }, logoBlock(),
-    info.fb ? h('div', { class: 'muted small center' }, 'Conta antiga, de antes do login por e-mail') : null,
-    canRegister ? h('div', { class: 'tabs' }, tabLogin, tabReg) : null,
-    user, pass, pass2, err, btn,
-    info.fb ? h('button', { class: 'linkbtn', onclick: () => loginScreen(info) }, '← Voltar para o login com e-mail') : null,
-    onlineLine(info), loreBlock());
-  show(h('div', { class: 'screen' }, panel));
+  const tabs = lgTabs([{ id: 'login', icon: 'user', label: 'Entrar' }, { id: 'register', icon: 'userPlus', label: 'Criar conta' }], (m) => setMode(m));
+  function setMode(m) {
+    mode = m;
+    tabs.set(m);
+    confirmField.style.display = m === 'login' ? 'none' : '';
+    submit.setText(m === 'login' ? 'Entrar' : 'Criar conta');
+    note.clear();
+  }
+  const go = async () => {
+    audio.init();
+    note.clear();
+    if (mode === 'register' && pass.value !== pass2.value) { note.error('As senhas não conferem.'); return; }
+    submit.btn.disabled = true;
+    try {
+      const r = await net.request({ t: mode, user: user.value.trim(), pass: pass.value }, (m) => m.t === 'chars' || m.t === 'err');
+      if (r.t === 'err') note.error(r.m);
+      else { store.set('aethra_user', user.value.trim()); onChars(r); }
+    } catch (e) { note.error(e.message); }
+    submit.btn.disabled = false;
+  };
+  submit.btn.addEventListener('click', (e) => { e.preventDefault(); go(); });
+  const form = h('form', { novalidate: true, onsubmit: (e) => { e.preventDefault(); go(); } },
+    lgField('user', user), lgField('lock', pass, peekButton(pass, pass2)), confirmField, submit.el);
+  user.value = store.get('aethra_user');
+  const back = info.fb ? h('button', { class: 'lg-link small', type: 'button', onclick: () => loginScreen(info) }, '← Voltar para o login com e-mail') : null;
+  const card = lgCard(canRegister ? tabs.el : h('div', { class: 'lg-legacy-note' }, 'Conta antiga, de antes do login por e-mail'),
+    note.el, form, h('p', { class: 'lg-lore' }, LORE), h('div', { class: 'lg-legacy' }, back));
+  setMode('login');
+  show(loginStage(info, card));
   setTimeout(() => (user.value ? pass : user).focus(), 50);
 }
 

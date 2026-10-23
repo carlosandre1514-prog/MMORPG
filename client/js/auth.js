@@ -46,24 +46,30 @@ export function errorText(e) {
   return `Não foi possível entrar${code ? ` (${code})` : ''}.`;
 }
 
+// "Lembrar de mim": sessão guardada no navegador (continua depois de fechar) ou só até fechar a aba
+async function persist(remember) {
+  await load();
+  try { await sdk.setPersistence(auth, remember === false ? sdk.browserSessionPersistence : sdk.browserLocalPersistence); } catch { /* segue com o padrão */ }
+}
+
 export const firebaseAuth = {
   // começa a carregar o SDK (chamado cedo, enquanto o jogo carrega o resto)
   preload() { return load().catch(() => null); },
   // usuário que já estava conectado neste navegador (ou null)
   async current() { try { await load(); return auth.currentUser; } catch { return null; } },
-  async signIn(email, pass) {
-    await load();
+  async signIn(email, pass, remember = true) {
+    await persist(remember);
     return (await sdk.signInWithEmailAndPassword(auth, String(email).trim(), pass)).user;
   },
   // cria a conta e já pede o e-mail de confirmação (sem travar se o envio falhar)
-  async signUp(email, pass) {
-    await load();
+  async signUp(email, pass, remember = true) {
+    await persist(remember);
     const { user } = await sdk.createUserWithEmailAndPassword(auth, String(email).trim(), pass);
     sdk.sendEmailVerification(user).catch(() => {});
     return user;
   },
-  async google() {
-    await load();
+  async google(remember = true) {
+    await persist(remember);
     return (await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider())).user;
   },
   async reset(email) {

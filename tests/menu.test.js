@@ -53,7 +53,7 @@ test('o login pelo Firebase: SDK local, configuração do projeto e telas ligada
   assert.match(auth, /import\('\/vendor\/firebase\/firebase-auth\.js'\)/, 'o SDK vem do próprio servidor, sem CDN');
   assert.ok(fs.existsSync(path.join(ROOT, 'client/vendor/firebase/firebase-auth.js')));
   assert.match(read('client/vendor/firebase/LICENSE'), /Apache License/);
-  assert.match(read('shared/firebase.js'), /projectId: 'gen-lang-client-0119623458'/);
+  assert.match(read('shared/firebase.js'), /projectId: 'mmorpg-aethra'/);
   // a tela de login manda o token ao servidor; a conta antiga fica em outra tela
   assert.match(main, /\{ t: 'fblogin', token \}/);
   assert.match(main, /function legacyLoginScreen/);
@@ -64,6 +64,22 @@ test('o login pelo Firebase: SDK local, configuração do projeto e telas ligada
   for (const code of ['auth/invalid-credential', 'auth/email-already-in-use', 'auth/weak-password', 'auth/operation-not-allowed', 'auth/unauthorized-domain']) {
     assert.ok(auth.includes(`'${code}'`), code);
   }
+});
+
+test('a tela de login: peças visuais, engrenagem, versão igual ao package.json e cena de acampamento', () => {
+  const ui = read('client/js/ui/loginui.js'), main = read('client/js/main.js'), css = read('client/style.css');
+  for (const fn of ['loginStage', 'lgCard', 'lgTabs', 'lgField', 'peekButton', 'lgSubmit', 'lgNotice', 'lgCheck']) assert.match(ui, new RegExp(`export function ${fn}\\b`), fn);
+  assert.match(main, /loginStage\(info, card\)/);
+  assert.match(main, /Lembrar de mim/);
+  assert.match(css, /\.lg-card \{/);
+  assert.match(css, /orientation: landscape\) \{ \/\* celular deitado/);
+  assert.equal(JSON.parse(read('package.json')).version, read('shared/constants.js').match(/GAME_VERSION = '([^']+)'/)[1]);
+  // a cena de abertura é o acampamento: cavaleiro, fogueira, castelo, rio e cachoeiras
+  const title = read('client/js/three/title.js'), chars = read('client/js/three/characters.js');
+  assert.match(chars, /hero_camp: \{ model: 'Knight'/);
+  for (const k of ['FLAME_FS', 'WATER_FS', 'FALL_FS', 'bannerTexture', "'hero_camp'", 'building_castle_blue']) assert.ok(title.includes(k), k);
+  // o SDK do Firebase exporta o que o "Lembrar de mim" usa
+  assert.match(read('tools/firebase/entry.js'), /browserSessionPersistence/);
 });
 
 test('a música tema toca em repetição contínua, dentro do jogo, e some em combate', () => {

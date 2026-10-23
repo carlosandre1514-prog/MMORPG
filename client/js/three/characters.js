@@ -22,6 +22,8 @@ export const LOOKS = {
   mage: { model: 'Mage', right: 'staff' },
   ranger: { model: 'Ranger', left: 'bow_withString' },
   cleric: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
+  // cavaleiro da cena de abertura (acampamento das telas de login)
+  hero_camp: { model: 'Knight', right: 'sword_1handed', hue: 215 },
   // NPCs
   thalric: { model: 'Mage', right: 'staff', hue: 190, sat: 0.7 },
   bran: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color', hue: -20 },

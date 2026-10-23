@@ -1,6 +1,7 @@
 // Constantes compartilhadas entre cliente e servidor.
 
 export const GAME_NAME = 'Aethra: A Chama Partida';
+export const GAME_VERSION = '1.0.0'; // igual ao version do package.json (um teste confere)
 export const PROTOCOL_VERSION = 1;
 
 export const TILE = 32;              // pixels por tile no zoom 1

@@ -145,7 +145,8 @@ input { font-family: var(--font); user-select: text; }
 .create-left { width: 240px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .create-preview { width: 200px; height: 200px; border: 1px solid #4a3d28; border-radius: 8px; background: radial-gradient(#2c3550, #10131c); cursor: pointer; }
 .create-right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.class-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.class-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.class-list .class-card { padding: 4px; min-width: 0; } .class-list .cl-name { font-size: 13px; } .class-list .cl-role { font-size: 10px; }
 @media (max-width: 760px) { .class-list { grid-template-columns: repeat(3, 1fr); } }
 .class-card { border: 2px solid #3a3020; border-radius: 8px; padding: 6px; text-align: center; cursor: pointer; background: rgba(0, 0, 0, 0.3); }
 .class-card:hover { background: rgba(255, 255, 255, 0.05); }
@@ -255,7 +256,7 @@ input { font-family: var(--font); user-select: text; }
 .ch-sistema.k-epic .chat-text { color: #ff9a1f; font-weight: 700; }
 .ch-sistema.k-good .chat-text { color: #82e0aa; }
 .ch-grito .chat-text, .ch-grito .chat-from { color: #ff7043; font-weight: 700; }
-.c-warrior { color: #ec7063 !important; } .c-mage { color: #5dade2 !important; } .c-ranger { color: #58d68d !important; } .c-cleric { color: #f7dc6f !important; }
+.c-warrior { color: #ec7063 !important; } .c-berserker { color: #eb984e !important; } .c-assassin { color: #bb8fce !important; } .c-mage { color: #5dade2 !important; } .c-ranger { color: #58d68d !important; } .c-cleric { color: #f7dc6f !important; }
 
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 #bottom > * { pointer-events: auto; }

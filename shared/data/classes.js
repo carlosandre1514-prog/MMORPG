@@ -34,6 +34,22 @@ export const CLASSES = {
     skills: ['b_cleave', 'b_rend', 'b_leap', 'b_frenzy', 'b_roar', 'b_massacre'],
     startItems: ['b_weapon_1', 'chest_1', 'pot_hp_1:5'],
   },
+  assassin: {
+    id: 'assassin',
+    name: 'Assassino',
+    desc: 'Mestre das sombras e das adagas. Some na fumaça, surge atrás do alvo e acaba com ele em golpes rápidos e envenenados.',
+    role: 'Dano corpo a corpo / Furtividade',
+    primary: 'dex',
+    baseHp: 85, hpPerLvl: 11,
+    baseMp: 60, mpPerLvl: 5,
+    base: { str: 6, dex: 13, int: 3, vit: 6 },
+    growth: { str: 1, dex: 3, int: 0, vit: 1 },
+    recommended: { dex: 2, vit: 1 },
+    atkRange: 1.7, atkInterval: 0.9, projectile: null,
+    color: '#a569bd',
+    skills: ['a_stab', 'a_backstab', 'a_venom', 'a_shadow', 'a_smoke', 'a_flurry'],
+    startItems: ['a_weapon_1', 'chest_1', 'pot_hp_1:5'],
+  },
   mage: {
     id: 'mage',
     name: 'Mago',
@@ -84,7 +100,7 @@ export const CLASSES = {
   },
 };
 
-export const CLASS_LIST = ['warrior', 'berserker', 'mage', 'ranger', 'cleric'];
+export const CLASS_LIST = ['warrior', 'berserker', 'assassin', 'mage', 'ranger', 'cleric'];
 
 export const SKIN_TONES = ['#f5d0a9', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e'];
 export const HAIR_COLORS = ['#2b1d0e', '#6b3e1d', '#c58b3c', '#e8d36c', '#b03a2e', '#dcdcdc', '#3c5aa8', '#2d8a4e'];

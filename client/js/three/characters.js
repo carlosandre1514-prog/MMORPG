@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { arms } from './arms.js';
 import { buildMace } from './mace.js';
+import { recolorImage } from './recolor.js';
+import { buildHalo, attachToHead } from './halo.js';
 
 const BASE = '/kaykit/';
 const MODELS = ['Barbarian', 'Knight', 'Mage', 'Ranger', 'Rogue', 'Rogue_Hooded',
@@ -23,7 +25,8 @@ export const LOOKS = {
   berserker: { model: 'Barbarian', right: 'axe_2handed' },
   mage: { model: 'Mage', right: 'staff' },
   ranger: { model: 'Ranger', left: 'bow_withString' },
-  cleric: { model: 'Mage', right: '@mace', left: 'spellbook_open', hide: ['Hat'], sat: 0.2, bright: 3.4, tint: [1.15, 1.03, 0.78] },
+  cleric: { model: 'Mage', right: '@mace', left: 'spellbook_open', hide: ['Hat'], recolor: 'cleric', halo: true },
+  assassin: { model: 'Rogue_Hooded', right: 'dagger', left: 'dagger', recolor: 'assassin' },
   // cavaleiro da cena de abertura (acampamento das telas de login)
   hero_camp: { model: 'Knight', right: 'sword_1handed', hue: 215 },
   // NPCs
@@ -170,6 +173,19 @@ class CharacterLibrary {
     return m;
   }
 
+  // Textura recolorida (uma por modelo e paleta; é compartilhada por todos os personagens com a mesma aparência)
+  recolored(map, look) {
+    this.recolorCache ||= new Map();
+    const key = `${look.model}:${look.recolor}`;
+    let t = this.recolorCache.get(key);
+    if (!t) {
+      t = new THREE.CanvasTexture(recolorImage(map.image, look.recolor));
+      t.flipY = map.flipY; t.colorSpace = map.colorSpace; t.wrapS = map.wrapS; t.wrapT = map.wrapT; t.anisotropy = map.anisotropy;
+      this.recolorCache.set(key, t);
+    }
+    return t;
+  }
+
   // Cria uma instância animada de um personagem.
   create(key) {
     const look = LOOKS[key];
@@ -181,7 +197,9 @@ class CharacterLibrary {
       if (!o.isMesh) return;
       // material próprio (variação de cor e brilho de dano por instância)
       if (look.hide && look.hide.some((n) => o.name.includes(n))) { o.visible = false; return; }
-      o.material = this.applyTint(o.material.clone(), look);
+      o.material = o.material.clone();
+      if (look.recolor && o.material.map) o.material.map = this.recolored(o.material.map, look);
+      o.material = this.applyTint(o.material, look);
       // olhos que brilham no escuro (mortos-vivos)
       if (look.eyes && /eyes/i.test(o.name)) { o.material.emissive = new THREE.Color(...look.eyes); o.material.emissiveIntensity = 2.2; o.material.userData.glow = true; }
       if (look.ghost) { o.material.transparent = true; o.material.opacity = 0.72; o.material.depthWrite = false; }
@@ -198,6 +216,7 @@ class CharacterLibrary {
         slot.add(w);
       }
     }
+    if (look.halo) attachToHead(model, buildHalo(THREE));
     const root = new THREE.Group();
     const scale = (TARGET_HEIGHT / src.height) * (look.scale || 1);
     model.scale.setScalar(scale);

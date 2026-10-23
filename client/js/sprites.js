@@ -73,6 +73,12 @@ function drawWeapon(ctx, type, color, glow, swing) {
       ctx.beginPath(); ctx.moveTo(-2, -3); ctx.lineTo(2, -3); ctx.lineTo(1.5, -19); ctx.lineTo(0, -22); ctx.lineTo(-1.5, -19); ctx.closePath(); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(-0.5, -18, 1, 14);
       break;
+    case 'dagger':
+      ctx.fillStyle = '#3b2a1a'; ctx.fillRect(-1, -2, 2, 5);
+      ctx.fillStyle = '#8e6a2c'; ctx.fillRect(-3.5, -3, 7, 1.8);
+      ctx.fillStyle = color || '#cfd6dc';
+      ctx.beginPath(); ctx.moveTo(-1.8, -3); ctx.lineTo(1.8, -3); ctx.lineTo(0, -15); ctx.closePath(); ctx.fill();
+      break;
     case 'axe':
       ctx.fillStyle = '#5a3d1e'; ctx.fillRect(-1, -18, 2, 21);
       ctx.fillStyle = color || '#aab7b8';
@@ -114,7 +120,7 @@ function drawWeapon(ctx, type, color, glow, swing) {
   ctx.restore();
 }
 
-const WEAPON_BY_CLASS = { warrior: 'sword', berserker: 'axe', mage: 'staff', ranger: 'bow', cleric: 'mace' };
+const WEAPON_BY_CLASS = { warrior: 'sword', berserker: 'axe', assassin: 'dagger', mage: 'staff', ranger: 'bow', cleric: 'mace' };
 
 // ------------------------------------------------------------------ humanoide
 // o: { dir, walk, skin, hair, hairStyle, tunic, legs, armor, trim, robe, cape, beard, hat, pointyHat, hood,
@@ -306,7 +312,7 @@ export function playerLook(e) {
   const legs = app.l && ITEMS[app.l];
   const head = app.h && ITEMS[app.h];
   const wpn = app.w && ITEMS[app.w];
-  const classColor = { warrior: '#922b21', berserker: '#a04000', mage: '#1f4e8c', ranger: '#1e6b3c', cleric: '#d4ac0d' }[e.cls];
+  const classColor = { warrior: '#922b21', berserker: '#a04000', assassin: '#6c3483', mage: '#1f4e8c', ranger: '#1e6b3c', cleric: '#d4ac0d' }[e.cls];
   look.tunic = classColor;
   if (chest) look.armor = chest.icon.c1;
   look.trim = classColor;
@@ -725,6 +731,13 @@ export function drawIcon(ctx, icon) {
       ctx.strokeStyle = c1; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(-6, 0, 13, -1.1, 1.1); ctx.stroke();
       ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-6 + Math.cos(-1.1) * 13, Math.sin(-1.1) * 13); ctx.lineTo(-6 + Math.cos(1.1) * 13, Math.sin(1.1) * 13); ctx.stroke();
       break;
+    case 'dagger':
+      ctx.translate(16, 16); ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = '#4a3220'; ctx.fillRect(-1.5, 5, 3, 7);
+      ctx.fillStyle = '#c9a227'; ctx.fillRect(-5, 3.5, 10, 2.6);
+      ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(-2.4, 3.5); ctx.lineTo(2.4, 3.5); ctx.lineTo(0, -12); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(-0.4, -8, 0.9, 11);
+      break;
     case 'axe':
       ctx.translate(16, 16); ctx.rotate(Math.PI / 4);
       ctx.fillStyle = '#6e4b2a'; ctx.fillRect(-1.5, -12, 3, 26);
@@ -940,6 +953,12 @@ export function skillIcon(sk, size = 44) {
     case 'charge': P([6, 20, 22, 20]); ctx.stroke(); P([18, 12, 30, 20, 18, 28]); ctx.stroke(); P([6, 12, 12, 12]); ctx.stroke(); P([6, 28, 12, 28]); ctx.stroke(); break;
     case 'whirl': ctx.beginPath(); for (let a = 0; a < 12; a += 0.2) { const r = 2 + a * 1.2; ctx.lineTo(20 + Math.cos(a) * r, 20 + Math.sin(a) * r); } ctx.stroke(); break;
     case 'fury': P([20, 6, 26, 18, 20, 16, 24, 34, 12, 18, 18, 20, 14, 6]); ctx.closePath(); ctx.fill(); break;
+    case 'stab': ctx.save(); ctx.translate(20, 20); ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(-3, 4); ctx.lineTo(3, 4); ctx.lineTo(0, -17); ctx.closePath(); ctx.fill(); ctx.fillRect(-7, 4, 14, 3); ctx.fillRect(-1.6, 7, 3.2, 8); ctx.restore(); ctx.globalAlpha = 0.6; P([5, 33, 11, 27]); ctx.stroke(); P([3, 27, 8, 23]); ctx.stroke(); ctx.globalAlpha = 1; break;
+    case 'backstab': circle(ctx, 14, 16, 6, c2 === '#6c3483' ? '#5b2c6f' : c2); ctx.fillStyle = c1; ctx.save(); ctx.translate(26, 22); ctx.rotate(-2.2); ctx.beginPath(); ctx.moveTo(-3, 3); ctx.lineTo(3, 3); ctx.lineTo(0, -15); ctx.closePath(); ctx.fill(); ctx.fillRect(-6, 3, 12, 3); ctx.restore(); break;
+    case 'venom': ctx.save(); ctx.translate(18, 18); ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(-3, 6); ctx.lineTo(3, 6); ctx.lineTo(0, -16); ctx.closePath(); ctx.fill(); ctx.fillRect(-7, 6, 14, 3); ctx.restore(); ctx.fillStyle = '#7cb342'; ctx.beginPath(); ctx.moveTo(30, 22); ctx.quadraticCurveTo(35, 29, 30, 34); ctx.quadraticCurveTo(25, 29, 30, 22); ctx.fill(); circle(ctx, 22, 32, 2, '#7cb342'); break;
+    case 'shadow': for (let i = 0; i < 3; i++) { ctx.globalAlpha = 0.25 + i * 0.3; ctx.beginPath(); ctx.ellipse(10 + i * 10, 22, 4 + i, 9 + i, 0, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; P([28, 10, 34, 16, 28, 22]); ctx.stroke(); break;
+    case 'smoke': for (const [x, y, r] of [[13, 24, 7], [22, 20, 9], [29, 26, 6], [18, 29, 6], [26, 14, 5]]) { ctx.globalAlpha = 0.75; circle(ctx, x, y, r, c1); } ctx.globalAlpha = 1; break;
+    case 'flurry': for (let i = 0; i < 4; i++) { ctx.save(); ctx.translate(20, 20); ctx.rotate((i * Math.PI) / 2 + 0.4); ctx.beginPath(); ctx.moveTo(-2.4, -4); ctx.lineTo(2.4, -4); ctx.lineTo(0, -16); ctx.closePath(); ctx.fill(); ctx.restore(); } ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(20, 20, 14, 0.3, 2.6); ctx.stroke(); ctx.beginPath(); ctx.arc(20, 20, 14, 3.5, 5.7); ctx.stroke(); ctx.globalAlpha = 1; break;
     case 'exec': P([20, 4, 20, 26]); ctx.stroke(); P([12, 24, 28, 24]); ctx.stroke(); P([16, 24, 16, 30]); ctx.stroke(); P([24, 24, 24, 30]); ctx.stroke(); ctx.globalAlpha = 0.6; P([8, 34, 32, 34]); ctx.stroke(); ctx.globalAlpha = 1; break;
     case 'cleave': P([14, 34, 22, 8]); ctx.stroke(); ctx.beginPath(); ctx.moveTo(21, 8); ctx.quadraticCurveTo(36, 10, 31, 24); ctx.lineTo(24, 16); ctx.fill(); ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(20, 22, 15, -2.4, -0.2); ctx.stroke(); ctx.globalAlpha = 1; break;
     case 'rend': for (let i = -1; i <= 1; i++) { P([10 + i * 7, 6, 26 + i * 7, 34]); ctx.stroke(); } ctx.fillStyle = '#ff6b5a'; circle(ctx, 14, 36, 1.8, '#ff6b5a'); circle(ctx, 28, 37, 1.6, '#ff6b5a'); break;

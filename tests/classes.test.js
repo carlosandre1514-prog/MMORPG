@@ -26,7 +26,7 @@ test('cada classe tem as 7 armas, seis habilidades suas e uma arma lendária', (
     for (let t = 1; t <= 7; t++) assert.equal(ITEMS[`${prefix}_weapon_${t}`]?.cls, id, `${id} arma ${t}`);
     assert.equal(ITEMS[`u_${id}_legend`]?.cls, id);
   }
-  assert.deepEqual(CLASS_LIST, ['warrior', 'berserker', 'mage', 'ranger', 'cleric']);
+  assert.deepEqual(CLASS_LIST, ['warrior', 'berserker', 'assassin', 'mage', 'ranger', 'cleric']);
 });
 
 test('o Guerreiro é o cavaleiro de espada e escudo, o Berserker usa machado e o Clérigo não usa espada nem escudo', () => {
@@ -36,6 +36,11 @@ test('o Guerreiro é o cavaleiro de espada e escudo, o Berserker usa machado e o
   const cleric = chars.match(/\n  cleric: \{([^}]*)\}/)[1];
   assert.ok(!/sword|shield|Knight/.test(cleric), cleric);
   assert.match(cleric, /@mace/);
+  assert.match(chars, /assassin: \{ model: 'Rogue_Hooded', right: 'dagger', left: 'dagger'/); // o Assassino usa duas adagas
+  assert.equal(ITEMS.a_weapon_1.icon.shape, 'dagger');
+  // o Clérigo mantém a cor de pele: só as roupas são recoloridas (por matiz), nada de desbotar o modelo todo
+  assert.match(cleric, /recolor: 'cleric'/);
+  assert.ok(!/\bsat:|bright:|tint:/.test(cleric), 'sem filtro que desbote a pele');
   assert.match(ITEMS.b_weapon_1.name, /Machad/);
   assert.equal(ITEMS.b_weapon_1.icon.shape, 'axe');
   // sprites das telas de personagem: um por classe

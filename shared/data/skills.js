@@ -79,6 +79,44 @@ export const SKILLS = {
     icon: { sym: 'massacre', c1: '#ff2d2d', c2: '#3b0a0a' },
   },
 
+  // ---------------- Assassino ----------------
+  a_stab: {
+    id: 'a_stab', cls: 'assassin', name: 'Estocada', lvl: 1, mp: 8, cd: 3, range: 1.8,
+    target: 'enemy', mult: 1.4, critBonus: 20,
+    desc: 'Golpe rápido com a adaga: 140% do Poder e +20% de chance de crítico.',
+    icon: { sym: 'stab', c1: '#d7bde2', c2: '#4a235a' },
+  },
+  a_backstab: {
+    id: 'a_backstab', cls: 'assassin', name: 'Golpe nas Costas', lvl: 3, mp: 12, cd: 8, range: 1.8,
+    target: 'enemy', mult: 2.0, bonusMult: 3.2,
+    desc: 'Causa 200% do Poder, ou 320% se o alvo estiver atacando outra pessoa, atordoado ou lento.',
+    icon: { sym: 'backstab', c1: '#e8daef', c2: '#6c3483' },
+  },
+  a_venom: {
+    id: 'a_venom', cls: 'assassin', name: 'Lâmina Envenenada', lvl: 6, mp: 14, cd: 10, range: 1.8,
+    target: 'enemy', mult: 1.0, poison: 0.35, poisonDur: 6,
+    desc: 'Corta o alvo: 100% do Poder e veneno de 35% do Poder por segundo durante 6s.',
+    icon: { sym: 'venom', c1: '#a3e635', c2: '#1f3d0a' },
+  },
+  a_shadow: {
+    id: 'a_shadow', cls: 'assassin', name: 'Passo Sombrio', lvl: 10, mp: 18, cd: 14, range: 8,
+    target: 'enemy', mult: 1.7, critBonus: 100,
+    desc: 'Some e surge atrás do alvo, golpeando com 170% do Poder. O golpe sempre é crítico.',
+    icon: { sym: 'shadow', c1: '#c39bd3', c2: '#1b0a2c' },
+  },
+  a_smoke: {
+    id: 'a_smoke', cls: 'assassin', name: 'Bomba de Fumaça', lvl: 15, mp: 25, cd: 30, range: 0,
+    target: 'self', radius: 4, slow: 0.5, slowDur: 3, dur: 5, dr: 0.35, speed: 0.25,
+    desc: 'Solta fumaça: inimigos em volta ficam 50% mais lentos por 3s e esquecem parte da raiva contra você. Você recebe 35% menos dano e anda 25% mais rápido por 5s.',
+    icon: { sym: 'smoke', c1: '#bdc3c7', c2: '#2c3e50' },
+  },
+  a_flurry: {
+    id: 'a_flurry', cls: 'assassin', name: 'Dança das Lâminas', lvl: 20, mp: 40, cd: 25, range: 0,
+    target: 'self', radius: 2.8, mult: 0.9, hits: 4, interval: 0.25,
+    desc: 'Gira entre as lâminas: 4 golpes de 90% do Poder em todos os inimigos ao redor.',
+    icon: { sym: 'flurry', c1: '#f5b7b1', c2: '#7b241c' },
+  },
+
   // ---------------- Mago ----------------
   m_fire: {
     id: 'm_fire', cls: 'mage', name: 'Bola de Fogo', lvl: 1, mp: 10, cd: 3, range: 8.5,

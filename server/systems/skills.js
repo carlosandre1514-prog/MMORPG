@@ -170,6 +170,51 @@ const IMPL = {
     zone.fx({ k: 'bf', id: p.id, s: 'fury' }, p.x, p.y);
   },
 
+  a_stab(zone, p, sk, t) {
+    strike(zone, p, t, sk.mult, { swing: 'slash', critBonus: sk.critBonus });
+  },
+  a_backstab(zone, p, sk, t) {
+    // pelas costas: o alvo está de olho em outra pessoa, ou está atordoado ou lento
+    const flank = t.isMonster ? !!t.target && t.target !== p : false;
+    const weak = hasStatus(t, 'stun') || hasStatus(t, 'slow') || hasStatus(t, 'root');
+    strike(zone, p, t, flank || weak ? sk.bonusMult : sk.mult, { swing: 'heavy' });
+  },
+  a_venom(zone, p, sk, t) {
+    strike(zone, p, t, sk.mult, {
+      swing: 'claw',
+      after: (tg) => addStatus(tg, { id: 'venom_' + p.id, type: 'poison', dps: p.stats.power * sk.poison, dur: sk.poisonDur, src: p.id, name: 'Veneno' }),
+    });
+  },
+  a_shadow(zone, p, sk, t) {
+    const dx = t.x - p.x, dy = t.y - p.y, d = Math.hypot(dx, dy) || 1;
+    // atrás do alvo (do lado oposto ao de onde veio); se não couber, para antes dele
+    let end = { x: t.x + (dx / d) * 1.0, y: t.y + (dy / d) * 1.0 };
+    if (!canStand(zone.map, end.x, end.y, 0.3)) end = castRay(zone.map, p.x, p.y, dx, dy, Math.max(0, d - 1.0), 0.3);
+    teleportPlayer(zone, p, end.x, end.y, 'blink');
+    strike(zone, p, t, sk.mult, { swing: 'exec', critBonus: sk.critBonus });
+  },
+  a_smoke(zone, p, sk) {
+    zone.fx({ k: 'ao', x: p.x, y: p.y, r: sk.radius, s: 'shadow' }, p.x, p.y);
+    for (const m of hostilesAround(zone, p, p.x, p.y, sk.radius)) {
+      addStatus(m, { id: 'slow_smoke', type: 'slow', value: sk.slow, dur: sk.slowDur, name: 'Fumaça' });
+      if (m.isMonster && m.threat.has(p.id)) m.threat.set(p.id, m.threat.get(p.id) * 0.4);
+    }
+    addStatus(p, { id: 'a_smoke', type: 'dr', value: sk.dr, dur: sk.dur, name: 'Fumaça' });
+    addStatus(p, { id: 'a_smoke_speed', type: 'buff', mods: { speed: sk.speed }, dur: sk.dur, name: 'Fumaça' });
+  },
+  a_flurry(zone, p, sk) {
+    zone.fx({ k: 'ao', x: p.x, y: p.y, r: sk.radius, s: 'whirl', id: p.id }, p.x, p.y);
+    for (let i = 0; i < sk.hits; i++) {
+      zone.schedule(i * sk.interval * 1000, () => {
+        if (!p.zone || p.zone !== zone || !p.alive) return;
+        for (const e of hostilesAround(zone, p, p.x, p.y, sk.radius)) {
+          const { dmg, crit } = computeHit(p, e, sk.mult);
+          dealDamage(zone, p, e, dmg, { crit });
+        }
+      });
+    }
+  },
+
   m_fire(zone, p, sk, t) {
     strike(zone, p, t, sk.mult, {
       speed: sk.speed, proj: 'fire', magic: true,
@@ -335,7 +380,7 @@ export function useSkill(world, p, msg) {
   bump(p, 'casts');
   p.send({ t: 'cd', s: sk.id, d: sk.cd * 1000, g: GLOBAL_COOLDOWN * 1000 });
   zone.fx({ k: 'cs', id: p.id, s: sk.id }, p.x, p.y);
-  if (sk.target === 'enemy' || sk.target === 'ground' || sk.id === 'w_cry' || sk.id === 'w_whirl' || sk.id === 'm_nova' || sk.id === 'b_roar') {
+  if (sk.target === 'enemy' || sk.target === 'ground' || sk.id === 'w_cry' || sk.id === 'w_whirl' || sk.id === 'm_nova' || sk.id === 'b_roar' || sk.id === 'a_smoke' || sk.id === 'a_flurry') {
     p.combatUntil = Math.max(p.combatUntil, now + 3000);
   }
 }

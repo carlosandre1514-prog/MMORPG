@@ -368,6 +368,47 @@
           "dur": 800
         }
       }
+    },
+    "assassin": {
+      "file": "assassin.webp",
+      "anims": {
+        "idle": {
+          "row": 0,
+          "frames": 8,
+          "loop": true,
+          "dur": 1067
+        },
+        "walk": {
+          "row": 4,
+          "frames": 8,
+          "loop": true,
+          "dur": 1067
+        },
+        "attack": {
+          "row": 8,
+          "frames": 6,
+          "loop": false,
+          "dur": 1367
+        },
+        "cast": {
+          "row": 12,
+          "frames": 6,
+          "loop": false,
+          "dur": 1600
+        },
+        "hit": {
+          "row": 16,
+          "frames": 4,
+          "loop": false,
+          "dur": 667
+        },
+        "death": {
+          "row": 20,
+          "frames": 6,
+          "loop": false,
+          "dur": 800
+        }
+      }
     }
   },
   "frame": 128,

@@ -46,6 +46,7 @@ const DIR_ANGLE = [0, -Math.PI / 2, Math.PI / 2, Math.PI]; // baixo, esquerda, d
 const LOOT_WEAPON = {
   warrior: ['sword_A', 'sword_C', 'sword_E'],
   berserker: ['axe_A', 'axe_B', 'axe_C'],
+  assassin: ['dagger_A', 'dagger_A', 'dagger_B'],
   mage: ['staff_A', 'staff_B', 'staff_B'],
   ranger: ['bow_A_withString', 'bow_B_withString', 'bow_B_withString'],
   cleric: ['hammer_A', 'hammer_B', 'hammer_C'],

@@ -17,6 +17,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { buildMace } from '/client/js/three/mace.js';
+import { recolorImage } from '/client/js/three/recolor.js';
+import { buildHalo, attachToHead } from '/client/js/three/halo.js';
 
 const FRAME = 128;
 const DIRS = ['down', 'left', 'right', 'up'];
@@ -65,9 +67,16 @@ cam.updateProjectionMatrix();
 async function bake(cfg, animClips, base) {
   const gltf = await load(`${base}/characters/${cfg.model}.glb`);
   const model = SkeletonUtils.clone(gltf.scene);
+  let recolored = null;
   model.traverse((o) => {
     if (o.isMesh) {
       o.frustumCulled = false;
+      if (cfg.recolor && o.material.map) {
+        // mesma recoloração do jogo (client/js/three/recolor.js): só as roupas mudam, a pele fica
+        if (!recolored) { const map = o.material.map; recolored = new THREE.CanvasTexture(recolorImage(map.image, cfg.recolor)); recolored.flipY = map.flipY; recolored.colorSpace = map.colorSpace; }
+        o.material = o.material.clone();
+        o.material.map = recolored;
+      }
       if (cfg.tint || cfg.emissive) {
         o.material = o.material.clone();
         if (cfg.tint) o.material.color.setRGB(...cfg.tint);
@@ -83,6 +92,7 @@ async function bake(cfg, animClips, base) {
     model.traverse((o) => { if (o.name.replace(/[._]/g, '').toLowerCase() === bone) slot = o; });
     if (slot) slot.add(w.scene);
   }
+  if (cfg.halo) attachToHead(model, buildHalo(THREE));
   const holder = new THREE.Group();
   holder.add(model);
   scene.add(holder);

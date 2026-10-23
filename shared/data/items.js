@@ -15,10 +15,11 @@ const WEAPON_NAMES = {
   mage: ['Cajado de Aprendiz', 'Cajado de Carvalho', 'Cajado Arcano', 'Cetro de Cristal', 'Cajado Estelar', 'Cajado do Abismo', 'Cajado de Ankh'],
   ranger: ['Arco Curto', 'Arco de Caça', 'Arco Longo', 'Arco Composto', 'Arco Élfico', 'Arco da Tempestade', 'Arco das Dunas'],
   berserker: ['Machadinha', 'Machado de Guerra', 'Machado de Ferro Negro', 'Machado do Carniceiro', 'Machado Rúnico', 'Fendedor das Cinzas', 'Machado do Sol'],
+  assassin: ['Adaga Simples', 'Adaga Afiada', 'Adaga de Ferro Negro', 'Lâmina Sussurrante', 'Adaga de Obsidiana', 'Presa da Víbora', 'Adaga do Sol'],
   cleric: ['Maça de Madeira', 'Maça de Ferro', 'Martelo Sagrado', 'Cetro da Aurora', 'Martelo Celestial', 'Relíquia da Chama', 'Cetro do Oásis'],
 };
-const WEAPON_ICON = { warrior: 'sword', berserker: 'axe', mage: 'staff', ranger: 'bow', cleric: 'mace' };
-const PREFIX = { warrior: 'w', berserker: 'b', mage: 'm', ranger: 'r', cleric: 'c' };
+const WEAPON_ICON = { warrior: 'sword', berserker: 'axe', assassin: 'dagger', mage: 'staff', ranger: 'bow', cleric: 'mace' };
+const PREFIX = { warrior: 'w', berserker: 'b', assassin: 'a', mage: 'm', ranger: 'r', cleric: 'c' };
 const TIER_COLORS = ['#a0a0a0', '#b87333', '#5d6d7e', '#aab7b8', '#76d7c4', '#e74c3c', '#f4d03f'];
 
 for (const cls of Object.keys(WEAPON_NAMES)) {
@@ -137,6 +138,7 @@ add({
 });
 const LEGEND_WEAPONS = {
   warrior: ['Lâmina da Aurora', { str: 18, vit: 10, crit: 6, lifesteal: 4 }],
+  assassin: ['Sombra da Aurora', { dex: 22, crit: 12, haste: 8, lifesteal: 3 }],
   berserker: ['Machado do Alvorecer', { str: 22, dex: 6, crit: 9, lifesteal: 6 }],
   mage: ['Cajado da Chama Eterna', { int: 20, mp: 120, crit: 7, haste: 8 }],
   ranger: ['Arco do Alvorecer', { dex: 20, crit: 10, haste: 10 }],

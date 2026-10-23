@@ -31,8 +31,10 @@ const cfg = await (await fetch(`https://www.googleapis.com/identitytoolkit/v3/re
 if (cfg.error) {
   line(false, `Não consegui ler a configuração do projeto (${cfg.error.message})`, 'a chave de API precisa permitir a API "Identity Toolkit"');
 } else {
-  const idps = (cfg.idpConfig || []).filter((p) => p.enabled !== false).map((p) => p.provider);
-  line(idps.includes('GOOGLE'), `Login com o Google ${idps.includes('GOOGLE') ? 'ativado' : 'desligado'}`, 'Firebase > Authentication > Método de login > Google > Ativar (escolha o e-mail de suporte) > Salvar');
+  // o Google ligado responde ao createAuthUri com o endereço de login; desligado dá OPERATION_NOT_ALLOWED
+  const g = await post(`https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=${KEY}`, { providerId: 'google.com', continueUri: 'http://localhost/' });
+  const googleOn = !!g.json.authUri;
+  line(googleOn, `Login com o Google ${googleOn ? 'ativado' : 'desligado'}`, 'Firebase > Authentication > Método de login > Google > Ativar (escolha o e-mail de suporte) > Salvar');
   const domains = cfg.authorizedDomains || [];
   console.log(`\n  Domínios autorizados: ${domains.join(', ') || '(nenhum)'}`);
   for (const d of wanted) {

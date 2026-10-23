@@ -53,7 +53,7 @@ test('o login pelo Firebase: SDK local, configuração do projeto e telas ligada
   assert.match(auth, /import\('\/vendor\/firebase\/firebase-auth\.js'\)/, 'o SDK vem do próprio servidor, sem CDN');
   assert.ok(fs.existsSync(path.join(ROOT, 'client/vendor/firebase/firebase-auth.js')));
   assert.match(read('client/vendor/firebase/LICENSE'), /Apache License/);
-  assert.match(read('shared/firebase.js'), /projectId: 'gen-lang-client-0119623458'/);
+  assert.match(read('shared/firebase.js'), /projectId: 'mmorpg-aethra'/);
   // a tela de login manda o token ao servidor; a conta antiga fica em outra tela
   assert.match(main, /\{ t: 'fblogin', token \}/);
   assert.match(main, /function legacyLoginScreen/);

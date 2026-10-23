@@ -14,7 +14,7 @@ import { characters } from './three/characters.js';
 import { medieval } from './three/medieval.js';
 import { setupLandscape } from './orientation.js';
 import { title } from './three/title.js';
-import { menuMusic } from './music.js';
+import { themeMusic } from './music.js';
 
 setupLandscape();
 const net = new Net();
@@ -27,7 +27,7 @@ let ui = null, game = null, charList = [], maxChars = 4, account = '';
 function show(el) {
   clear(screens).appendChild(el);
   screens.style.display = 'flex';
-  menuMusic.setMenu(true);
+  themeMusic.setScreen('menu');
   canvas.style.display = 'none';
   overlayCanvas.style.display = 'none';
   uiRoot.style.display = 'none';
@@ -39,7 +39,7 @@ function errorBox() { return h('div', { class: 'form-err' }); }
 // Cena 3D de abertura (client/js/three/title.js); se o navegador não der WebGL, cai no fundo simples em 2D.
 let flat2d = false;
 function startBackdrop() {
-  menuMusic.init();
+  themeMusic.init();
   if (flat2d) return; // fundo simples já em andamento (sem WebGL)
   if (title.start()) return;
   flat2d = true;
@@ -254,7 +254,7 @@ function createScreen() {
 // ------------------------------------------------------------------ jogo
 function enterGame() {
   title.stop(); // libera a placa de vídeo para o mundo 3D
-  menuMusic.setMenu(false);
+  themeMusic.setScreen('game');
   screens.style.display = 'none';
   canvas.style.display = 'block';
   overlayCanvas.style.display = 'block';
@@ -312,6 +312,6 @@ async function boot() {
 }
 
 // acesso para depuração pelo console do navegador
-window.aethra = { get game() { return game; }, get ui() { return ui; }, net, music: menuMusic };
+window.aethra = { get game() { return game; }, get ui() { return ui; }, net, music: themeMusic };
 
 boot();

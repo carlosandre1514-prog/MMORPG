@@ -18,6 +18,7 @@ import { Renderer3D } from './three/engine.js';
 import { Guide } from './navigation.js';
 import { Input } from './input.js';
 import { audio } from './audio.js';
+import { themeMusic } from './music.js';
 import { canAccept, isComplete } from './questlogic.js';
 
 const INTERP_DELAY = 110;
@@ -627,6 +628,8 @@ export class Game {
     this.interpolate(dt, now);
     this.guide.update(now);
     this.fx.update(dt);
+    const meEnt = this.myEntity();
+    if (meEnt) themeMusic.setCombat(!!(meEnt.f & F.COMBAT)); // a música tema some enquanto o jogador está em combate (sem entidade, na troca de zona, mantém o estado)
   }
 
   updateHover() {

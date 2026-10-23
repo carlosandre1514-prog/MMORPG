@@ -21,6 +21,10 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
+  '.m4a': 'audio/mp4',
+  '.wav': 'audio/wav',
 };
 
 // Tipos que valem a pena comprimir (os modelos 3D e o Three.js encolhem bastante com gzip)
@@ -65,7 +69,18 @@ export function createStaticHandler(mounts) {
         const head = { 'Content-Type': type, 'Cache-Control': 'no-cache', ETag: etag };
         const gz = COMPRESSIBLE.has(path.extname(file)) && st.size > 1024 && /\bgzip\b/.test(req.headers['accept-encoding'] || '');
         if (!gz) {
-          res.writeHead(200, { ...head, 'Content-Length': st.size });
+          // pedidos parciais (Range): navegadores, principalmente o Safari, só tocam áudio/vídeo e só deixam pular para um ponto da faixa assim
+          const rng = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+          if (rng && (rng[1] || rng[2])) {
+            const a = rng[1] === '' ? Math.max(0, st.size - Number(rng[2])) : Number(rng[1]);
+            const b = rng[1] === '' || rng[2] === '' ? st.size - 1 : Math.min(Number(rng[2]), st.size - 1);
+            if (a > b || a >= st.size) { res.writeHead(416, { 'Content-Range': `bytes */${st.size}` }); res.end(); return; }
+            res.writeHead(206, { ...head, 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${a}-${b}/${st.size}`, 'Content-Length': b - a + 1 });
+            if (req.method === 'HEAD') { res.end(); return; }
+            pipeline(fs.createReadStream(file, { start: a, end: b }), res, () => {});
+            return;
+          }
+          res.writeHead(200, { ...head, 'Accept-Ranges': 'bytes', 'Content-Length': st.size });
           if (req.method === 'HEAD') { res.end(); return; }
           // pipeline fecha o arquivo se o cliente abortar o download no meio
           pipeline(fs.createReadStream(file), res, () => {});

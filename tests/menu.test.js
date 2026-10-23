@@ -21,6 +21,16 @@ test('a música de abertura é um MP3 de tamanho razoável e o servidor a entreg
     assert.equal(ok.status, 200);
     assert.match(ok.headers.get('content-type') || '', /audio|mpeg|octet/);
     assert.equal(Buffer.from(await ok.arrayBuffer()).length, b.length);
+    assert.equal(ok.headers.get('accept-ranges'), 'bytes');
+    // pedidos parciais (Safari só toca áudio assim; também permite pular na faixa)
+    const part = await fetch(`${base}/music/theme.mp3`, { headers: { Range: 'bytes=100-199' } });
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get('content-range'), `bytes 100-199/${b.length}`);
+    assert.deepEqual(Buffer.from(await part.arrayBuffer()), b.subarray(100, 200));
+    const tail = await fetch(`${base}/music/theme.mp3`, { headers: { Range: 'bytes=-50' } });
+    assert.equal(tail.status, 206);
+    assert.deepEqual(Buffer.from(await tail.arrayBuffer()), b.subarray(b.length - 50));
+    assert.equal((await fetch(`${base}/music/theme.mp3`, { headers: { Range: `bytes=${b.length + 5}-` } })).status, 416);
     assert.equal((await fetch(`${base}/music/nao-existe.mp3`)).status, 404);
     assert.equal((await fetch(`${base}/music/../server/main.js`)).status, 404);
   } finally { await srv.close(); }
@@ -29,13 +39,30 @@ test('a música de abertura é um MP3 de tamanho razoável e o servidor a entreg
 test('main.js liga a cena de abertura e a música: começam nas telas de menu e param ao entrar no jogo', () => {
   const main = read('client/js/main.js');
   assert.match(main, /import \{ title \} from '\.\/three\/title\.js'/);
-  assert.match(main, /import \{ menuMusic \} from '\.\/music\.js'/);
+  assert.match(main, /import \{ themeMusic \} from '\.\/music\.js'/);
   // enterGame desmonta a cena e para a música; voltar ao menu (lista de personagens) liga de novo
   const enter = main.slice(main.indexOf('function enterGame()'));
   assert.ok(enter.indexOf('title.stop()') > 0 && enter.indexOf('title.stop()') < 200);
-  assert.ok(enter.slice(0, 300).includes('menuMusic.setMenu(false)'));
+  assert.ok(enter.slice(0, 300).includes("themeMusic.setScreen('game')")); // a música continua dentro do jogo (some só em combate)
   assert.match(main, /game\.stop\(\); game = null; startBackdrop\(\)/);
   assert.match(read('client/index.html'), /<canvas id="backdrop">/);
+});
+
+test('a música tema toca em repetição contínua, dentro do jogo, e some em combate', () => {
+  const music = read('client/js/music.js');
+  assert.match(music, /export const themeMusic/);
+  assert.match(music, /nx\.play\(\)/, 'a próxima volta entra antes do fim'); // mistura entre voltas
+  assert.match(music, /Math\.cos\(/, 'curva de potência igual na saída'); // mistura com curva de potência igual
+  assert.ok(!/\.loop\s*=\s*true/.test(music), 'sem loop nativo (teria silêncio entre voltas)');
+  // o jogo informa a bandeira de combate do jogador a cada quadro
+  const game = read('client/js/game.js');
+  assert.match(game, /themeMusic\.setCombat\(!!\(meEnt\.f & F\.COMBAT\)\)/);
+  // com a faixa tocando, a música ambiente gerada por código fica calada
+  assert.match(read('client/js/audio.js'), /this\.ambientOff/);
+  // a opção Música dos ajustes controla a mesma preferência
+  assert.match(read('client/js/ui/windows.js'), /Música \(some durante os combates\)/);
+  // o servidor conhece os tipos de áudio
+  assert.match(read('server/net/static.js'), /'\.mp3': 'audio\/mpeg'/);
 });
 
 test('a cena de abertura só usa modelos que existem nos packs do KayKit', () => {

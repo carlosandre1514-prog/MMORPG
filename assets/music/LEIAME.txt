@@ -1,8 +1,9 @@
-Música de abertura do jogo
-==========================
+Música tema do jogo
+===================
 Coloque aqui o arquivo da música tema com um destes nomes: theme.mp3 (preferido), theme.ogg, theme.m4a ou theme.wav.
-Ela toca nas telas de login, personagens e criação (começa no primeiro toque ou tecla do jogador, com entrada suave, em
-repetição) e para ao entrar no jogo. Um botão de som aparece no canto da tela. Sem arquivo, nada muda.
+Ela toca nas telas de login, personagens e criação e também durante o jogo, em repetição infinita (o fim de uma volta se mistura com o
+começo da próxima), e some enquanto o jogador está em combate. Começa no primeiro toque ou tecla do jogador, com entrada suave. Nos menus
+há um botão de som no canto; no jogo, a opção Música em Opções. Sem arquivo, nada muda (a música ambiente gerada por código continua).
 
 Dica: use uma faixa de 2 a 3 minutos, de preferência com começo e fim que combinem (para a repetição não "pular").
 Licença: guarde aqui também o comprovante do plano/termos usados para gerar a música (por exemplo, a data e o plano do Suno).

@@ -9,6 +9,7 @@ class AudioEngine {
     this.musicOn = load('music', true);
     this.theme = null;
     this.musicTimer = null;
+    this.ambientOff = false; // true quando a faixa de assets/music/theme.* está tocando no lugar da música ambiente gerada
     this.last = {};
   }
 
@@ -120,7 +121,7 @@ class AudioEngine {
     const th = THEMES[theme] || THEMES.town;
     let bar = 0;
     const playBar = () => {
-      if (!this.musicOn) return;
+      if (!this.musicOn || this.ambientOff) return;
       const c = this.ctx;
       const chordRoot = th.root * Math.pow(2, [0, 2, 3, 5, 7, 8, 10][th.prog[bar % th.prog.length] % 7] / 12) / 2;
       // pad

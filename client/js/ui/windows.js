@@ -13,6 +13,7 @@ import { h, clear, esc, Win, fmt } from './dom.js';
 import { slotEl } from './itemview.js';
 import { skillIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { audio } from '../audio.js';
+import { themeMusic } from '../music.js';
 import { touchUiMode } from '../device.js';
 import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
@@ -582,7 +583,7 @@ export const windowsMixin = {
     zoom.addEventListener('input', () => { this.game.zoom = parseFloat(zoom.value); });
     body.append(
       toggle('Efeitos sonoros', audio.enabled, (v) => { audio.init(); audio.setSfx(v); }),
-      toggle('Música ambiente', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); if (v) audio.startMusic(this.game.zone.def.music); }),
+      toggle('Música (some durante os combates)', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); themeMusic.sync(); if (v) audio.startMusic(this.game.zone.def.music); }),
       toggle('Mostrar nomes dos itens no chão (Z)', this.game.showItemNames, (v) => { this.game.showItemNames = v; }),
       select('Câmera (V)', this.game.renderer.camMode, [['far', '3ª pessoa · longe'], ['near', '3ª pessoa · perto'], ['first', '1ª pessoa']], (v) => this.game.renderer.setCamMode(v)),
       h('label', { class: 'opt-row' }, 'Zoom ', zoom),

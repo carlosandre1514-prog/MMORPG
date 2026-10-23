@@ -35,6 +35,7 @@ export const windowsMixin = {
     W('social', 'Grupo', { w: 340 });
     W('guild', 'Clã', { w: 360 });
     W('ranking', 'Quadro de Honra', { w: 420 });
+    this.buildLegacyWindow(W);
     W('help', 'Ajuda — Como Jogar', { w: 600 });
     W('options', 'Opções', { w: 380 });
     W('trade', 'Comércio', { w: 520, onClose: () => { if (this.game.trade) this.send({ t: 'trade', op: 'cancel' }); } });
@@ -557,7 +558,7 @@ export const windowsMixin = {
             <tr><td>Botão direito (arrastar)</td><td>Girar e inclinar a câmera</td></tr>
             <tr><td>V</td><td>Alternar câmera: 3ª pessoa longe / perto / 1ª pessoa</td></tr>
             <tr><td>Toque (celular)</td><td>Direcional à esquerda, botões à direita; arraste na tela para girar, pinça para zoom</td></tr>
-            <tr><td>I C K J M P G O</td><td>Inventário, Personagem, Habilidades, Missões, Mapa, Grupo, Clã, Ranking</td></tr>
+            <tr><td>I C K J M P G N O</td><td>Inventário, Personagem, Habilidades, Missões, Mapa, Grupo, Clã, Legado (feitos, maestria, bestiário e desafios), Ranking</td></tr>
             <tr><td>Esc</td><td>Fechar janela / Opções</td></tr>
           </table>
         </div>

@@ -6,6 +6,7 @@ import { MONSTERS } from '../../shared/data/monsters.js';
 import { NPC_RANGE } from '../../shared/constants.js';
 import { createItem } from '../../shared/itemgen.js';
 import { countItem, addItem, removeItem, canAddAll } from './inventory.js';
+import { bump } from './legacy.js';
 
 export function questState(ch) {
   if (!ch.quests) ch.quests = { active: {}, done: {} };
@@ -112,6 +113,7 @@ export function turnInQuest(world, p, qid) {
   p.dirty.inv = true;
   p.dirty.quests = true;
   p.send({ t: 'qdone', q: q.id });
+  bump(p, 'quests');
   p.msg(`Missão concluída: ${q.name}`, 'quest');
   if (r.xp) world.giveXp(p, r.xp, true);
 }

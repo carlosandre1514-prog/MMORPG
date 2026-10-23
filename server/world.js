@@ -4,6 +4,8 @@ import { KINGDOMS } from '../shared/data/kingdoms.js';
 import { CLASSES } from '../shared/data/classes.js';
 import { ITEMS } from '../shared/data/items.js';
 import { discoverAltars } from './systems/altars.js';
+import { ensureLegacy, flushLegacy, addMasteryXp } from './systems/legacy.js';
+import { masteryBonus } from '../shared/mastery.js';
 import { backfillAltars } from '../shared/altars.js';
 import { TICK_RATE, MAX_LEVEL, POINTS_PER_LEVEL, DAY_LENGTH, INV_SIZE, STASH_SIZE } from '../shared/constants.js';
 import { xpToNext, computeStats } from '../shared/formulas.js';
@@ -117,6 +119,7 @@ export class World {
       if (z.players.size) z.sendSnapshots(now);
     }
     for (const p of this.players.values()) this.flush(p, now);
+    if (this.tickCount % (TICK_RATE * 60) === 0) for (const p of this.players.values()) { p.syncChar(); p.dirty.legacy = true; } // horas de jogo contam para os feitos
     if (this.tickCount % TICK_RATE === 0) { this.social.tickSecond(now); this.sweepKingdoms(now); }
     if (this.tickCount % (TICK_RATE * 30) === 0) {
       const t = this.worldTime();
@@ -136,6 +139,7 @@ export class World {
       const key = JSON.stringify(me);
       if (key !== p.lastMe) { p.lastMe = key; p.send(me); }
     }
+    if (p.dirty.legacy) flushLegacy(this, p, now);
     if (p.dirty.stats) { p.dirty.stats = false; p.send({ t: 'stats', s: p.stats }); }
     if (p.dirty.inv) { p.dirty.inv = false; p.send({ t: 'inv', l: ch.inv }); }
     if (p.dirty.equip) { p.dirty.equip = false; p.send({ t: 'eqp', e: ch.equip }); }
@@ -169,6 +173,7 @@ export class World {
       else addItem(ch.inv, it);
     }
     addItem(ch.inv, createItem('scroll_return', { qty: 2 }));
+    ensureLegacy(ch);
     const st = computeStats(ch);
     ch.hp = st.maxHp;
     ch.mp = st.maxMp;
@@ -187,6 +192,7 @@ export class World {
     ch.quests ||= { active: {}, done: {} };
     ch.visited ||= ['town'];
     ch.altars ||= backfillAltars(ch.visited);
+    ensureLegacy(ch);
     ch.flags ||= {};
     ch.record ||= { kills: 0, bossKills: 0, pvpKills: 0, deaths: 0 };
     ch.buffs ||= [];
@@ -251,7 +257,8 @@ export class World {
     });
     p.altarCheck = 0;
     discoverAltars(p); // quem chega a uma zona já conhece o altar ao lado
-    p.dirty.me = p.dirty.stats = p.dirty.statuses = true;
+    p.dirty.me = p.dirty.stats = p.dirty.statuses = p.dirty.legacy = true;
+    p.legSendAt = 0;
     p.lastMe = '';
     p.lastMoveAt = Date.now();
   }
@@ -272,10 +279,17 @@ export class World {
   // ---------------------------------------------------------------- progressão
   giveXp(p, amount, fromQuest = false) {
     const ch = p.char;
-    if (ch.level >= MAX_LEVEL) return;
     let v = amount * (1 + (p.mods.xp || 0));
     if (fromQuest) v *= this.xpRate;
     v = Math.max(1, Math.round(v));
+    // no nível máximo o XP vira maestria (sem teto): é o que mantém o personagem crescendo
+    if (ch.level >= MAX_LEVEL) {
+      addMasteryXp(p, v);
+      p.fxQueue.push({ k: 'xp', v });
+      p.dirty.me = true;
+      this.db.markDirty();
+      return;
+    }
     ch.xp += v;
     p.fxQueue.push({ k: 'xp', v });
     let leveled = false;
@@ -302,9 +316,11 @@ export class World {
 
   giveGold(p, amount, fromKill = false) {
     if (amount <= 0) return;
-    p.char.gold += Math.round(amount);
-    p.dirty.me = true;
-    if (fromKill) p.fxQueue.push({ k: 'gd', v: Math.round(amount) });
+    amount = Math.round(amount * (1 + masteryBonus(p.char.mastery && p.char.mastery.ranks).gold));
+    p.char.gold += amount;
+    p.char.stats.gold = (p.char.stats.gold || 0) + amount;
+    p.dirty.me = p.dirty.legacy = true;
+    if (fromKill) p.fxQueue.push({ k: 'gd', v: amount });
   }
 
   broadcastSystem(text, kind = 'info') {

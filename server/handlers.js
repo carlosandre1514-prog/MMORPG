@@ -14,6 +14,7 @@ import { addStatus, hasStatus } from './systems/effects.js';
 import { heal, isHostile, revivePlayer } from './systems/combat.js';
 import { addItem, removeItem, countItem, validSlot, canAddAll } from './systems/inventory.js';
 import { discoverAltars, travelToAltar } from './systems/altars.js';
+import { bump, touch, spendMastery, resetMastery, setTitle, claimChallenge, legacyPayload } from './systems/legacy.js';
 import { acceptQuest, turnInQuest, abandonQuest, onTalk } from './systems/quests.js';
 
 const WEAPON_PREFIX = { warrior: 'w', berserker: 'b', mage: 'm', ranger: 'r', cleric: 'c' };
@@ -143,12 +144,14 @@ const HANDLERS = {
       if (now < p.potCd.hp) return p.err('Poções de vida em recarga.');
       if (p.hp >= p.stats.maxHp) return p.err('Sua vida já está cheia.');
       p.potCd.hp = now + 8000;
+      bump(p, 'potions');
       heal(p.zone, p, p, u.hp);
       p.send({ t: 'pcd', k: 'hp', d: 8000 });
     } else if (u.mp) {
       if (now < p.potCd.mp) return p.err('Poções de mana em recarga.');
       if (p.mp >= p.stats.maxMp) return p.err('Sua mana já está cheia.');
       p.potCd.mp = now + 8000;
+      bump(p, 'potions');
       p.mp = Math.min(p.stats.maxMp, p.mp + u.mp);
       p.zone.fx({ k: 'mp', id: p.id, v: u.mp }, p.x, p.y);
       p.send({ t: 'pcd', k: 'mp', d: 8000 });
@@ -253,6 +256,8 @@ const HANDLERS = {
     if (!addItem(p.char.inv, gi.item)) return p.err('Inventário cheio.');
     zone.removeEntity(gi);
     p.dirty.inv = p.dirty.quests = true;
+    if ((gi.item.r || 0) >= 2) bump(p, 'rare');
+    if ((gi.item.r || 0) >= 4 || (ITEMS[gi.item.id] && ITEMS[gi.item.id].unique)) bump(p, 'legend');
     p.send({ t: 'loot', i: gi.item.id, q: gi.item.q || 1, r: gi.item.r || 0, n: itemName(gi.item) });
     if ((gi.item.r || 0) >= 3) {
       world.broadcastSystem(`${p.name} encontrou ${itemName(gi.item)}!`, (gi.item.r >= 4) ? 'epic' : 'good');
@@ -328,6 +333,7 @@ const HANDLERS = {
     p.char.gold -= r.gold;
     addItem(p.char.inv, result);
     p.dirty.inv = p.dirty.me = p.dirty.quests = true;
+    bump(p, 'crafted');
     p.send({ t: 'crafted', i: result.id, r: result.r || 0, n: itemName(result), q: result.q || 1 });
   },
 
@@ -348,6 +354,7 @@ const HANDLERS = {
     const ok = Math.random() < enhanceChance(plus);
     if (ok) {
       item.p = plus + 1;
+      bump(p, 'enhanced');
       p.send({ t: 'enhres', ok: true, p: item.p, n: itemName(item) });
       if (item.p >= 8) world.broadcastSystem(`${p.name} aprimorou ${itemName(item)}!`, 'good');
     } else {
@@ -393,6 +400,12 @@ const HANDLERS = {
   },
 
   atp(world, p, msg) { travelToAltar(world, p, msg.id); },
+
+  // Legado: pedir o estado, gastar maestria, trocar de título e receber desafios
+  leg(world, p) { p.send(legacyPayload(p)); },
+  ma(world, p, msg) { if (msg.op === 'reset') resetMastery(world, p); else spendMastery(world, p, String(msg.k), num(msg.n, 1)); },
+  title(world, p, msg) { setTitle(p, msg.v === null ? null : String(msg.v)); },
+  chal(world, p, msg) { claimChallenge(world, p, String(msg.p), Math.floor(num(msg.i, -1))); },
 
   rank(world, p) {
     p.send({ t: 'rank', d: world.ranking() });

@@ -497,6 +497,8 @@ export class Social {
     a.trade = b.trade = null;
     for (const p of [a, b]) {
       p.dirty.inv = p.dirty.me = p.dirty.quests = true;
+      p.char.stats.trades = (p.char.stats.trades || 0) + 1;
+      p.dirty.legacy = true;
       p.send({ t: 'trade', closed: true });
       p.msg('Comércio concluído!', 'good');
     }

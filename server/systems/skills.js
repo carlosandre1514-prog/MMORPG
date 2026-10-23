@@ -4,6 +4,7 @@ import { CLASSES } from '../../shared/data/classes.js';
 import { GLOBAL_COOLDOWN } from '../../shared/constants.js';
 import { castRay, canStand } from '../../shared/collision.js';
 import { addStatus, removeStatus, hasStatus } from './effects.js';
+import { bump } from './legacy.js';
 import { dealDamage, heal, computeHit, isHostile, isFriendly, addThreat, revivePlayer, applyStun } from './combat.js';
 
 const RANGE_TOLERANCE = 1.0;
@@ -331,6 +332,7 @@ export function useSkill(world, p, msg) {
   p.cd[sk.id] = now + sk.cd * 1000;
   p.gcd = now + GLOBAL_COOLDOWN * 1000;
   p.dirty.me = true;
+  bump(p, 'casts');
   p.send({ t: 'cd', s: sk.id, d: sk.cd * 1000, g: GLOBAL_COOLDOWN * 1000 });
   zone.fx({ k: 'cs', id: p.id, s: sk.id }, p.x, p.y);
   if (sk.target === 'enemy' || sk.target === 'ground' || sk.id === 'w_cry' || sk.id === 'w_whirl' || sk.id === 'm_nova' || sk.id === 'b_roar') {

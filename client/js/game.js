@@ -157,6 +157,9 @@ export class Game {
       case 'qdone': audio.play('quest'); this.ui.questCompleted(m.q); this.markerVer++; break;
       case 'loot': audio.play('pickup'); this.ui.lootNotice(m); break;
       case 'altar': this.onAltar(m.id); break;
+      case 'leg': this.ui.onLegacy(m); break;
+      case 'ach': audio.play('levelup'); this.ui.achievementUnlocked(m.id); break;
+      case 'mlvl': audio.play('levelup'); this.ui.masteryUp(m.lv); break;
       case 'lvl': audio.play('levelup'); this.ui.levelUp(m.lv); this.markerVer++; break;
       case 'cast': me.casting = { start: performance.now(), dur: m.d, name: m.n }; this.ui.onCast(); break;
       case 'castEnd': me.casting = null; this.ui.onCast(); break;

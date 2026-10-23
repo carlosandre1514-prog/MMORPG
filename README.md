@@ -79,6 +79,7 @@ Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa
 ## O que existe no jogo
 
 - **História**: a campanha "A Chama Partida" em 4 atos + epílogo (20 missões), com diálogos, reviravoltas e final; missões secundárias, contratos repetíveis e pedras de memória com lore.
+- **Legado (tecla N)**: 105 feitos com títulos e patentes de Glória, maestria sem teto depois do nível 30 (380 pontos para gastar), bestiário com dano extra por espécie e desafios do dia e da semana: o que mantém o personagem crescendo por anos.
 - **Classes**: Guerreiro (espada e escudo), Berserker (machado), Mago, Arqueiro e Clérigo (manto e maça), cada uma com 6 habilidades (provocar, investida, salto, frenesi, meteoros, teleporte, chuva de flechas, cura, ressurreição...).
 - **Mundo**: Cidade de Alvorada (capital murada e segura, com castelo, mercado, bairros, becos e 125 construções com interior visitável), Campos Verdejantes, Floresta Sussurrante, Minas de Ferro Negro, Ruínas de Cinza e Arena de Sangue — mapas procedurais determinísticos, ciclo dia/noite e iluminação dinâmica.
 - **Combate**: alvo + auto-ataque, projéteis, áreas, críticos, esquiva, escudos, venenos, queimaduras, lentidão, atordoamento, ameaça (aggro), monstros em bando e com coleira.

@@ -3,6 +3,7 @@ import { CLASSES } from './data/classes.js';
 import { ITEMS } from './data/items.js';
 import { itemStats } from './itemgen.js';
 import { MAX_LEVEL, EQUIP_SLOTS } from './constants.js';
+import { masteryBonus } from './mastery.js';
 
 export function xpToNext(lvl) {
   if (lvl >= MAX_LEVEL) return 0;
@@ -49,20 +50,22 @@ export function computeStats(ch, mods = {}) {
     attr[k] = cls.base[k] + cls.growth[k] * (lvl - 1) + ((ch.alloc && ch.alloc[k]) || 0) + (g[k] || 0);
   }
   const flags = ch.flags || {};
+  const mb = masteryBonus(ch.mastery && ch.mastery.ranks); // graus gastos em maestria
   let maxHp = cls.baseHp + cls.hpPerLvl * (lvl - 1) + attr.vit * 8 + (g.hp || 0);
   if (flags.brasa_vida) maxHp *= 1.1;
+  maxHp *= 1 + mb.hp;
   const maxMp = cls.baseMp + cls.mpPerLvl * (lvl - 1) + attr.int * 4 + (g.mp || 0);
   const weaponDmg = g.dmg || 3;
   const primary = attr[cls.primary];
   let power = weaponDmg + primary * 1.2 + (g.power || 0);
   if (flags.brasa_espirito) power *= 1.1;
-  power *= 1 + (mods.power || 0);
+  power *= 1 + (mods.power || 0) + mb.power;
   let def = (g.def || 0) + attr.vit * 0.6;
   if (flags.brasa_terra) def *= 1.1;
-  def *= 1 + (mods.def || 0);
-  const crit = Math.min(75, 5 + attr.dex * 0.12 + (g.crit || 0) + (mods.crit || 0));
-  const haste = Math.min(80, attr.dex * 0.15 + (g.haste || 0) + (mods.haste || 0));
-  const speedPct = Math.min(40, (g.speed || 0) + (mods.speed || 0) * 100);
+  def *= 1 + (mods.def || 0) + mb.def;
+  const crit = Math.min(75, 5 + attr.dex * 0.12 + (g.crit || 0) + (mods.crit || 0) + mb.crit);
+  const haste = Math.min(80, attr.dex * 0.15 + (g.haste || 0) + (mods.haste || 0) + mb.haste);
+  const speedPct = Math.min(40, (g.speed || 0) + (mods.speed || 0) * 100 + mb.speed * 100);
   return {
     ...attr,
     maxHp: Math.round(maxHp),
@@ -76,7 +79,7 @@ export function computeStats(ch, mods = {}) {
     atkRange: cls.atkRange,
     speed: 4.6 * (1 + speedPct / 100) * (mods.slow ? 1 - mods.slow : 1),
     dodge: Math.min(15, attr.dex * 0.06),
-    lifesteal: Math.min(30, (g.lifesteal || 0) + (mods.lifesteal || 0)),
+    lifesteal: Math.min(30, (g.lifesteal || 0) + (mods.lifesteal || 0) + mb.lifesteal),
     hpRegen: 0.5 + attr.vit * 0.06,
     mpRegen: 0.8 + attr.int * 0.05,
     weaponDmg,

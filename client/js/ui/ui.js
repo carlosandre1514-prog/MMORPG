@@ -17,6 +17,7 @@ import { charSprites } from '../charsprites.js';
 import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
+import { legacyMixin } from './legacyui.js';
 import { MobileControls } from './mobile.js';
 import { chatBox } from './chatbox.js';
 import { MapArt } from '../mapart.js';
@@ -128,7 +129,7 @@ export class UI {
     const menu = [
       ['inventory', 'Inventário', 'I', '🎒'], ['character', 'Personagem', 'C', '🛡'], ['skills', 'Habilidades', 'K', '✦'],
       ['quests', 'Missões', 'J', '📜'], ['map', 'Mapa', 'M', '🗺'], ['social', 'Grupo', 'P', '👥'], ['guild', 'Clã', 'G', '⚑'],
-      ['ranking', 'Ranking', 'O', '🏆'], ['help', 'Ajuda', 'H', '?'], ['options', 'Opções', 'Esc', '⚙'],
+      ['legacy', 'Legado', 'N', '📖'], ['ranking', 'Ranking', 'O', '🏆'], ['help', 'Ajuda', 'H', '?'], ['options', 'Opções', 'Esc', '⚙'],
     ];
     const mb = h('div', { id: 'menubar' });
     for (const [id, name, key, icon] of menu) {
@@ -780,7 +781,7 @@ export class UI {
 
   // teclas de interface; retorna true se consumida
   handleKey(k) {
-    const map = { i: 'inventory', b: 'inventory', c: 'character', k: 'skills', j: 'quests', l: 'quests', m: 'map', p: 'social', g: 'guild', o: 'ranking', h: 'help' };
+    const map = { i: 'inventory', b: 'inventory', c: 'character', k: 'skills', j: 'quests', l: 'quests', m: 'map', p: 'social', g: 'guild', n: 'legacy', o: 'ranking', h: 'help' };
     if (k === 'Enter') { this.chatInput.focus(); return true; }
     if (k === 'Escape') {
       if (this.menuEl) { this.closeMenus(); return true; }
@@ -809,6 +810,7 @@ export class UI {
     if (render) render.call(this);
     w.open();
     if (id === 'ranking') this.send({ t: 'rank' });
+    if (id === 'legacy') this.send({ t: 'leg' });
     if (id === 'guild') this.send({ t: 'guild', op: 'info' });
   }
 }
@@ -856,5 +858,5 @@ export function objectiveText(o) {
   }
 }
 
-Object.assign(UI.prototype, windowsMixin, npcMixin);
+Object.assign(UI.prototype, windowsMixin, npcMixin, legacyMixin);
 export { CHAT };

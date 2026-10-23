@@ -8,6 +8,7 @@ import { isSafeAt } from '../../shared/data/zones.js';
 import { addStatus, hasStatus, removeStatus, clearStatuses } from './effects.js';
 import { onKill, onPvpKill, needsQuestItem } from './quests.js';
 import { addItem } from './inventory.js';
+import { onMonsterKilled, bestiaryMult } from './legacy.js';
 import { GroundItem } from '../entities/monster.js';
 import { rand } from '../../shared/rng.js';
 
@@ -53,6 +54,8 @@ export function computeHit(src, tgt, mult, opts = {}) {
   if (opts.holy && tgt.isMonster && (tgt.def.undead || tgt.def.voidborn)) dmg *= 1.5;
   // JxJ: dano reduzido para combates mais longos
   if (src.isPlayer && tgt.isPlayer) dmg *= 0.6;
+  // o que o jogador já estudou da espécie (bestiário) vira dano extra contra ela
+  if (src.isPlayer && tgt.isMonster) dmg *= bestiaryMult(src, tgt.def);
   return { dmg, crit };
 }
 
@@ -106,7 +109,11 @@ export function dealDamage(zone, src, tgt, amount, opts = {}) {
   zone.fx({ k: 'd', id: tgt.id, v: dmg, c: opts.crit ? 1 : 0, h: opts.dot ? 'o' : (opts.magic ? 'm' : 'p'), ab: absorbed || undefined, s: src ? src.id : 0 }, tgt.x, tgt.y);
   if (src) src.combatUntil = now + COMBAT_TIMEOUT * 1000;
   tgt.combatUntil = now + COMBAT_TIMEOUT * 1000;
-  if (tgt.isMonster && src && src.isPlayer) addThreat(tgt, src, (dmg + absorbed) * (opts.threatMult || 1));
+  if (tgt.isMonster && src && src.isPlayer) {
+    addThreat(tgt, src, (dmg + absorbed) * (opts.threatMult || 1));
+    src.char.stats.damage = (src.char.stats.damage || 0) + dmg;
+    src.dirty.legacy = true;
+  }
   if (tgt.isPlayer && tgt.casting && tgt.casting.interruptible) {
     tgt.casting = null;
     tgt.send({ t: 'castEnd', ok: false });
@@ -179,6 +186,7 @@ function killMonster(zone, m, killer) {
     p.char.record.kills++;
     if (def.boss) p.char.record.bossKills++;
     onKill(p, def.id);
+    onMonsterKilled(p, def, n > 1, !!m.summoned);
     // itens de missão vão direto para o inventário de quem precisa
     for (const qd of def.questDrops || []) {
       if (needsQuestItem(p.char, qd.id, qd.quest) && Math.random() < qd.chance) {
@@ -230,12 +238,14 @@ function killPlayer(zone, p, killer) {
   p.attackTarget = null;
   clearStatuses(p, true);
   p.char.record.deaths++;
+  p.dirty.legacy = true;
   for (const m of zone.monsters) {
     if (m.threat.delete(p.id) && m.target === p) m.target = null;
   }
   const pvp = killer && killer.isPlayer;
   if (pvp) {
     killer.char.record.pvpKills++;
+    killer.dirty.legacy = true;
     onPvpKill(killer);
     zone.chatAll({ t: 'chat', c: 'sistema', m: `⚔ ${killer.name} derrotou ${p.name} na arena!` });
   } else if (!zone.def.pvp) {

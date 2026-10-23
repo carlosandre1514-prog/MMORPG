@@ -114,14 +114,59 @@ const IMPL = {
       dealDamage(zone, p, e, dmg, { crit });
     }
   },
-  w_titan(zone, p, sk) {
-    addStatus(p, { id: 'w_titan', type: 'buff', mods: { power: sk.power, lifesteal: sk.lifesteal }, dur: sk.dur, name: 'Fúria do Titã' });
-    zone.fx({ k: 'bf', id: p.id, s: 'fury' }, p.x, p.y);
+  w_wall(zone, p, sk) {
+    addStatus(p, { id: 'w_wall', type: 'dr', value: sk.dr, dur: sk.dur, name: 'Muralha de Aço' });
+    addStatus(p, { id: 'w_wall_regen', type: 'buff', mods: { regenPct: sk.regen }, dur: sk.dur, name: 'Muralha de Aço' });
+    zone.fx({ k: 'bf', id: p.id, s: 'steel' }, p.x, p.y);
   },
   w_exec(zone, p, sk, t) {
     const maxHp = t.isPlayer ? t.stats.maxHp : t.maxHp;
     const mult = t.hp / maxHp < sk.execPct ? sk.execMult : sk.mult;
     strike(zone, p, t, mult, { swing: 'exec' });
+  },
+
+  b_cleave(zone, p, sk, t) {
+    strike(zone, p, t, sk.mult, { swing: 'heavy' });
+    zone.fx({ k: 'ao', x: t.x, y: t.y, r: sk.splashR, s: 'stomp' }, t.x, t.y);
+    for (const e of hostilesAround(zone, p, t.x, t.y, sk.splashR)) {
+      if (e === t) continue;
+      const { dmg, crit } = computeHit(p, e, sk.splash);
+      dealDamage(zone, p, e, dmg, { crit });
+    }
+  },
+  b_rend(zone, p, sk, t) {
+    strike(zone, p, t, sk.mult, {
+      swing: 'claw',
+      after: (tg) => addStatus(tg, { id: 'bleed_' + p.id, type: 'poison', dps: p.stats.power * sk.bleed, dur: sk.bleedDur, src: p.id, name: 'Sangramento' }),
+    });
+  },
+  b_leap(zone, p, sk, t) {
+    const reach = Math.max(0, dist(p, t) - 0.9);
+    const end = castRay(zone.map, p.x, p.y, t.x - p.x, t.y - p.y, reach, 0.3);
+    teleportPlayer(zone, p, end.x, end.y, 'charge');
+    zone.fx({ k: 'ao', x: end.x, y: end.y, r: sk.radius, s: 'stomp' }, end.x, end.y);
+    for (const e of hostilesAround(zone, p, end.x, end.y, sk.radius)) {
+      const { dmg, crit } = computeHit(p, e, sk.mult);
+      dealDamage(zone, p, e, dmg, { crit });
+      if (e.alive) addStatus(e, { id: 'slow_leap', type: 'slow', value: sk.slow, dur: sk.slowDur, name: 'Esmagado' });
+    }
+  },
+  b_frenzy(zone, p, sk) {
+    addStatus(p, { id: 'b_frenzy', type: 'buff', mods: { power: sk.power, haste: sk.haste, def: -sk.defPenalty }, dur: sk.dur, name: 'Frenesi' });
+    zone.fx({ k: 'bf', id: p.id, s: 'fury' }, p.x, p.y);
+  },
+  b_roar(zone, p, sk) {
+    zone.fx({ k: 'ao', x: p.x, y: p.y, r: sk.radius, s: 'shout' }, p.x, p.y);
+    let hit = 0;
+    for (const e of hostilesAround(zone, p, p.x, p.y, sk.radius)) {
+      const { dmg, crit } = computeHit(p, e, sk.mult);
+      dealDamage(zone, p, e, dmg, { crit });
+      if (hit < sk.maxHeals) { hit++; heal(zone, p, p, p.stats.maxHp * sk.healPct); }
+    }
+  },
+  b_massacre(zone, p, sk) {
+    addStatus(p, { id: 'b_massacre', type: 'buff', mods: { power: sk.power, lifesteal: sk.lifesteal, speed: sk.speed }, dur: sk.dur, name: 'Massacre' });
+    zone.fx({ k: 'bf', id: p.id, s: 'fury' }, p.x, p.y);
   },
 
   m_fire(zone, p, sk, t) {
@@ -271,7 +316,7 @@ export function useSkill(world, p, msg) {
     const r = resolveEnemy(zone, p, msg.id, sk.range);
     if (r.err) return p.err(r.err);
     t = r.t;
-    if (sk.id === 'w_charge' && hasStatus(p, 'root')) return p.err('Você está enraizado!');
+    if ((sk.id === 'w_charge' || sk.id === 'b_leap') && hasStatus(p, 'root')) return p.err('Você está enraizado!');
     faceTowards(p, t.x, t.y);
     p.attackTarget = t.id;
   } else if (sk.target === 'ally') {
@@ -288,7 +333,7 @@ export function useSkill(world, p, msg) {
   p.dirty.me = true;
   p.send({ t: 'cd', s: sk.id, d: sk.cd * 1000, g: GLOBAL_COOLDOWN * 1000 });
   zone.fx({ k: 'cs', id: p.id, s: sk.id }, p.x, p.y);
-  if (sk.target === 'enemy' || sk.target === 'ground' || sk.id === 'w_cry' || sk.id === 'w_whirl' || sk.id === 'm_nova') {
+  if (sk.target === 'enemy' || sk.target === 'ground' || sk.id === 'w_cry' || sk.id === 'w_whirl' || sk.id === 'm_nova' || sk.id === 'b_roar') {
     p.combatUntil = Math.max(p.combatUntil, now + 3000);
   }
 }

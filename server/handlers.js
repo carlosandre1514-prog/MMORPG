@@ -16,7 +16,7 @@ import { addItem, removeItem, countItem, validSlot, canAddAll } from './systems/
 import { discoverAltars, travelToAltar } from './systems/altars.js';
 import { acceptQuest, turnInQuest, abandonQuest, onTalk } from './systems/quests.js';
 
-const WEAPON_PREFIX = { warrior: 'w', mage: 'm', ranger: 'r', cleric: 'c' };
+const WEAPON_PREFIX = { warrior: 'w', berserker: 'b', mage: 'm', ranger: 'r', cleric: 'c' };
 
 function nearNpcWith(p, npcId, service) {
   const n = NPCS[npcId];

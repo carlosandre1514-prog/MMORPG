@@ -15,10 +15,11 @@ try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(
 
 // Personagem 3D -> chave usada no jogo
 export const CONFIGS = [
-  { key: 'warrior', model: 'Barbarian', right: 'axe_2handed' },
+  { key: 'warrior', model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
+  { key: 'berserker', model: 'Barbarian', right: 'axe_2handed' },
   { key: 'mage', model: 'Mage', right: 'staff' },
   { key: 'ranger', model: 'Ranger', left: 'bow_withString' },
-  { key: 'cleric', model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
+  { key: 'cleric', model: 'Mage', right: '@mace', left: 'spellbook_open', hide: ['Hat'], filter: 'saturate(0.3) brightness(1.5) sepia(0.12)' },
   { key: 'rogue', model: 'Rogue', right: 'dagger', left: 'dagger' },
   { key: 'hooded', model: 'Rogue_Hooded', right: 'dagger' },
   { key: 'cultist', model: 'Rogue_Hooded', right: 'wand', left: 'spellbook_open', filter: 'hue-rotate(150deg) saturate(0.9) brightness(0.75)' },

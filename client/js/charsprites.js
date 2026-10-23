@@ -6,7 +6,7 @@ const SCALE = 0.72; // pixels de mundo por pixel do quadro
 const DIR_INDEX = [0, 1, 2, 3]; // baixo, esquerda, direita, cima (mesma ordem do manifesto)
 
 // Quem usa qual sprite
-export const NPC_SPRITES = { bran: 'cleric', lyra: 'ranger', kael: 'rogue', cael: 'hooded', brunhilda: 'warrior', ilyas: 'mage', elira: 'cleric', rurik: 'warrior' };
+export const NPC_SPRITES = { bran: 'warrior', lyra: 'ranger', kael: 'rogue', cael: 'hooded', brunhilda: 'berserker', ilyas: 'mage', elira: 'warrior', rurik: 'berserker' };
 export const MONSTER_SPRITES = { cultist: 'cultist', ash_knight: 'ashknight' };
 const CASTERS = new Set(['mage', 'cleric', 'cultist']);
 

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { arms } from './arms.js';
+import { buildMace } from './mace.js';
 
 const BASE = '/kaykit/';
 const MODELS = ['Barbarian', 'Knight', 'Mage', 'Ranger', 'Rogue', 'Rogue_Hooded',
@@ -18,10 +19,11 @@ const ZOMBIE_BASE = '/brackeys/zombie/';
 // Mortos-vivos: eyes = cor do brilho dos olhos; rise = sobem do chão ao aparecer; ghost = translúcido.
 export const LOOKS = {
   // classes jogáveis
-  warrior: { model: 'Barbarian', right: 'axe_2handed' },
+  warrior: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
+  berserker: { model: 'Barbarian', right: 'axe_2handed' },
   mage: { model: 'Mage', right: 'staff' },
   ranger: { model: 'Ranger', left: 'bow_withString' },
-  cleric: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
+  cleric: { model: 'Mage', right: '@mace', left: 'spellbook_open', hide: ['Hat'], sat: 0.2, bright: 3.4, tint: [1.15, 1.03, 0.78] },
   // cavaleiro da cena de abertura (acampamento das telas de login)
   hero_camp: { model: 'Knight', right: 'sword_1handed', hue: 215 },
   // NPCs
@@ -70,6 +72,9 @@ export const LOOKS = {
   zombie_brute: { kind: 'zombie', rise: true, hue: -40, sat: 1.15, bright: 0.72 },
   morvath: { model: 'Knight', right: 'staff', sat: 0.15, bright: 0.6, emissive: [0.4, 0.08, 0.02], float: 0.35 },
 };
+
+// armas montadas em código (nome com @)
+const PROCEDURAL = { '@mace': () => buildMace(THREE) };
 
 const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith', 'soraya', 'safiya', 'dune_sorcerer', 'sun_king']);
 
@@ -175,6 +180,7 @@ class CharacterLibrary {
     model.traverse((o) => {
       if (!o.isMesh) return;
       // material próprio (variação de cor e brilho de dano por instância)
+      if (look.hide && look.hide.some((n) => o.name.includes(n))) { o.visible = false; return; }
       o.material = this.applyTint(o.material.clone(), look);
       // olhos que brilham no escuro (mortos-vivos)
       if (look.eyes && /eyes/i.test(o.name)) { o.material.emissive = new THREE.Color(...look.eyes); o.material.emissiveIntensity = 2.2; o.material.userData.glow = true; }
@@ -186,9 +192,9 @@ class CharacterLibrary {
       let slot = null;
       model.traverse((o) => { if (!slot && o.name.replace(/[._]/g, '').toLowerCase() === bone) slot = o; });
       if (slot) {
-        const w = this.weapons[look[side]]?.clone() || arms.held(look[side]); // armas de Sahaar só existem depois que o reino carrega
+        const w = PROCEDURAL[look[side]]?.() || this.weapons[look[side]]?.clone() || arms.held(look[side]); // armas de Sahaar só existem depois que o reino carrega
         if (!w) continue;
-        w.traverse((o) => { if (o.isMesh) { o.material = this.applyTint(o.material.clone(), look); mats.push(o.material); } });
+        w.traverse((o) => { if (o.isMesh) { o.material = o.userData.notint ? o.material.clone() : this.applyTint(o.material.clone(), look); mats.push(o.material); } });
         slot.add(w);
       }
     }

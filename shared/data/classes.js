@@ -5,7 +5,7 @@ export const CLASSES = {
   warrior: {
     id: 'warrior',
     name: 'Guerreiro',
-    desc: 'Mestre do combate corpo a corpo. Resiste a golpes que derrubariam qualquer outro e protege os aliados atraindo a fúria dos inimigos.',
+    desc: 'Cavaleiro de espada e escudo. Resiste a golpes que derrubariam qualquer outro e protege os aliados atraindo a fúria dos inimigos.',
     role: 'Tanque / Dano corpo a corpo',
     primary: 'str',
     baseHp: 110, hpPerLvl: 16,
@@ -15,8 +15,24 @@ export const CLASSES = {
     recommended: { str: 2, vit: 1 },
     atkRange: 1.8, atkInterval: 1.1, projectile: null,
     color: '#c0392b',
-    skills: ['w_strike', 'w_cry', 'w_charge', 'w_whirl', 'w_titan', 'w_exec'],
+    skills: ['w_strike', 'w_cry', 'w_charge', 'w_whirl', 'w_wall', 'w_exec'],
     startItems: ['w_weapon_1', 'chest_1', 'pot_hp_1:5'],
+  },
+  berserker: {
+    id: 'berserker',
+    name: 'Berserker',
+    desc: 'Guerreiro selvagem de machado enorme. Quanto mais sangue derrama, mais perigoso fica: dano altíssimo de perto e roubo de vida, mas quase nenhuma proteção.',
+    role: 'Dano corpo a corpo / Fúria',
+    primary: 'str',
+    baseHp: 100, hpPerLvl: 14,
+    baseMp: 45, mpPerLvl: 3,
+    base: { str: 14, dex: 7, int: 2, vit: 7 },
+    growth: { str: 3, dex: 1, int: 0, vit: 1 },
+    recommended: { str: 2, vit: 1 },
+    atkRange: 1.9, atkInterval: 1.05, projectile: null,
+    color: '#e67e22',
+    skills: ['b_cleave', 'b_rend', 'b_leap', 'b_frenzy', 'b_roar', 'b_massacre'],
+    startItems: ['b_weapon_1', 'chest_1', 'pot_hp_1:5'],
   },
   mage: {
     id: 'mage',
@@ -53,7 +69,7 @@ export const CLASSES = {
   cleric: {
     id: 'cleric',
     name: 'Clérigo',
-    desc: 'Devoto da Chama Primordial. Cura e fortalece os aliados, e pune os servos do Vazio com luz sagrada.',
+    desc: 'Devoto da Chama Primordial, de manto branco e maça benta. Cura e fortalece os aliados, e pune os servos do Vazio com luz sagrada.',
     role: 'Suporte / Cura',
     primary: 'int',
     baseHp: 95, hpPerLvl: 12,
@@ -68,7 +84,7 @@ export const CLASSES = {
   },
 };
 
-export const CLASS_LIST = ['warrior', 'mage', 'ranger', 'cleric'];
+export const CLASS_LIST = ['warrior', 'berserker', 'mage', 'ranger', 'cleric'];
 
 export const SKIN_TONES = ['#f5d0a9', '#e0ac69', '#c68642', '#8d5524', '#5c3a1e'];
 export const HAIR_COLORS = ['#2b1d0e', '#6b3e1d', '#c58b3c', '#e8d36c', '#b03a2e', '#dcdcdc', '#3c5aa8', '#2d8a4e'];

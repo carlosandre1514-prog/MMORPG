@@ -23,7 +23,7 @@ const PAL = {
   blink: ['#e8b8ff', '#9a30c0', '#3a0f55'], roll: ['#ffe680', '#d4b000', '#6a5500'], web: ['#f0f0f0', '#a8b0b8', '#5a636b'],
   roots: ['#c8b498', '#6a4a30', '#2a1a10'], arrows: ['#e0d0bc', '#8a6a4c', '#3a2a1c'], slash: ['#f4fbff', '#8fd0ff', '#25405a'],
   heavy: ['#ffe8a0', '#ff9a30', '#6a3000'], exec: ['#ffe8a0', '#ff7a1a', '#6a2000'], claw: ['#ffc0b0', '#e53935', '#5a1010'],
-  hit: ['#fff0c0', '#ff9a30', '#a03010'],
+  hit: ['#fff0c0', '#ff9a30', '#a03010'], steel: ['#e8f4ff', '#6aa9dc', '#1b3a5c'],
 };
 const colorCache = new Map();
 function col(hex) { let c = colorCache.get(hex); if (!c) { c = new THREE.Color(hex); colorCache.set(hex, c); } return c; }
@@ -818,7 +818,7 @@ function puffParticle(shape, pal, size, life, pos, vel, rand = Math.random()) {
 
 // ------------------------------------------------------------------ gerente
 const SUPPORTED = new Set(['proj', 'swing', 'aoe', 'area', 'buff', 'falling']);
-const SHIELDY = new Set(['harden', 'arcane_shield']);
+const SHIELDY = new Set(['harden', 'arcane_shield', 'steel']);
 
 export class VFX {
   constructor(fx) {

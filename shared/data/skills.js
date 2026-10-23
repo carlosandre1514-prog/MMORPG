@@ -17,7 +17,7 @@ export const SKILLS = {
     icon: { sym: 'shout', c1: '#f39c12', c2: '#7e5109' },
   },
   w_charge: {
-    id: 'w_charge', cls: 'warrior', name: 'Investida', lvl: 6, mp: 12, cd: 12, range: 9,
+    id: 'w_charge', cls: 'warrior', name: 'Investida de Escudo', lvl: 6, mp: 12, cd: 12, range: 9,
     target: 'enemy', mult: 1.3, stun: 1.5,
     desc: 'Avança até o alvo, causando 130% do Poder e atordoando por 1,5s.',
     icon: { sym: 'charge', c1: '#d35400', c2: '#6e2c00' },
@@ -28,17 +28,55 @@ export const SKILLS = {
     desc: 'Gira com a arma, causando 170% do Poder a todos os inimigos ao redor.',
     icon: { sym: 'whirl', c1: '#bdc3c7', c2: '#566573' },
   },
-  w_titan: {
-    id: 'w_titan', cls: 'warrior', name: 'Fúria do Titã', lvl: 15, mp: 30, cd: 60, range: 0,
-    target: 'self', dur: 12, power: 0.4, lifesteal: 15,
-    desc: 'Entra em fúria por 12s: +40% de Poder e 15% de roubo de vida.',
-    icon: { sym: 'fury', c1: '#ff5733', c2: '#900c3f' },
+  w_wall: {
+    id: 'w_wall', cls: 'warrior', name: 'Muralha de Aço', lvl: 15, mp: 30, cd: 50, range: 0,
+    target: 'self', dur: 10, dr: 0.45, regen: 0.02,
+    desc: 'Firma o escudo por 10s: recebe 45% menos dano e recupera 2% da vida máxima por segundo.',
+    icon: { sym: 'faith', c1: '#aed6f1', c2: '#1f618d' },
   },
   w_exec: {
     id: 'w_exec', cls: 'warrior', name: 'Execução', lvl: 20, mp: 25, cd: 14, range: 2.0,
     target: 'enemy', mult: 3.0, execMult: 6.0, execPct: 0.3,
     desc: 'Golpe final: 300% do Poder, ou 600% se o alvo estiver abaixo de 30% de vida.',
-    icon: { sym: 'axe', c1: '#922b21', c2: '#1b0907' },
+    icon: { sym: 'exec', c1: '#e8eef5', c2: '#1b2733' },
+  },
+
+  // ---------------- Berserker ----------------
+  b_cleave: {
+    id: 'b_cleave', cls: 'berserker', name: 'Golpe Ceifador', lvl: 1, mp: 8, cd: 4, range: 2.0,
+    target: 'enemy', mult: 1.5, splash: 0.6, splashR: 2.2,
+    desc: 'Um talho largo do machado: 150% do Poder no alvo e 60% nos inimigos ao redor dele.',
+    icon: { sym: 'cleave', c1: '#f5b041', c2: '#6e2c00' },
+  },
+  b_rend: {
+    id: 'b_rend', cls: 'berserker', name: 'Dilacerar', lvl: 3, mp: 12, cd: 9, range: 2.0,
+    target: 'enemy', mult: 1.0, bleed: 0.3, bleedDur: 6,
+    desc: 'Rasga o alvo: 100% do Poder e sangramento de 30% do Poder por segundo durante 6s.',
+    icon: { sym: 'rend', c1: '#e74c3c', c2: '#641e16' },
+  },
+  b_leap: {
+    id: 'b_leap', cls: 'berserker', name: 'Salto Selvagem', lvl: 6, mp: 14, cd: 12, range: 9,
+    target: 'enemy', mult: 1.4, radius: 2.4, slow: 0.4, slowDur: 2.5,
+    desc: 'Salta sobre o alvo e esmaga o chão: 140% do Poder a todos em volta do ponto de pouso, com lentidão de 40% por 2,5s.',
+    icon: { sym: 'leap', c1: '#f39c12', c2: '#7e5109' },
+  },
+  b_frenzy: {
+    id: 'b_frenzy', cls: 'berserker', name: 'Frenesi', lvl: 10, mp: 20, cd: 30, range: 0,
+    target: 'self', dur: 10, power: 0.25, haste: 30, defPenalty: 0.2,
+    desc: 'Entra em frenesi por 10s: +25% de Poder e +30% de velocidade de ataque, mas recebe 20% mais dano.',
+    icon: { sym: 'frenzy', c1: '#ff5733', c2: '#7b241c' },
+  },
+  b_roar: {
+    id: 'b_roar', cls: 'berserker', name: 'Rugido Sanguinário', lvl: 15, mp: 25, cd: 20, range: 0,
+    target: 'self', radius: 4.5, mult: 1.2, healPct: 0.06, maxHeals: 5,
+    desc: 'Um urro que racha o ar: 120% do Poder a todos em volta e recupera 6% da vida máxima por inimigo atingido (até 5).',
+    icon: { sym: 'roar', c1: '#ffb347', c2: '#922b21' },
+  },
+  b_massacre: {
+    id: 'b_massacre', cls: 'berserker', name: 'Massacre', lvl: 20, mp: 40, cd: 90, range: 0,
+    target: 'self', dur: 15, power: 0.5, lifesteal: 25, speed: 0.2,
+    desc: 'Perde o controle por 15s: +50% de Poder, +25% de roubo de vida e +20% de velocidade de movimento.',
+    icon: { sym: 'massacre', c1: '#ff2d2d', c2: '#3b0a0a' },
   },
 
   // ---------------- Mago ----------------

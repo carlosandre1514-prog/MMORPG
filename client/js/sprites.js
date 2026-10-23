@@ -114,7 +114,7 @@ function drawWeapon(ctx, type, color, glow, swing) {
   ctx.restore();
 }
 
-const WEAPON_BY_CLASS = { warrior: 'sword', mage: 'staff', ranger: 'bow', cleric: 'mace' };
+const WEAPON_BY_CLASS = { warrior: 'sword', berserker: 'axe', mage: 'staff', ranger: 'bow', cleric: 'mace' };
 
 // ------------------------------------------------------------------ humanoide
 // o: { dir, walk, skin, hair, hairStyle, tunic, legs, armor, trim, robe, cape, beard, hat, pointyHat, hood,
@@ -306,7 +306,7 @@ export function playerLook(e) {
   const legs = app.l && ITEMS[app.l];
   const head = app.h && ITEMS[app.h];
   const wpn = app.w && ITEMS[app.w];
-  const classColor = { warrior: '#922b21', mage: '#1f4e8c', ranger: '#1e6b3c', cleric: '#d4ac0d' }[e.cls];
+  const classColor = { warrior: '#922b21', berserker: '#a04000', mage: '#1f4e8c', ranger: '#1e6b3c', cleric: '#d4ac0d' }[e.cls];
   look.tunic = classColor;
   if (chest) look.armor = chest.icon.c1;
   look.trim = classColor;
@@ -318,7 +318,7 @@ export function playerLook(e) {
   if (e.cls === 'mage') { look.robe = true; if (!head) { look.pointyHat = true; look.hat = shade(look.armor || classColor, -0.1); } }
   if (e.cls === 'cleric') { look.robe = true; look.tunic = '#ecf0f1'; look.trim = '#d4ac0d'; if (chest) look.armor = shade(chest.icon.c1, 0.35); if (!head) look.circlet = true; }
   if (e.cls === 'ranger' && !head) look.hood = shade(look.armor || classColor, -0.15);
-  if (e.cls === 'warrior' && chest) look.cape = '#922b21';
+  if ((e.cls === 'warrior' || e.cls === 'berserker') && chest) look.cape = classColor;
   return look;
 }
 
@@ -725,6 +725,13 @@ export function drawIcon(ctx, icon) {
       ctx.strokeStyle = c1; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(-6, 0, 13, -1.1, 1.1); ctx.stroke();
       ctx.strokeStyle = '#ecf0f1'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-6 + Math.cos(-1.1) * 13, Math.sin(-1.1) * 13); ctx.lineTo(-6 + Math.cos(1.1) * 13, Math.sin(1.1) * 13); ctx.stroke();
       break;
+    case 'axe':
+      ctx.translate(16, 16); ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = '#6e4b2a'; ctx.fillRect(-1.5, -12, 3, 26);
+      ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(1.5, -12); ctx.quadraticCurveTo(13, -12, 12, -2); ctx.lineTo(1.5, -4); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-1.5, -10); ctx.quadraticCurveTo(-8, -10, -7, -4); ctx.lineTo(-1.5, -5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillRect(4, -9, 5, 1.4);
+      break;
     case 'mace':
       ctx.translate(16, 16); ctx.rotate(Math.PI / 4);
       ctx.fillStyle = '#6e4b2a'; ctx.fillRect(-1.5, -4, 3, 17);
@@ -905,6 +912,13 @@ export function skillIcon(sk, size = 44) {
     case 'charge': P([6, 20, 22, 20]); ctx.stroke(); P([18, 12, 30, 20, 18, 28]); ctx.stroke(); P([6, 12, 12, 12]); ctx.stroke(); P([6, 28, 12, 28]); ctx.stroke(); break;
     case 'whirl': ctx.beginPath(); for (let a = 0; a < 12; a += 0.2) { const r = 2 + a * 1.2; ctx.lineTo(20 + Math.cos(a) * r, 20 + Math.sin(a) * r); } ctx.stroke(); break;
     case 'fury': P([20, 6, 26, 18, 20, 16, 24, 34, 12, 18, 18, 20, 14, 6]); ctx.closePath(); ctx.fill(); break;
+    case 'exec': P([20, 4, 20, 26]); ctx.stroke(); P([12, 24, 28, 24]); ctx.stroke(); P([16, 24, 16, 30]); ctx.stroke(); P([24, 24, 24, 30]); ctx.stroke(); ctx.globalAlpha = 0.6; P([8, 34, 32, 34]); ctx.stroke(); ctx.globalAlpha = 1; break;
+    case 'cleave': P([14, 34, 22, 8]); ctx.stroke(); ctx.beginPath(); ctx.moveTo(21, 8); ctx.quadraticCurveTo(36, 10, 31, 24); ctx.lineTo(24, 16); ctx.fill(); ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(20, 22, 15, -2.4, -0.2); ctx.stroke(); ctx.globalAlpha = 1; break;
+    case 'rend': for (let i = -1; i <= 1; i++) { P([10 + i * 7, 6, 26 + i * 7, 34]); ctx.stroke(); } ctx.fillStyle = '#ff6b5a'; circle(ctx, 14, 36, 1.8, '#ff6b5a'); circle(ctx, 28, 37, 1.6, '#ff6b5a'); break;
+    case 'leap': ctx.beginPath(); ctx.arc(20, 30, 14, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); P([27, 24, 33, 30, 26, 32]); ctx.stroke(); ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.ellipse(32, 34, 6, 2.5, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; break;
+    case 'frenzy': P([20, 4, 30, 18, 24, 18, 28, 36, 14, 20, 20, 20]); ctx.closePath(); ctx.fill(); circle(ctx, 14, 14, 2.4, '#fff3a0'); circle(ctx, 26, 14, 2.4, '#fff3a0'); break;
+    case 'roar': ctx.beginPath(); ctx.moveTo(6, 14); ctx.lineTo(18, 20); ctx.lineTo(6, 28); ctx.closePath(); ctx.fill(); for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(14, 21, 10 + i * 6, -0.9, 0.9); ctx.stroke(); } break;
+    case 'massacre': ctx.beginPath(); ctx.arc(20, 17, 11, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(14, 24, 12, 8); ctx.fillStyle = shade(c2, -0.4); circle(ctx, 15.5, 17, 3, shade(c2, -0.4)); circle(ctx, 24.5, 17, 3, shade(c2, -0.4)); ctx.fillRect(18, 25, 1.6, 6); ctx.fillRect(21.4, 25, 1.6, 6); break;
     case 'axe': P([12, 32, 26, 10]); ctx.stroke(); ctx.beginPath(); ctx.moveTo(22, 8); ctx.quadraticCurveTo(36, 10, 30, 22); ctx.lineTo(24, 14); ctx.fill(); break;
     case 'fire': ctx.beginPath(); ctx.moveTo(20, 6); ctx.quadraticCurveTo(32, 20, 26, 30); ctx.quadraticCurveTo(20, 36, 14, 30); ctx.quadraticCurveTo(8, 20, 20, 6); ctx.fill(); ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.moveTo(20, 16); ctx.quadraticCurveTo(25, 24, 22, 29); ctx.quadraticCurveTo(20, 31, 18, 29); ctx.quadraticCurveTo(15, 24, 20, 16); ctx.fill(); break;
     case 'frost': for (let i = 0; i < 3; i++) { ctx.save(); ctx.translate(20, 20); ctx.rotate((i * Math.PI) / 3); P([0, -14, 0, 14]); ctx.stroke(); P([-4, -10, 0, -6, 4, -10]); ctx.stroke(); P([-4, 10, 0, 6, 4, 10]); ctx.stroke(); ctx.restore(); } break;

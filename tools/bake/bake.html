@@ -16,6 +16,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { buildMace } from '/client/js/three/mace.js';
 
 const FRAME = 128;
 const DIRS = ['down', 'left', 'right', 'up'];
@@ -77,7 +78,7 @@ async function bake(cfg, animClips, base) {
   });
   for (const [side, bone] of [['right', 'handslotr'], ['left', 'handslotl']]) {
     if (!cfg[side]) continue;
-    const w = await load(`${base}/weapons/${cfg[side]}.gltf`);
+    const w = cfg[side] === '@mace' ? { scene: buildMace(THREE) } : await load(`${base}/weapons/${cfg[side]}.gltf`);
     let slot = null;
     model.traverse((o) => { if (o.name.replace(/[._]/g, '').toLowerCase() === bone) slot = o; });
     if (slot) slot.add(w.scene);

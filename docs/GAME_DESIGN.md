@@ -34,7 +34,8 @@ Missões secundárias (gato do Pip, fazendeiro, ervas, forja, xamãs, ents, morc
 
 | Classe | Papel | Atributo | Habilidades (nível) |
 |---|---|---|---|
-| Guerreiro | tanque / corpo a corpo | Força | Golpe Poderoso (1), Grito de Guerra — provoca (3), Investida — atordoa (6), Redemoinho (10), Fúria do Titã (15), Execução (20) |
+| Guerreiro | tanque / corpo a corpo (espada e escudo) | Força | Golpe Poderoso (1), Grito de Guerra — provoca (3), Investida de Escudo — atordoa (6), Redemoinho (10), Muralha de Aço — 45% menos dano e regeneração (15), Execução (20) |
+| Berserker | dano corpo a corpo / fúria (machado) | Força | Golpe Ceifador — acerta quem está em volta (1), Dilacerar — sangramento (3), Salto Selvagem — esmaga e retarda (6), Frenesi — mais poder e velocidade, menos defesa (10), Rugido Sanguinário — cura ao ferir (15), Massacre — roubo de vida e velocidade (20) |
 | Mago | dano mágico / controle | Inteligência | Bola de Fogo (1), Lança de Gelo (3), Escudo Arcano (6), Chuva de Meteoros (10), Teleporte (15), Nova Glacial (20) |
 | Arqueiro | dano à distância | Destreza | Tiro Certeiro (1), Flecha Venenosa (3), Rolamento — invulnerável (6), Chuva de Flechas (10), Olho de Falcão (15), Tiro Múltiplo (20) |
 | Clérigo | cura / suporte | Inteligência | Luz Sagrada — +50% contra mortos-vivos (1), Cura (2), Bênção (6), Consagração (10), Escudo da Fé (15), Graça Divina — cura em área e ressuscita (20) |

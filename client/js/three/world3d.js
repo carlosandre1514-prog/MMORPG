@@ -16,6 +16,17 @@ import { OceanWater } from './ocean.js';
 import { Farm } from './animals.js';
 
 const CHUNK = 16;
+// A fazenda usa as texturas das construções da cidade (Medieval Village MegaKit) para ter cara de vila medieval: por material do modelo
+// original (RoofBlack = telhado, LightRed = paredes, DarkRed = tábuas, White = molduras, Brown = madeiramento, Grey = pedra...),
+// [textura da cidade, tom que multiplica a textura]. Os modelos têm UVs por projeção em caixa (tools/farm/convert.mjs).
+const FARM_TEX = {
+  _: { RoofBlack: ['RoundTiles', 0xffffff], DarkRed: ['WoodTrim', 0x7d5b3d], LightRed: ['Plaster', 0xe8d3a8], White: ['WoodTrim', 0xd2b88c], Brown: ['WoodTrim', 0xa98358], DarkBrown: ['WoodTrim', 0x6a4a30] },
+  Silo: { DarkRed: ['UnevenBrick', 0xe6c9a6], LightRed: ['Brick', 0xe6c4aa], White: ['RoundTiles', 0xffffff], Grey: ['UnevenBrick', 0xdcd2c4] },
+  Silo_House: { DarkRed: ['UnevenBrick', 0xe6c9a6], LightRed: ['Plaster', 0xe8d3a8], Grey: ['RoundTiles', 0xffffff], DarkGrey: ['UnevenBrick', 0xb0a898] },
+  TowerWindmill: { Grey: ['UnevenBrick', 0xffffff], DarkGrey: ['UnevenBrick', 0xb8b0a0], LightBrown: ['WoodTrim', 0xc9a878] },
+  WaterTower: { Grey: ['WoodTrim', 0x8a6c48] },
+  Well: { Grey: ['UnevenBrick', 0xffffff], DarkGrey: ['UnevenBrick', 0xb0a898], LightRed: ['RoundTiles', 0xffffff], White: ['Plaster', 0xe8d3a8] },
+};
 // plantas pintadas à mão por zona: p = chance por tile de grama, h = altura em tiles
 const FLORA = {
   forest: { p: 0.08, h: 0.7, kinds: ['flora_Mushroom1', 'flora_Mushroom2', 'flora_Mushroom3', 'flora_Bell1', 'flora_Bell2', 'flora_Bell3'] },
@@ -675,14 +686,23 @@ export class ZoneScene {
   buildFarm() {
     const sts = this.zone.structures.filter((st) => st.kind === 'farm' || st.kind === 'farmprop' || st.kind === 'pen');
     if (!sts.length) return;
+    this.farmMats = new Map();
     for (const st of sts) {
-      if (st.kind !== 'farm' || !medieval.has('farm_' + st.model)) continue;
-      const name = 'farm_' + st.model;
+      if (st.kind !== 'farm') continue;
+      const names = medieval.parts('farm_' + st.model);
+      if (!names.length) continue;
+      const box = new THREE.Box3();
+      for (const n of names) box.union(medieval.geo(n).boundingBox); // as partes dividem a origem: centradas em x e z, base em y = 0
+      const size = box.getSize(new THREE.Vector3());
       this.group.add(this.facing(st, (W, D) => {
-        const k = medieval.fit(name, W * 0.98, D * 0.98);
-        const m = medieval.mesh(name, k);
-        const g = new THREE.Group();
-        g.add(m); // o modelo já vem centrado em x e z e com a base em y = 0
+        const k = Math.min(W * 0.98 / size.x, D * 0.98 / size.z), g = new THREE.Group();
+        for (const n of names) {
+          const mesh = new THREE.Mesh(medieval.geo(n), this.farmMaterial(st.model, n.split('~')[1], n));
+          mesh.scale.setScalar(k);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          g.add(mesh);
+        }
         return g;
       }));
     }
@@ -697,6 +717,23 @@ export class ZoneScene {
       this.addInst(inst);
     }
     if (sts.some((st) => st.kind === 'pen')) { this.farm = new Farm(this.zone); this.group.add(this.farm.group); }
+  }
+
+  // Material de uma parte da fazenda: a textura da cidade (telha, reboco, madeira, pedra) com o tom do material original; sem a
+  // textura (cidade não carregada, ou metal e peças pretas) fica a cor por vértice do próprio modelo.
+  farmMaterial(model, mtl, partName) {
+    const spec = (FARM_TEX[model] && FARM_TEX[model][mtl]) || FARM_TEX._[mtl];
+    const base = spec && village.ready && village.mats[spec[0]];
+    if (!base) return medieval.mat(partName);
+    const key = spec[0] + '|' + spec[1];
+    let m = this.farmMats.get(key);
+    if (!m) {
+      m = base.clone();
+      m.userData = {};
+      m.color.set(spec[1]);
+      this.farmMats.set(key, m);
+    }
+    return m;
   }
 
   // Flores, sinos e cogumelos que brilham, espalhados pela grama (plantas pintadas à mão do pacote da WizP)

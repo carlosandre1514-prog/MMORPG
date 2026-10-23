@@ -117,7 +117,7 @@ function parseObj(file) { // OBJ + MTL: um vértice por (posição, normal, mate
       else if (t[0] === 'Kd' && cur) { cur[0] = +t[1]; cur[1] = +t[2]; cur[2] = +t[3]; }
     }
   }
-  const v = [], vn = [], map = new Map(), pos = [], nor = [], col = [], idx = [];
+  const v = [], vn = [], map = new Map(), pos = [], nor = [], col = [], idx = [], tmat = [];
   let material = null;
   for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
     const t = line.trim().split(/\s+/);
@@ -132,9 +132,10 @@ function parseObj(file) { // OBJ + MTL: um vértice por (posição, normal, mate
         if (id == null) { id = pos.length / 3; map.set(k, id); pos.push(...v[vi]); nor.push(...(ni >= 0 ? vn[ni] : [0, 1, 0])); col.push(...(mtl[material] || [0.8, 0.8, 0.8])); }
         idx.push(id);
       }
+      if (f.length >= 3) for (let i = 1; i + 1 < f.length; i++) tmat.push(material);
     }
   }
-  return { pos: new Float32Array(pos), nor: new Float32Array(nor), col: new Float32Array(col), idx: new Uint32Array(idx) };
+  return { pos: new Float32Array(pos), nor: new Float32Array(nor), col: new Float32Array(col), idx: new Uint32Array(idx), tmat };
 }
 
 const sizes = {};
@@ -153,6 +154,31 @@ async function save(doc, file, rows) {
 }
 
 // ------------------------------------------------------------------ 1. construções (Quaternius)
+// Cada construção sai em partes, uma por material do .mtl original (telhado, paredes, madeiramento, pedra...), com UVs por projeção em
+// caixa. O jogo põe nelas as texturas das construções da cidade (telha, reboco, madeira, pedra: client/js/three/world3d.js, FARM_TEX).
+// Metros por repetição da textura de cada material: tem de bater com o que a cidade usa (a escala dos UVs é fixada aqui).
+const UV_METERS = { RoofBlack: 2.2, DarkRed: 1.6, LightRed: 2.4, White: 1.6, Brown: 1.6, Grey: 2.4, DarkGrey: 2.4, LightBrown: 1.8, DarkBrown: 1.6, Black: 2 };
+function splitParts(m) {
+  const parts = new Map();
+  for (let t = 0; t < m.tmat.length; t++) {
+    const name = m.tmat[t] || 'None';
+    let p = parts.get(name);
+    if (!p) parts.set(name, (p = { map: new Map(), pos: [], nor: [], col: [], uv: [], idx: [] }));
+    for (let k = 0; k < 3; k++) {
+      const vi = m.idx[t * 3 + k];
+      let id = p.map.get(vi);
+      if (id == null) {
+        id = p.pos.length / 3; p.map.set(vi, id);
+        const x = m.pos[vi * 3], y = m.pos[vi * 3 + 1], z = m.pos[vi * 3 + 2], nx = m.nor[vi * 3], ny = m.nor[vi * 3 + 1], nz = m.nor[vi * 3 + 2];
+        p.pos.push(x, y, z); p.nor.push(nx, ny, nz); p.col.push(m.col[vi * 3], m.col[vi * 3 + 1], m.col[vi * 3 + 2]);
+        const S = UV_METERS[name] || 2, ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
+        if (ay >= ax && ay >= az) p.uv.push(x / S, z / S); else if (ax >= az) p.uv.push(z / S, -y / S); else p.uv.push(x / S, -y / S);
+      }
+      p.idx.push(id);
+    }
+  }
+  return [...parts].map(([name, p]) => ({ name, m: { pos: new Float32Array(p.pos), nor: new Float32Array(p.nor), col: new Float32Array(p.col), uv: new Float32Array(p.uv), idx: new Uint32Array(p.idx) } }));
+}
 {
   const doc = new Document(), buffer = doc.createBuffer(), scene = doc.createScene('farm');
   const mat = doc.createMaterial('farm').setBaseColorFactor([1, 1, 1, 1]).setRoughnessFactor(0.9).setMetallicFactor(0);
@@ -162,8 +188,18 @@ async function save(doc, file, rows) {
     const m = parseObj(path.join(FARM, f));
     const sz = normalize(m, FRONT[name] || 0);
     sizes['farm_' + name] = sz.map((v) => +v.toFixed(2));
-    addVertexColored(doc, buffer, scene, mat, 'farm_' + name, m);
-    rows.push(`farm_${name.padEnd(14)} ${m.idx.length / 3} triângulos  ${sz.map((v) => v.toFixed(1)).join(' x ')} m`);
+    const parts = splitParts(m);
+    for (const { name: mtl, m: pm } of parts) {
+      const prim = doc.createPrimitive().setMaterial(mat)
+        .setAttribute('POSITION', doc.createAccessor().setType('VEC3').setArray(pm.pos).setBuffer(buffer))
+        .setAttribute('NORMAL', doc.createAccessor().setType('VEC3').setArray(pm.nor).setBuffer(buffer))
+        .setAttribute('COLOR_0', doc.createAccessor().setType('VEC3').setArray(pm.col).setBuffer(buffer))
+        .setAttribute('TEXCOORD_0', doc.createAccessor().setType('VEC2').setArray(pm.uv).setBuffer(buffer))
+        .setIndices(doc.createAccessor().setType('SCALAR').setArray(pm.idx).setBuffer(buffer));
+      const node = `farm_${name}~${mtl}`;
+      scene.addChild(doc.createNode(node).setMesh(doc.createMesh(node).addPrimitive(prim)));
+    }
+    rows.push(`farm_${name.padEnd(14)} ${m.idx.length / 3} triângulos em ${parts.length} partes (${parts.map((p) => p.name).join(', ')})  ${sz.map((v) => v.toFixed(1)).join(' x ')} m`);
   }
   await save(doc, 'farm.glb', rows);
 }

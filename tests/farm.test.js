@@ -81,7 +81,7 @@ test('o mapa dos Campos tem a fazenda: construções bloqueiam, cercas têm port
 test('os modelos usados pela fazenda existem nos GLBs convertidos (tools/farm/convert.mjs)', () => {
   const farm = glbNames('assets/farm/farm.glb'), props = glbNames('assets/farm/props.glb'), flora = glbNames('assets/farm/flora.glb'), magic = glbNames('assets/farm/magic.glb');
   const L = farmLayout();
-  for (const b of L.buildings) assert.ok(farm.has('farm_' + b.model), b.model);
+  for (const b of L.buildings) assert.ok([...farm].some((n) => n.startsWith('farm_' + b.model + '~')), b.model); // cada construção vem em partes por material
   for (const p of L.props) assert.ok(props.has('prop_' + p.m), p.m);
   const world = read('client/js/three/world3d.js');
   for (const n of world.match(/flora_[A-Za-z0-9]+/g)) assert.ok(flora.has(n), n);

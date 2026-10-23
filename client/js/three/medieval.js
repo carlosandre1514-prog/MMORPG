@@ -57,6 +57,8 @@ export const medieval = {
   },
 
   mat(name) { return this.mats.get(name) || this.material; },
+  // partes de um modelo dividido por material (nomes "prefixo~material"), como as construções da fazenda
+  parts(prefix) { return [...this.geos.keys()].filter((n) => n.startsWith(prefix + '~')); },
   has(name) { return this.ready && this.geos.has(name); },
   geo(name) { return this.geos.get(name); },
   size(name) { return this.geos.get(name).boundingBox.getSize(new THREE.Vector3()); },

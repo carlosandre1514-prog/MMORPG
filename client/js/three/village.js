@@ -9,6 +9,8 @@ import { doorIndex } from '/shared/citygen.js';
 import { medieval } from './medieval.js';
 import { interiorFor } from './interiors.js';
 import { registerDecor } from './decor.js';
+import { lite } from './lite.js';
+import { quality } from '../device.js';
 
 const BASE = '/village/';
 const MOD = 200; // módulo da grade, em cm
@@ -18,6 +20,8 @@ const TEXTURED = {
   RockTrim: { normal: true }, WoodTrim: { normal: true }, Vine: { png: true },
 };
 const DOOR_OPEN = 1.5; // rad: a folha gira para dentro da casa
+const ALWAYS_LOD = /^(Roof_|Window_|DoorFrame_|Prop_Chimney)/; // mesmas peças que o tools/village/lod.mjs simplifica com mais força
+const FINE = /^(WindowShutters_|Prop_Vine)/;
 const FACE_ROT = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 };
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -48,19 +52,19 @@ export const village = {
     const tl = new THREE.TextureLoader();
     const load = (file, color) => tl.loadAsync(BASE + 'textures/' + file).then((t) => {
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.anisotropy = 4;
+      t.anisotropy = quality().low ? 1 : 4;
       if (color) t.colorSpace = THREE.SRGBColorSpace;
       return t;
     });
     await Promise.all(Object.entries(TEXTURED).map(async ([key, o]) => {
       const map = await load(`${key}_color.${o.png ? 'png' : 'jpg'}`, true);
-      const normalMap = o.normal ? await load(`${key}_normal.jpg`, false) : null;
+      const normalMap = o.normal && !quality().low ? await load(`${key}_normal.jpg`, false) : null; // sem mapa de normais no modo leve
       const m = new THREE.MeshStandardMaterial({ name: key, map, normalMap, roughness: o.rough ?? 0.92, metalness: 0 });
       if (key === 'Vine') { m.alphaTest = 0.5; m.side = THREE.DoubleSide; m.color.set(0x5f9a3c); }
-      this.mats[key] = m;
+      this.mats[key] = lite(m);
     }));
     // vidro das janelas: acende à noite (emissiveIntensity é ajustada pela cena)
-    this.mats.WindowGlass = new THREE.MeshStandardMaterial({ name: 'WindowGlass', color: 0x9cc0d6, roughness: 0.15, metalness: 0.2, emissive: 0xffc35a, emissiveIntensity: 0 });
+    this.mats.WindowGlass = lite(new THREE.MeshStandardMaterial({ name: 'WindowGlass', color: 0x9cc0d6, roughness: 0.15, metalness: 0.2, emissive: 0xffc35a, emissiveIntensity: 0 }));
     registerDecor(this);
     for (const m of Object.values(this.mats)) m.userData.shared = true;
   },
@@ -85,15 +89,19 @@ export const village = {
   // Cada peça leva o número da casa (bid) e se some quando o jogador está dentro (hide: telhado e andares de cima).
   place(spec, base, out, props = null, st = null, meta = null) {
     const local = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+    const low = quality().low;
     let hideNow = false, innerNow = false; // innerNow: piso, teto e decoração (só aparecem de perto)
     const bid = st ? st.seed || 0 : 0;
     if (bid) this.centers.set(bid, [base.elements[12], base.elements[14], st.w / 2, st.h / 2]);
     const add = (name, x, y, z, rot = 0, scale = null, depth = 0, leaf = false) => {
+      // no modo leve as peças decorativas (telhado, moldura, janela, chaminé) já nascem na versão simples
+      if (low && !leaf && ALWAYS_LOD.test(name) && this.pieces.has(name + '@lod')) name += '@lod';
       if (!this.pieces.has(name)) return;
       // depth: recuo em cm ao longo da normal da parede (negativo = para dentro)
       const pos = new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth);
       local.compose(pos, q.setFromAxisAngle(UP, rot), scale || one);
-      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow, inner: innerNow };
+      // venezianas e trepadeiras são detalhe fino: só aparecem de perto
+      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow, inner: innerNow || FINE.test(name) };
       if (leaf) pl.leaf = { base, pos, rot, scale: scale.clone() }; // folha da porta: gira em volta da dobradiça
       out.push(pl);
       // peças pesadas têm uma irmã simplificada (@lod) para os prédios distantes
@@ -257,7 +265,7 @@ export const village = {
     // por casa: instâncias que somem por dentro (telhado e andares de cima) ou trocam de detalhe com a distância, e folhas de porta
     const bld = new Map(), leaves = new Map();
     const keep = (map, id, v) => { const l = map.get(id); if (l) l.push(v); else map.set(id, [v]); };
-    const state = (id) => { let b = bld.get(id); if (!b) bld.set(id, (b = { hidden: false, far: false, entries: [] })); return b; };
+    const state = (id) => { let b = bld.get(id); if (!b) bld.set(id, (b = { hidden: false, far: false, outer: false, entries: [] })); return b; };
     g.userData.bld = bld; g.userData.leaves = leaves;
     for (const [key, e] of byKey) {
       let nv = 0, ni = 0;
@@ -282,13 +290,13 @@ export const village = {
   // Visibilidade de cada instância de uma casa: telhado/andares de cima somem por dentro, e o detalhe vira simples de longe
   applyState(b) {
     for (const e of b.entries) {
-      const vis = (e.kind === 2 ? b.far : e.kind === 1 || e.kind === 3 ? !b.far : true) && !(e.hide && b.hidden);
+      const vis = (e.kind === 2 ? b.far : e.kind === 1 ? !b.far : e.kind === 3 ? !b.outer : true) && !(e.hide && b.hidden);
       if (vis !== e.vis) { e.bm.setVisibleAt(e.id, vis); e.vis = vis; }
     }
   },
 
   // Troca o detalhe das casas conforme a distância ao jogador (histerese de 2 tiles para não piscar)
-  updateLod(batchGroup, px, pz, r) {
+  updateLod(batchGroup, px, pz, r, inner = r) {
     const bld = batchGroup.userData.bld;
     if (!bld) return;
     for (const [id, b] of bld) {
@@ -296,7 +304,8 @@ export const village = {
       if (!c) continue;
       const d = Math.hypot(Math.max(0, Math.abs(c[0] - px) - c[2]), Math.max(0, Math.abs(c[1] - pz) - c[3])); // distância até o retângulo do prédio
       const far = b.far ? d > r - 2 : d > r + 2;
-      if (far !== b.far) { b.far = far; this.applyState(b); }
+      const outer = b.outer ? d > inner - 1.5 : d > inner + 1.5; // interior (piso, teto, decoração, venezianas): só de perto
+      if (far !== b.far || outer !== b.outer) { b.far = far; b.outer = outer; this.applyState(b); }
     }
   },
 

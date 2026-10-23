@@ -73,8 +73,13 @@ export class Game {
       this.lastFrame = ts;
       try {
         this.update(dt);
-        this.renderer.render(ts / 1000);
-        this.ui.frame();
+        // aparelhos fracos desenham a no máximo ~30 quadros por segundo (o jogo continua simulando a cada quadro)
+        const gap = this.renderer.frameGap;
+        if (!gap || ts - (this.lastDraw || 0) >= gap - 3) {
+          this.lastDraw = ts;
+          this.renderer.render(ts / 1000);
+          this.ui.frame();
+        }
       } catch (e) {
         // um erro num quadro não pode congelar o jogo
         if (!this.loggedErr || ts - this.loggedErr > 5000) { console.error('[jogo] erro no quadro', e); this.loggedErr = ts; }

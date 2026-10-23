@@ -4,6 +4,7 @@
 // continua sendo um BatchedMesh por material.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { lite } from './lite.js';
 
 const TILE = 90; // cm de parede por repetição da textura
 
@@ -202,18 +203,18 @@ export function registerDecor(village) {
   pieces.set('Counter', counterPieces());
   pieces.set('Bookcase', bookcasePieces());
   pieces.set('Cupboard', cupboardPieces());
-  mats.Books = new THREE.MeshStandardMaterial({ name: 'Books', map: booksTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 });
-  mats.FurnWood = new THREE.MeshStandardMaterial({ name: 'FurnWood', color: 0xa86a3e, roughness: 0.9 });
-  mats.Soot = new THREE.MeshStandardMaterial({ name: 'Soot', color: 0x16120f, roughness: 1 });
-  mats.Log = new THREE.MeshStandardMaterial({ name: 'Log', color: 0x5a3b22, roughness: 0.95 });
-  mats.Ember = new THREE.MeshStandardMaterial({ name: 'Ember', color: 0x3a1608, emissive: 0xff6a1a, emissiveIntensity: 1.6, roughness: 1 });
+  mats.Books = lite(new THREE.MeshStandardMaterial({ name: 'Books', map: booksTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
+  mats.FurnWood = lite(new THREE.MeshStandardMaterial({ name: 'FurnWood', color: 0xa86a3e, roughness: 0.9 }));
+  mats.Soot = lite(new THREE.MeshStandardMaterial({ name: 'Soot', color: 0x16120f, roughness: 1 }));
+  mats.Log = lite(new THREE.MeshStandardMaterial({ name: 'Log', color: 0x5a3b22, roughness: 0.95 }));
+  mats.Ember = lite(new THREE.MeshStandardMaterial({ name: 'Ember', color: 0x3a1608, emissive: 0xff6a1a, emissiveIntensity: 1.6, roughness: 1 }));
   const rugGeo = (w, d) => new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2);
   for (const v of Object.keys(RUGS)) {
     const key = 'Rug' + v;
-    mats[key] = new THREE.MeshStandardMaterial({ name: key, map: rugTexture(v, 288, 192), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    mats[key] = lite(new THREE.MeshStandardMaterial({ name: key, map: rugTexture(v, 288, 192), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
     pieces.set('Rug_' + v, [{ key, geo: rugGeo(180, 120) }]);
   }
   // passadeira longa e estreita (corredor do salão)
-  mats.RugRunner = new THREE.MeshStandardMaterial({ name: 'RugRunner', map: rugTexture('A', 320, 96), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  mats.RugRunner = lite(new THREE.MeshStandardMaterial({ name: 'RugRunner', map: rugTexture('A', 320, 96), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
   pieces.set('Runner', [{ key: 'RugRunner', geo: rugGeo(300, 90) }]);
 }

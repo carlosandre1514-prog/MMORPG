@@ -3,6 +3,7 @@ import { F, RARITY } from '/shared/constants.js';
 import { MONSTERS } from '/shared/data/monsters.js';
 import { NPCS } from '/shared/data/npcs.js';
 import { ITEMS } from '/shared/data/items.js';
+import { quality } from '../device.js';
 
 export class Overlay {
   constructor(canvas, renderer, game) {
@@ -13,7 +14,7 @@ export class Overlay {
   }
 
   resize(W, H) {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = Math.min(quality().low ? 1.5 : 2, window.devicePixelRatio || 1); // textos não precisam da resolução cheia no modo leve
     this.dpr = dpr;
     this.canvas.width = Math.floor(W * dpr);
     this.canvas.height = Math.floor(H * dpr);

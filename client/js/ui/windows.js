@@ -574,7 +574,7 @@ export const windowsMixin = {
       toggle('Sombras (desative se o jogo ficar lento)', this.game.renderer.shadows, (v) => this.game.renderer.setShadows(v)),
       select('Câmera (V)', this.game.renderer.camMode, [['far', '3ª pessoa · longe'], ['near', '3ª pessoa · perto'], ['first', '1ª pessoa']], (v) => this.game.renderer.setCamMode(v)),
       h('label', { class: 'opt-row' }, 'Zoom ', zoom),
-      select('Qualidade gráfica (recarrega)', qualityMode(), [['auto', 'Automática'], ['high', 'Alta'], ['low', 'Leve (celular)']], (v) => { prefs.set('quality', v); this.toast('Qualidade salva: recarregue a página para aplicar.', 'info'); }),
+      select('Qualidade gráfica (recarrega)', qualityMode() === 'low' && prefs.get('ultra', '0') === '1' ? 'ultra' : qualityMode(), [['auto', 'Automática'], ['high', 'Alta'], ['low', 'Leve (celular)'], ['ultra', 'Muito leve (aparelho fraco)']], (v) => { prefs.set('quality', v === 'ultra' ? 'low' : v); prefs.set('ultra', v === 'ultra' ? '1' : '0'); this.toast('Qualidade salva: recarregue a página para aplicar.', 'info'); }),
       select('Controles de toque', touchUiMode(), [['auto', 'Automático'], ['on', 'Sempre ligados'], ['off', 'Desligados']], (v) => this.mobile.set(v)),
       h('button', { class: 'btn small', onclick: () => this.mobile.fullscreen() }, 'Tela cheia'),
       h('div', { class: 'row' },

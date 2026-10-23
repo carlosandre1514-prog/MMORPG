@@ -14,7 +14,7 @@ import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
 import { roomAt } from '/shared/housegeom.js';
 import { GuideFx } from './guide3d.js';
-import { quality } from '../device.js';
+import { quality, weakDevice, prefs } from '../device.js';
 
 const Q = quality();
 const LIGHT_POOL = Q.lights;
@@ -85,9 +85,11 @@ export class Renderer3D {
     this.playerLight = new THREE.PointLight(0xffe0b0, 0, 12, 1.4);
     this.scene.add(this.playerLight);
     // luz quente dentro das casas (velas e lareira)
-    this.roomLight = new THREE.PointLight(0xffcf94, 0, 7, 1.2);
-    this.scene.add(this.roomLight);
+    // no modo leve uma luz só faz as duas tarefas (cada luz de ponto custa em todos os pixels)
+    this.roomLight = Q.low ? this.playerLight : new THREE.PointLight(0xffcf94, 0, 7, 1.2);
+    if (!Q.low) this.scene.add(this.roomLight);
     this.room = null;
+    this.frameGap = Q.low && weakDevice() ? 33 : 0; // ms mínimos entre quadros desenhados
     this.fx = new Effects3D(game, this.scene);
     this.guideFx = new GuideFx(this.scene);
     this.actors = new Map();
@@ -115,8 +117,9 @@ export class Renderer3D {
   }
 
   resize() {
-    this.dpr = Math.min(this.maxDpr || Q.dprMax, window.devicePixelRatio || 1);
     this.W = window.innerWidth; this.H = window.innerHeight;
+    // resolução: limitada pelo aparelho, pelo passo da qualidade automática e por um orçamento de pixels (modo leve)
+    this.dpr = Math.min(this.maxDpr || Q.dprMax, window.devicePixelRatio || 1, Math.max(0.6, Math.sqrt(Q.pixels / (this.W * this.H))));
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.setSize(this.W, this.H, false);
     this.canvas.style.width = this.W + 'px';
@@ -139,6 +142,8 @@ export class Renderer3D {
     this.lights = terrain.lights.map((L) => ({ x: L.x, y: L.lava ? 0.4 : 1.15, z: L.y, r: L.r, lava: L.lava, o: L.o }));
     const me = this.game.me;
     this.camTarget.set(me.x, 0.8, me.y);
+    // compila os shaders já (em paralelo, se o navegador deixar) para o jogo não engasgar na primeira vez que algo aparece
+    if (this.renderer.extensions.has('KHR_parallel_shader_compile')) this.renderer.compileAsync(this.scene, this.camera).catch(() => {});
   }
 
   get dist() {
@@ -329,7 +334,10 @@ export class Renderer3D {
       root.rotation.y = lerpAngle(root.rotation.y, want, 1 - Math.exp(-dt * 14));
       const dead = !!(e.f & F.DEAD);
       const st = { now, moving: e.moving && !dead, speed: e.spd || 0, phase: e.phase, dead, deathStart: e.deathStart, atkStart: e.atkStart, hurt: e.hurt, lit: e.n === 'altar' && g.questDone('ms19') };
-      a.model.update(dt, st);
+      // longe do jogador a animação é atualizada menos vezes (com o tempo acumulado), o que poupa CPU em quem tem muita gente por perto
+      const far = Math.max(Math.abs(e.rx - g.me.x), Math.abs(e.ry - g.me.y));
+      a.acc = (a.acc || 0) + dt;
+      if (e.id !== g.me.id && far > 14 && (this.frameNo + (e.id | 0)) % (far > 28 ? 4 : 2) !== 0) { /* pula este quadro */ } else { a.model.update(a.acc, st); a.acc = 0; }
       // monstros mortos desaparecem
       if (dead && e.k === 'm' && a.kind === 'char') a.model.setOpacity(Math.max(0, 1 - (now - (e.deathStart || now)) / 1600));
       else if (a.kind === 'char' && e.k === 'p') a.model.setOpacity(e.f & F.INVULN ? 0.5 : 1);
@@ -390,6 +398,7 @@ export class Renderer3D {
     const me = this.game.myEntity();
     if (me) this.playerLight.position.set(me.rx, 2.2, me.ry);
     this.playerLight.intensity = dark * 9;
+    if (Q.low) { this.playerLight.color.set(0xffe0b0); this.playerLight.distance = 12; }
     // pool de luzes: tochas e efeitos mais próximos
     if (now - this.lastLightPick > 150) {
       this.lastLightPick = now;
@@ -442,6 +451,7 @@ export class Renderer3D {
     const dt = Math.min(0.1, raw);
     this.lastRender = now;
     this.autoQuality(raw);
+    this.frameNo = (this.frameNo || 0) + 1;
     this.syncActors(dt, now);
     this.updateCamera(dt);
     this.updateLights(now, t);
@@ -466,6 +476,14 @@ export class Renderer3D {
     this.zoneScene.setIndoor(room, this.camMode !== 'first');
     this.zoneScene.updateDoors(g.me.x, g.me.y, dt);
     const L = this.roomLight;
+    if (Q.low) {
+      // luz única: dentro de uma casa vira a luz quente do cômodo
+      if (room) {
+        L.position.set((room.inner[0] + room.inner[2]) / 2, 2.0, (room.inner[1] + room.inner[3]) / 2);
+        L.color.set(0xffcf94); L.distance = Math.max(room.inner[2] - room.inner[0], room.inner[3] - room.inner[1]) * 0.8 + 2; L.intensity = 9;
+      }
+      return;
+    }
     if (room) { L.position.set((room.inner[0] + room.inner[2]) / 2, 2.0, (room.inner[1] + room.inner[3]) / 2); L.distance = Math.max(room.inner[2] - room.inner[0], room.inner[3] - room.inner[1]) * 0.8 + 2; }
     const target = room ? 9 : 0;
     L.intensity += (target - L.intensity) * Math.min(1, dt * 6);
@@ -480,6 +498,7 @@ export class Renderer3D {
     if (this.fpsT < 5) return;
     const fps = this.fpsN / this.fpsT;
     this.fpsT = 0; this.fpsN = 0;
+    if (Q.low && !this.frameGap && fps < 42) { this.frameGap = 33; return; } // 30 quadros firmes valem mais que 35 irregulares
     if (fps >= 28) { this.qualityDone = true; return; }
     if (this.dpr > 1) { this.maxDpr = 1; this.resize(); return; } // 1º passo: resolução menor
     if (this.shadows) {
@@ -488,6 +507,14 @@ export class Renderer3D {
       return; // mede de novo antes de ir mais longe
     }
     if (this.dpr > 0.8) { this.maxDpr = 0.8; this.resize(); return; }
+    // último recurso: "muito leve" (alcance, resolução e partículas menores; vale também nas próximas vezes)
+    if (Q.low && prefs.get('ultra', '0') !== '1' && fps < 24) {
+      prefs.set('ultra', '1');
+      Object.assign(Q, quality());
+      this.resize();
+      this.game.ui.toast('Modo muito leve ativado para o jogo rodar melhor (Opções > Qualidade).');
+      return;
+    }
     this.qualityDone = true;
   }
 

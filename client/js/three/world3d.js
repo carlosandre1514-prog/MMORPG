@@ -9,6 +9,7 @@ import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
 import { quality } from '../device.js';
+import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 
 const CHUNK = 16;
@@ -226,7 +227,7 @@ export class ZoneScene {
     this.group.traverse((o) => {
       if (!o.isMesh || !o.material) return;
       for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
-        if (m.isMeshStandardMaterial && m !== this.waterMat && m !== this.lavaMat) applySeeThrough(m);
+        if ((m.isMeshStandardMaterial || m.isMeshLambertMaterial) && !m.userData.ground && m !== this.waterMat && m !== this.lavaMat) applySeeThrough(m);
       }
     });
   }
@@ -278,7 +279,7 @@ export class ZoneScene {
     if (!force && (now - (this.lastCull || 0) < 200 || (Math.abs(px - this.cullX) < 0.5 && Math.abs(pz - this.cullZ) < 0.5))) return;
     this.lastCull = now; this.cullX = px; this.cullZ = pz;
     village.cullProps(this.propGroup, px, pz, quality().cullR);
-    if (this.cityGroup) village.updateLod(this.cityGroup, px, pz, quality().lodR);
+    if (this.cityGroup) { const Qc = quality(); village.updateLod(this.cityGroup, px, pz, Qc.lodR, Qc.innerR); }
   }
 
   // O jogador entrou (ou saiu) de uma casa: com a câmera de fora o telhado e os andares de cima somem
@@ -309,14 +310,14 @@ export class ZoneScene {
         this.terrain.drawChunk(ctx, cx, cy);
         const tex = new THREE.CanvasTexture(cv);
         tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = Math.min(8, this.maxAniso);
+        tex.anisotropy = quality().low ? 1 : Math.min(8, this.maxAniso);
         // chunks de borda cobrem só os tiles que existem (o resto da textura seria o vazio preto)
         const wv = Math.min(CHUNK, z.w - cx * CHUNK), hv = Math.min(CHUNK, z.h - cy * CHUNK);
         const geo = new THREE.PlaneGeometry(wv, hv);
         const uv = geo.attributes.uv;
         for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (wv / CHUNK), 1 - (1 - uv.getY(i)) * (hv / CHUNK));
         geo.rotateX(-Math.PI / 2);
-        const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: tex }));
+        const m = new THREE.Mesh(geo, Object.assign(new THREE.MeshLambertMaterial({ map: tex }), { userData: { ground: true } }));
         m.position.set(cx * CHUNK + wv / 2, 0, cy * CHUNK + hv / 2);
         m.receiveShadow = true;
         this.group.add(m);
@@ -325,7 +326,7 @@ export class ZoneScene {
     // chão além das bordas
     const def = z.def;
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(z.w + 120, z.h + 120).rotateX(-Math.PI / 2),
-      new THREE.MeshLambertMaterial({ color: def.gen.type === 'cave' || def.gen.type === 'arena' ? 0x1c1916 : def.id === 'ruins' ? 0x3a3330 : 0x24401f }));
+      Object.assign(new THREE.MeshLambertMaterial({ color: def.gen.type === 'cave' || def.gen.type === 'arena' ? 0x1c1916 : def.id === 'ruins' ? 0x3a3330 : 0x24401f }), { userData: { ground: true } }));
     outer.position.set(z.w / 2, -0.02, z.h / 2);
     this.group.add(outer);
   }
@@ -376,7 +377,7 @@ export class ZoneScene {
       col.set([c.r, c.g, c.b], i * 3);
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, flatShading: true });
+    const mat = lite(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, flatShading: true }));
     const inst = new THREE.InstancedMesh(geo, mat, list.length);
     const mtx = new THREE.Matrix4();
     list.forEach(([x, y], i) => {
@@ -429,8 +430,8 @@ export class ZoneScene {
       if (!byType.has(ob.o)) byType.set(ob.o, []);
       byType.get(ob.o).push(ob);
     }
-    const stdMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.9 });
-    const crystalMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.3, emissive: 0x7d3c98, emissiveIntensity: 0.9 });
+    const stdMat = lite(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.9 }));
+    const crystalMat = lite(new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.3, emissive: 0x7d3c98, emissiveIntensity: 0.9 }));
     const mtx = new THREE.Matrix4();
     for (const [o, list] of byType) {
       if (medieval.ready && OBJECT_MODEL_KEY[o] && this.packObjects(o, list)) continue;
@@ -658,8 +659,8 @@ export class ZoneScene {
     if (village.ready) {
       return {
         stone: village.mats.UnevenBrick, roof: village.mats.RoundTiles,
-        trim: new THREE.MeshStandardMaterial({ map: village.mats.Brick.map, normalMap: village.mats.Brick.normalMap, color: 0xb8b2a8, roughness: 0.95 }),
-        iron: new THREE.MeshStandardMaterial({ color: 0x2b2a2e, roughness: 0.5, metalness: 0.6 }),
+        trim: lite(new THREE.MeshStandardMaterial({ map: village.mats.Brick.map, normalMap: village.mats.Brick.normalMap, color: 0xb8b2a8, roughness: 0.95 })),
+        iron: lite(new THREE.MeshStandardMaterial({ color: 0x2b2a2e, roughness: 0.5, metalness: 0.6 })),
       };
     }
     return {

@@ -5,6 +5,7 @@
 // tools/medieval/convert.mjs, com todos os modelos dividindo um material com atlas.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { lite } from './lite.js';
 
 // Packs convertidos por tools/medieval/convert.mjs; cada um tem o próprio atlas
 const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb', '/kaykit/dungeon/dungeon.glb',
@@ -22,16 +23,18 @@ export const medieval = {
     await Promise.all(PACKS.map(async (url, i) => {
       try {
         const gltf = await new GLTFLoader().loadAsync(url, (e) => { if (e.total) { prog[i] = e.loaded / e.total; onProgress(prog.reduce((a, b) => a + b, 0) / PACKS.length); } });
-        let mat = null;
+        let mat = null, gltfMat = null;
         gltf.scene.traverse((o) => {
           if (!o.isMesh) return;
           o.geometry.computeBoundingBox();
-          mat ||= o.material;
+          mat ||= o.material; gltfMat = mat;
           this.geos.set(o.name, o.geometry);
           this.mats.set(o.name, mat);
           this.shared.add(o.geometry);
         });
         if (mat) {
+          mat = lite(mat);
+          for (const k of [...this.mats.keys()]) if (this.mats.get(k) === gltfMat) this.mats.set(k, mat);
           mat.userData.shared = true;
           mat.roughness = 0.85;
           mat.metalness = 0;

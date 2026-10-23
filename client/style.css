@@ -186,22 +186,27 @@ input { font-family: var(--font); user-select: text; }
 .tr-obj.ok { color: var(--good); }
 .tr-empty { font-size: 12px; color: #ccc; background: rgba(0, 0, 0, 0.5); padding: 6px; border-radius: 4px; }
 
-#chat { position: absolute; left: 10px; bottom: 30px; width: min(400px, calc(50vw - 245px)); min-width: 200px; height: 210px; display: flex; flex-direction: column; padding: 4px; background: rgba(10, 10, 16, 0.6); }
-#chat-head { display: flex; align-items: center; gap: 2px; margin: -4px -4px 2px; padding: 2px 6px; font-size: 11px; color: #c9b784; background: rgba(0, 0, 0, 0.35); border-bottom: 1px solid rgba(255, 255, 255, 0.08); cursor: grab; touch-action: none; user-select: none; }
+/* chat: balão pequeno e translúcido sob o cartão do jogador; ao clicar abre (.open) no tamanho normal */
+#chat { position: absolute; left: 10px; top: 104px; width: min(300px, 42vw); display: flex; flex-direction: column; padding: 3px 5px; background: rgba(10, 10, 16, 0.22); border-color: rgba(255, 255, 255, 0.1); box-shadow: none; opacity: 0.8; cursor: pointer; outline: none; transition: opacity 0.15s, background 0.15s; }
+#chat:hover { opacity: 1; background: rgba(10, 10, 16, 0.4); }
+#chat:not(.open):has(#chat-log:empty) { display: none; }
+#chat-head { display: none; }
+/* fechado, o campo de digitar fica escondido mas focável (Enter, / e o botão 💬 só precisam dar foco nele para abrir o chat) */
+#chat-bar { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+#chat.open #chat-head { display: flex; align-items: center; gap: 2px; margin: -4px -4px 2px; padding: 2px 6px; font-size: 11px; color: #c9b784; background: rgba(0, 0, 0, 0.35); border-bottom: 1px solid rgba(255, 255, 255, 0.08); cursor: grab; touch-action: none; user-select: none; }
 #chat-head.grab { cursor: grabbing; }
 #chat-head .ch-title { flex: 1; }
 #chat-head button { background: none; border: 0; color: #c9b784; cursor: pointer; padding: 0 5px; font-size: 13px; line-height: 1.2; }
 #chat-head button:hover { color: #fff; }
-#chat-bar { display: flex; align-items: stretch; gap: 4px; }
+#chat.open #chat-bar { position: static; width: auto; height: auto; overflow: visible; opacity: 1; pointer-events: auto; display: flex; align-items: stretch; gap: 4px; }
 #chat-bar #chat-input { flex: 1; min-width: 0; }
 #chat-grip { flex: none; width: 16px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 48%, #8a7a50 48%, #8a7a50 56%, transparent 56%, transparent 70%, #8a7a50 70%, #8a7a50 78%, transparent 78%); }
-#chat.min { height: auto !important; min-height: 0; }
-#chat.min #chat-log, #chat.min #chat-bar { display: none; }
-body.touch-ui #chat-head { padding: 6px 8px; font-size: 13px; }
-body.touch-ui #chat-head button { font-size: 17px; padding: 0 9px; }
-body.touch-ui #chat-grip { width: 30px; }
-#chat-log { flex: 1; overflow-y: auto; font-size: 13px; padding: 2px 4px; user-select: text; }
-#chat-log::-webkit-scrollbar { width: 6px; }
+#chat-log { max-height: 76px; overflow-y: auto; scrollbar-width: none; font-size: 12px; padding: 2px 4px; user-select: none; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%); mask-image: linear-gradient(to bottom, transparent 0, #000 45%); }
+#chat-log::-webkit-scrollbar { display: none; }
+#chat:not(.open) .chat-line { text-shadow: 0 0 3px #000, 0 1px 2px #000; }
+#chat.open { z-index: 6; width: min(400px, calc(50vw - 245px)); min-width: 200px; height: 210px; padding: 4px; background: rgba(10, 10, 16, 0.78); border-color: var(--border); box-shadow: 0 0 0 1px #000, 0 6px 20px rgba(0, 0, 0, 0.6); opacity: 1; cursor: default; }
+#chat.open #chat-log { flex: 1; max-height: none; overflow-y: auto; scrollbar-width: auto; font-size: 13px; user-select: text; -webkit-mask-image: none; mask-image: none; }
+#chat.open #chat-log::-webkit-scrollbar { display: block; width: 6px; }
 #chat-log::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
 #chat-input { background: rgba(0, 0, 0, 0.6); border: 1px solid #444; color: #fff; padding: 5px 7px; border-radius: 3px; outline: none; font-size: 13px; }
 #chat-input:focus { border-color: var(--border-hi); }
@@ -460,7 +465,6 @@ ul.tips { padding-left: 16px; margin: 4px 0; font-size: 13px; line-height: 1.4; 
 }
 @media (max-width: 900px) {
   #tracker, #lootlog { display: none; }
-  #chat { width: 260px; height: 120px; bottom: 76px; }
   #hud-target { top: 90px; width: 220px; }
   #menubar { bottom: 76px; }
   .create-wrap { flex-direction: column; align-items: center; }
@@ -536,9 +540,15 @@ body.touch-ui #minimap canvas { width: 124px; height: 124px; }
 body.touch-ui #minimap .mm-zone, body.touch-ui #minimap .mm-info { font-size: 9px; }
 body.touch-ui #hud-target { top: 8px; width: 210px; padding: 4px 8px; }
 body.touch-ui #guidebar { top: 56px; max-width: 42vw; }
-body.touch-ui #tracker, body.touch-ui #chat, body.touch-ui #menubar, body.touch-ui #lootlog { display: none; }
+body.touch-ui #tracker, body.touch-ui #menubar, body.touch-ui #lootlog { display: none; }
 body.touch-ui.show-tracker #tracker { display: flex; left: 10px; right: auto; top: 76px; width: min(56vw, 300px); z-index: 6; }
-body.touch-ui.show-chat #chat { display: flex; left: 10px; bottom: auto; top: 76px; width: min(58vw, 420px); height: 42vh; z-index: 6; background: rgba(10, 10, 16, 0.85); }
+body.touch-ui #chat { width: min(250px, 38vw); top: 80px; }
+body.touch-ui #chat-log { max-height: 62px; font-size: 11px; }
+body.touch-ui #chat.open { width: min(58vw, 420px); height: 42vh; }
+body.touch-ui #chat.open #chat-log { max-height: none; font-size: 13px; }
+body.touch-ui #chat.open #chat-head { padding: 6px 8px; font-size: 13px; }
+body.touch-ui #chat-head button { font-size: 17px; padding: 0 9px; }
+body.touch-ui #chat-grip { width: 30px; }
 body.touch-ui.show-menu #menubar { display: flex; flex-wrap: wrap; width: 244px; right: 150px; top: 54px; bottom: auto; z-index: 6; }
 body.touch-ui .mb-btn { width: 44px; height: 44px; font-size: 20px; }
 body.touch-ui #bottom { left: auto; right: 6px; width: auto; align-items: stretch; }

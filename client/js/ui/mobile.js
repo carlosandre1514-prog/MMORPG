@@ -40,7 +40,7 @@ export class MobileControls {
     this.topBar = h('div', { id: 'mob-top', class: 'mob' },
       top('⛶', 'fs', () => this.fullscreen()),
       top('📜', 'tr', () => this.toggleClass('show-tracker')),
-      top('💬', 'ch', () => this.toggleClass('show-chat')),
+      top('💬', 'ch', () => this.game?.ui.chatInput.focus()),
       top('☰', 'mn', () => this.toggleClass('show-menu')));
     R.append(this.zone, this.topBar);
     // fechar menu ao escolher uma janela
@@ -50,7 +50,7 @@ export class MobileControls {
 
   toggleClass(c) {
     const on = !document.body.classList.contains(c);
-    for (const k of ['show-tracker', 'show-chat', 'show-menu']) document.body.classList.remove(k);
+    for (const k of ['show-tracker', 'show-menu']) document.body.classList.remove(k);
     if (on) document.body.classList.add(c);
   }
 
@@ -104,7 +104,7 @@ export class MobileControls {
 
   apply(on) {
     document.body.classList.toggle('touch-ui', !!on);
-    if (!on) for (const k of ['show-tracker', 'show-chat', 'show-menu']) document.body.classList.remove(k);
+    if (!on) for (const k of ['show-tracker', 'show-menu']) document.body.classList.remove(k);
     const st = this.game?.input.stick;
     if (st) { st.x = 0; st.y = 0; }
   }

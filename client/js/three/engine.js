@@ -14,10 +14,9 @@ import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
 import { roomAt } from '/shared/housegeom.js';
 import { GuideFx } from './guide3d.js';
-import { quality, weakDevice, prefs } from '../device.js';
+import { quality, onGfxChange, lowerAutoPreset, PRESET_NAMES, showFps } from '../device.js';
 
-const Q = quality();
-const LIGHT_POOL = Q.lights;
+const Q = quality(); // objeto único, atualizado no lugar quando o jogador muda os gráficos
 
 // Atmosfera por zona: céu de dia/noite, névoa
 const ATMOS = {
@@ -53,7 +52,7 @@ export class Renderer3D {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: Q.antialias, powerPreference: 'high-performance' });
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
-    this.shadows = loadPref('shadows', Q.shadows);
+    this.shadows = Q.shadows;
     this.renderer.shadowMap.enabled = this.shadows;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.scene = new THREE.Scene();
@@ -77,19 +76,14 @@ export class Renderer3D {
     this.sun.shadow.normalBias = 0.03;
     this.scene.add(this.hemi, this.sun, this.sun.target);
     this.pool = [];
-    for (let i = 0; i < LIGHT_POOL; i++) {
-      const l = new THREE.PointLight(0xffaa55, 0, 8, 1.6);
-      this.scene.add(l);
-      this.pool.push(l);
-    }
     this.playerLight = new THREE.PointLight(0xffe0b0, 0, 12, 1.4);
     this.scene.add(this.playerLight);
-    // luz quente dentro das casas (velas e lareira)
-    // no modo leve uma luz só faz as duas tarefas (cada luz de ponto custa em todos os pixels)
-    this.roomLight = Q.low ? this.playerLight : new THREE.PointLight(0xffcf94, 0, 7, 1.2);
-    if (!Q.low) this.scene.add(this.roomLight);
+    // luz quente dentro das casas (velas e lareira); com poucas luzes uma só faz as duas tarefas (cada luz custa em todos os pixels)
+    this.ownRoomLight = new THREE.PointLight(0xffcf94, 0, 7, 1.2);
+    this.roomLight = this.playerLight;
+    this.applyLights();
     this.room = null;
-    this.frameGap = Q.low && weakDevice() ? 33 : 0; // ms mínimos entre quadros desenhados
+    this.frameGap = this.capGap(); // ms mínimos entre quadros desenhados
     this.fx = new Effects3D(game, this.scene);
     this.guideFx = new GuideFx(this.scene);
     this.actors = new Map();
@@ -106,20 +100,61 @@ export class Renderer3D {
     this.lastLightPick = 0;
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    onGfxChange(() => this.applyGraphics());
+    this.setFpsMeter(showFps());
   }
 
-  setShadows(on, persist = true) {
+  // Liga/desliga as sombras e acerta o tamanho do mapa de sombra (Q.shadowMap)
+  setShadows(on) {
+    const was = this.shadows;
     this.shadows = on;
-    if (persist) { savePref('shadows', on); this.qualityDone = true; }
     this.renderer.shadowMap.enabled = on;
     this.sun.castShadow = on;
-    this.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) m.needsUpdate = true; } });
+    const sh = this.sun.shadow;
+    if (sh.mapSize.x !== Q.shadowMap) {
+      sh.mapSize.set(Q.shadowMap, Q.shadowMap);
+      if (sh.map) { sh.map.dispose(); sh.map = null; } // o three recria o mapa no próximo quadro
+    }
+    if (was !== on) this.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) m.needsUpdate = true; } });
+  }
+
+  capGap() { return Q.fps ? Math.round(1000 / Q.fps) : 0; }
+
+  // Pool de luzes de ponto (tochas, fogo, magias) e a luz dos cômodos, conforme Q.lights / Q.fuse. Mudar o número de luzes recompila os materiais uma vez.
+  applyLights() {
+    while (this.pool.length > Q.lights) { const l = this.pool.pop(); this.scene.remove(l); l.dispose(); }
+    while (this.pool.length < Q.lights) {
+      const l = new THREE.PointLight(0xffaa55, 0, 8, 1.6);
+      this.scene.add(l);
+      this.pool.push(l);
+    }
+    if (Q.fuse) {
+      if (this.ownRoomLight.parent) this.scene.remove(this.ownRoomLight);
+      this.roomLight = this.playerLight;
+    } else {
+      if (!this.ownRoomLight.parent) this.scene.add(this.ownRoomLight);
+      this.roomLight = this.ownRoomLight;
+      this.playerLight.color.set(0xffe0b0); this.playerLight.distance = 12;
+    }
+    this.picked = null;
+    this.lastLightPick = 0;
+  }
+
+  // O jogador mexeu em Opções > Gráficos: aplica ao vivo o que dá (anti-serrilhado, materiais e textura do chão pedem recarregar)
+  applyGraphics() {
+    this.maxDpr = null; // esquece os passos automáticos desta sessão
+    this.frameGap = this.capGap();
+    this.setShadows(Q.shadows);
+    this.applyLights();
+    this.resize();
+    if (this.zoneScene) this.zoneScene.cull(this.game.me.x, this.game.me.y, true);
+    this.qualityDone = false; this.fpsT = 0; this.fpsN = 0;
   }
 
   resize() {
     this.W = window.innerWidth; this.H = window.innerHeight;
     // resolução: limitada pelo aparelho, pelo passo da qualidade automática e por um orçamento de pixels (modo leve)
-    this.dpr = Math.min(this.maxDpr || Q.dprMax, window.devicePixelRatio || 1, Math.max(0.6, Math.sqrt(Q.pixels / (this.W * this.H))));
+    this.dpr = Math.min(this.maxDpr || Q.dprMax, window.devicePixelRatio || 1, Math.max(0.5, Math.sqrt(Q.pixels / (this.W * this.H))));
     this.renderer.setPixelRatio(this.dpr);
     this.renderer.setSize(this.W, this.H, false);
     this.canvas.style.width = this.W + 'px';
@@ -398,7 +433,7 @@ export class Renderer3D {
     const me = this.game.myEntity();
     if (me) this.playerLight.position.set(me.rx, 2.2, me.ry);
     this.playerLight.intensity = dark * 9;
-    if (Q.low) { this.playerLight.color.set(0xffe0b0); this.playerLight.distance = 12; }
+    if (Q.fuse) { this.playerLight.color.set(0xffe0b0); this.playerLight.distance = 12; }
     // pool de luzes: tochas e efeitos mais próximos
     if (now - this.lastLightPick > 150) {
       this.lastLightPick = now;
@@ -411,7 +446,7 @@ export class Renderer3D {
       this.fx.lights(fxl);
       for (const L of fxl) cands.push({ ...L, dd: -1 });
       cands.sort((a, b) => a.dd - b.dd);
-      this.picked = cands.slice(0, LIGHT_POOL);
+      this.picked = cands.slice(0, this.pool.length);
     }
     this.pool.forEach((l, i) => {
       const L = this.picked && this.picked[i];
@@ -451,6 +486,8 @@ export class Renderer3D {
     const dt = Math.min(0.1, raw);
     this.lastRender = now;
     this.autoQuality(raw);
+    this.meter(raw);
+    if (this.bench) this.stepBench(raw);
     this.frameNo = (this.frameNo || 0) + 1;
     this.syncActors(dt, now);
     this.updateCamera(dt);
@@ -476,7 +513,7 @@ export class Renderer3D {
     this.zoneScene.setIndoor(room, this.camMode !== 'first');
     this.zoneScene.updateDoors(g.me.x, g.me.y, dt);
     const L = this.roomLight;
-    if (Q.low) {
+    if (Q.fuse) {
       // luz única: dentro de uma casa vira a luz quente do cômodo
       if (room) {
         L.position.set((room.inner[0] + room.inner[2]) / 2, 2.0, (room.inner[1] + room.inner[3]) / 2);
@@ -490,32 +527,74 @@ export class Renderer3D {
     if (L.intensity < 0.02) L.intensity = 0;
   }
 
-  // Qualidade automática: se o jogo rodar lento, reduz a resolução e depois desliga as sombras.
+  // Ajuste automático durante o jogo (Opções > Gráficos): se rodar lento, limita a 30 quadros, reduz a resolução, desliga as sombras
+  // e, no perfil Automático, rebaixa o perfil de vez (lembrado nas próximas vezes).
   autoQuality(raw) {
-    if (this.qualityDone || raw <= 0 || raw > 0.5) return;
+    if (!Q.adapt || this.qualityDone || raw <= 0 || raw > 0.5) return;
     this.fpsT = (this.fpsT || 0) + raw;
     this.fpsN = (this.fpsN || 0) + 1;
     if (this.fpsT < 5) return;
     const fps = this.fpsN / this.fpsT;
     this.fpsT = 0; this.fpsN = 0;
-    if (Q.low && !this.frameGap && fps < 42) { this.frameGap = 33; return; } // 30 quadros firmes valem mais que 35 irregulares
+    if (Q.low && this.frameGap < 33 && fps < 42) { this.frameGap = 33; return; } // 30 quadros firmes valem mais que 35 irregulares
     if (fps >= 28) { this.qualityDone = true; return; }
     if (this.dpr > 1) { this.maxDpr = 1; this.resize(); return; } // 1º passo: resolução menor
     if (this.shadows) {
-      this.setShadows(false, false);
-      this.game.ui.toast('Sombras desligadas para melhorar o desempenho (Opções para religar).');
+      this.setShadows(false);
+      this.game.ui.toast('Sombras desligadas para melhorar o desempenho (Opções > Gráficos para religar).');
       return; // mede de novo antes de ir mais longe
     }
     if (this.dpr > 0.8) { this.maxDpr = 0.8; this.resize(); return; }
-    // último recurso: "muito leve" (alcance, resolução e partículas menores; vale também nas próximas vezes)
-    if (Q.low && prefs.get('ultra', '0') !== '1' && fps < 24) {
-      prefs.set('ultra', '1');
-      Object.assign(Q, quality());
-      this.resize();
-      this.game.ui.toast('Modo muito leve ativado para o jogo rodar melhor (Opções > Qualidade).');
-      return;
+    // último recurso: perfil automático um degrau abaixo (vale também nas próximas vezes)
+    if (fps < 24) {
+      const lower = lowerAutoPreset();
+      if (lower) {
+        this.game.ui.toast(`Gráficos reduzidos para "${PRESET_NAMES[lower]}" para o jogo rodar melhor (Opções > Gráficos).`);
+        return;
+      }
     }
     this.qualityDone = true;
+  }
+
+  // ------------------------------------------------------------------ medidor de FPS e teste de desempenho
+  setFpsMeter(on) {
+    if (!on) { if (this.fpsEl) this.fpsEl.style.display = 'none'; return; }
+    if (!this.fpsEl) {
+      this.fpsEl = document.createElement('div');
+      this.fpsEl.id = 'fps-meter';
+      document.body.appendChild(this.fpsEl);
+    }
+    this.fpsEl.style.display = '';
+  }
+
+  meter(raw) {
+    if (raw > 1) return; // aba em segundo plano
+    this.mT = (this.mT || 0) + raw; this.mN = (this.mN || 0) + 1;
+    if (this.mT < 0.5) return;
+    if (this.fpsEl && this.fpsEl.style.display !== 'none') {
+      const info = this.renderer.info.render;
+      const fps = this.mN / this.mT;
+      this.fpsEl.textContent = `${fps.toFixed(0)} FPS · ${(1000 / fps).toFixed(1)} ms\n3D ${Math.round(this.W * this.dpr)}×${Math.round(this.H * this.dpr)} (${this.dpr.toFixed(2)}×) · ${info.calls} chamadas · ${(info.triangles / 1000).toFixed(0)} mil tri`;
+    }
+    this.mT = 0; this.mN = 0;
+  }
+
+  // Mede o desempenho por `seconds` segundos; done({ avg, low }) com a média e a média dos 5% piores quadros (em FPS)
+  startBench(seconds, done, progress) {
+    this.bench = { t: 0, frames: [], seconds, done, progress };
+  }
+
+  stepBench(raw) {
+    const b = this.bench;
+    if (raw > 0 && raw < 1) b.frames.push(raw);
+    b.t += raw;
+    if (b.progress) b.progress(Math.min(1, b.t / b.seconds));
+    if (b.t < b.seconds) return;
+    this.bench = null;
+    const f = b.frames.sort((x, y) => y - x);
+    const n = f.length || 1;
+    const worst = f.slice(0, Math.max(1, Math.floor(n * 0.05)));
+    b.done({ avg: n / (f.reduce((s, x) => s + x, 0) || 1), low: worst.length / (worst.reduce((s, x) => s + x, 0) || 1), frames: f.length });
   }
 
   // ------------------------------------------------------------------ projeções e seleção
@@ -568,10 +647,4 @@ function loadStr(k, def) {
 }
 function saveStr(k, v) {
   try { localStorage.setItem('aethra_' + k, v); } catch { /* ignorado */ }
-}
-function loadPref(k, def) {
-  try { const v = localStorage.getItem('aethra_' + k); return v == null ? def : v === '1'; } catch { return def; }
-}
-function savePref(k, v) {
-  try { localStorage.setItem('aethra_' + k, v ? '1' : '0'); } catch { /* ignorado */ }
 }

@@ -1,13 +1,13 @@
 // Modo leve (celulares fracos): materiais PBR (MeshStandardMaterial) viram MeshLambertMaterial, que só calcula luz difusa.
 // Cada luz de ponto custa bem menos por pixel e não há reflexo especular nem mapa de normais.
 import * as THREE from 'three';
-import { quality } from '../device.js';
+import { bootQuality } from '../device.js';
 
 const cache = new Map();
 
-// Devolve uma versão leve do material (a mesma instância para o mesmo material); fora do modo leve devolve o original.
+// Devolve uma versão leve do material (a mesma instância para o mesmo material); com materiais realistas ligados devolve o original.
 export function lite(m) {
-  if (!m || !m.isMeshStandardMaterial || !quality().low) return m;
+  if (!m || !m.isMeshStandardMaterial || bootQuality().pbr) return m;
   let l = cache.get(m);
   if (l) return l;
   l = new THREE.MeshLambertMaterial({

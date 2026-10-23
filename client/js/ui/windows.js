@@ -12,7 +12,8 @@ import { h, clear, esc, Win, fmt } from './dom.js';
 import { slotEl } from './itemview.js';
 import { skillIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { audio } from '../audio.js';
-import { prefs, qualityMode, touchUiMode } from '../device.js';
+import { touchUiMode } from '../device.js';
+import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
 
@@ -31,7 +32,7 @@ export const windowsMixin = {
     W('guild', 'Clã', { w: 360 });
     W('ranking', 'Quadro de Honra', { w: 420 });
     W('help', 'Ajuda — Como Jogar', { w: 600 });
-    W('options', 'Opções', { w: 320 });
+    W('options', 'Opções', { w: 380 });
     W('trade', 'Comércio', { w: 520, onClose: () => { if (this.game.trade) this.send({ t: 'trade', op: 'cancel' }); } });
     this.buildNpcWindows(W);
   },
@@ -553,6 +554,10 @@ export const windowsMixin = {
   // ================================================================ opções
   renderOptions() {
     const body = clear(this.wins.options.body);
+    const tab = this.optTab || 'geral';
+    body.appendChild(h('div', { class: 'tabs' },
+      ...[['geral', 'Geral'], ['graficos', 'Gráficos']].map(([id, n]) => h('button', { class: 'tab' + (tab === id ? ' on' : ''), onclick: () => { this.optTab = id; this.renderOptions(); } }, n))));
+    if (tab === 'graficos') { body.appendChild(graphicsPanel(this)); return; }
     const toggle = (label, val, fn) => {
       const cb = h('input', { type: 'checkbox' });
       cb.checked = val;
@@ -571,10 +576,9 @@ export const windowsMixin = {
       toggle('Efeitos sonoros', audio.enabled, (v) => { audio.init(); audio.setSfx(v); }),
       toggle('Música ambiente', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); if (v) audio.startMusic(this.game.zone.def.music); }),
       toggle('Mostrar nomes dos itens no chão (Z)', this.game.showItemNames, (v) => { this.game.showItemNames = v; }),
-      toggle('Sombras (desative se o jogo ficar lento)', this.game.renderer.shadows, (v) => this.game.renderer.setShadows(v)),
       select('Câmera (V)', this.game.renderer.camMode, [['far', '3ª pessoa · longe'], ['near', '3ª pessoa · perto'], ['first', '1ª pessoa']], (v) => this.game.renderer.setCamMode(v)),
       h('label', { class: 'opt-row' }, 'Zoom ', zoom),
-      select('Qualidade gráfica (recarrega)', qualityMode() === 'low' && prefs.get('ultra', '0') === '1' ? 'ultra' : qualityMode(), [['auto', 'Automática'], ['high', 'Alta'], ['low', 'Leve (celular)'], ['ultra', 'Muito leve (aparelho fraco)']], (v) => { prefs.set('quality', v === 'ultra' ? 'low' : v); prefs.set('ultra', v === 'ultra' ? '1' : '0'); this.toast('Qualidade salva: recarregue a página para aplicar.', 'info'); }),
+      h('button', { class: 'btn small', onclick: () => { this.optTab = 'graficos'; this.renderOptions(); } }, 'Gráficos e desempenho…'),
       select('Controles de toque', touchUiMode(), [['auto', 'Automático'], ['on', 'Sempre ligados'], ['off', 'Desligados']], (v) => this.mobile.set(v)),
       h('button', { class: 'btn small', onclick: () => this.mobile.fullscreen() }, 'Tela cheia'),
       h('div', { class: 'row' },

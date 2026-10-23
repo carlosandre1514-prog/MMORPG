@@ -10,7 +10,7 @@ import { medieval } from './medieval.js';
 import { interiorFor } from './interiors.js';
 import { registerDecor } from './decor.js';
 import { lite } from './lite.js';
-import { quality } from '../device.js';
+import { bootQuality } from '../device.js';
 
 const BASE = '/village/';
 const MOD = 200; // módulo da grade, em cm
@@ -52,13 +52,13 @@ export const village = {
     const tl = new THREE.TextureLoader();
     const load = (file, color) => tl.loadAsync(BASE + 'textures/' + file).then((t) => {
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.anisotropy = quality().low ? 1 : 4;
+      t.anisotropy = bootQuality().low ? 1 : 4;
       if (color) t.colorSpace = THREE.SRGBColorSpace;
       return t;
     });
     await Promise.all(Object.entries(TEXTURED).map(async ([key, o]) => {
       const map = await load(`${key}_color.${o.png ? 'png' : 'jpg'}`, true);
-      const normalMap = o.normal && !quality().low ? await load(`${key}_normal.jpg`, false) : null; // sem mapa de normais no modo leve
+      const normalMap = o.normal && !bootQuality().low ? await load(`${key}_normal.jpg`, false) : null; // sem mapa de normais no modo leve
       const m = new THREE.MeshStandardMaterial({ name: key, map, normalMap, roughness: o.rough ?? 0.92, metalness: 0 });
       if (key === 'Vine') { m.alphaTest = 0.5; m.side = THREE.DoubleSide; m.color.set(0x5f9a3c); }
       this.mats[key] = lite(m);
@@ -89,7 +89,7 @@ export const village = {
   // Cada peça leva o número da casa (bid) e se some quando o jogador está dentro (hide: telhado e andares de cima).
   place(spec, base, out, props = null, st = null, meta = null) {
     const local = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-    const low = quality().low;
+    const low = bootQuality().low;
     let hideNow = false, innerNow = false; // innerNow: piso, teto e decoração (só aparecem de perto)
     const bid = st ? st.seed || 0 : 0;
     if (bid) this.centers.set(bid, [base.elements[12], base.elements[14], st.w / 2, st.h / 2]);

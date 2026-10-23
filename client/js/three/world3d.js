@@ -8,12 +8,12 @@ import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
-import { quality } from '../device.js';
+import { quality, bootQuality } from '../device.js';
 import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 
 const CHUNK = 16;
-const GROUND_RES = quality().groundRes; // pixels de textura por pixel de mundo 2D (32 px por tile)
+const GROUND_RES = bootQuality().groundRes; // pixels de textura por pixel de mundo 2D (32 px por tile)
 
 // ------------------------------------------------------------------ geometrias com cor por vértice
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3();
@@ -310,7 +310,7 @@ export class ZoneScene {
         this.terrain.drawChunk(ctx, cx, cy);
         const tex = new THREE.CanvasTexture(cv);
         tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = quality().low ? 1 : Math.min(8, this.maxAniso);
+        tex.anisotropy = bootQuality().low ? 1 : Math.min(8, this.maxAniso);
         // chunks de borda cobrem só os tiles que existem (o resto da textura seria o vazio preto)
         const wv = Math.min(CHUNK, z.w - cx * CHUNK), hv = Math.min(CHUNK, z.h - cy * CHUNK);
         const geo = new THREE.PlaneGeometry(wv, hv);

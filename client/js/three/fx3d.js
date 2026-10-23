@@ -17,7 +17,8 @@ export const STYLE_COLORS = {
   enrage: ['#ff5252', '#b71c1c'], harden: ['#b39ddb', '#4527a0'], arcane_shield: ['#e1bee7', '#7b1fa2'],
 };
 const LIT_STYLES = new Set(['fire', 'holy', 'arcane', 'frost', 'ash', 'shadow', 'meteor', 'void', 'heal', 'poison']);
-const MAX_PARTICLES = quality().particles;
+const Q = quality(); // limite de partículas muda ao vivo (Opções > Gráficos); os buffers já nascem no tamanho máximo
+const MAX_BUFFER = 3000;
 
 const col = (c) => new THREE.Color(c);
 
@@ -36,8 +37,8 @@ export class Effects3D {
     // partículas
     this.pdata = [];
     const geo = new THREE.BufferGeometry();
-    this.ppos = new Float32Array(MAX_PARTICLES * 3);
-    this.pcol = new Float32Array(MAX_PARTICLES * 3);
+    this.ppos = new Float32Array(MAX_BUFFER * 3);
+    this.pcol = new Float32Array(MAX_BUFFER * 3);
     geo.setAttribute('position', new THREE.BufferAttribute(this.ppos, 3).setUsage(THREE.DynamicDrawUsage));
     geo.setAttribute('color', new THREE.BufferAttribute(this.pcol, 3).setUsage(THREE.DynamicDrawUsage));
     geo.setDrawRange(0, 0);
@@ -74,7 +75,7 @@ export class Effects3D {
   burst(p, n, opts = {}) {
     const [c1, c2] = STYLE_COLORS[opts.style] || [opts.color || '#ffffff', opts.color2 || '#aaaaaa'];
     const a = col(c1), b = col(c2);
-    for (let i = 0; i < n && this.pdata.length < MAX_PARTICLES; i++) {
+    for (let i = 0; i < n && this.pdata.length < Q.particles; i++) {
       const ang = Math.random() * Math.PI * 2;
       const sp = (opts.speed || 2) * (0.4 + Math.random() * 0.8);
       this.pdata.push({
@@ -228,7 +229,7 @@ export class Effects3D {
           o.lookAt(p.pos.clone().add(p.dir));
           if (LIT_STYLES.has(e.style) && Math.random() < 0.7) {
             const [c1, c2] = STYLE_COLORS[e.style];
-            this.pdata.length < MAX_PARTICLES && this.pdata.push({ x: p.pos.x, y: p.pos.y, z: p.pos.z, vx: (Math.random() - 0.5) * 0.5, vy: 0.3 + Math.random() * 0.4, vz: (Math.random() - 0.5) * 0.5, life: 380, age: 0, c: col(Math.random() < 0.5 ? c1 : c2), grav: 0.5 });
+            this.pdata.length < Q.particles && this.pdata.push({ x: p.pos.x, y: p.pos.y, z: p.pos.z, vx: (Math.random() - 0.5) * 0.5, vy: 0.3 + Math.random() * 0.4, vz: (Math.random() - 0.5) * 0.5, life: 380, age: 0, c: col(Math.random() < 0.5 ? c1 : c2), grav: 0.5 });
           }
           break;
         }
@@ -269,7 +270,7 @@ export class Effects3D {
             const ang = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * e.r;
             const [c1] = STYLE_COLORS[e.style] || ['#ffffff'];
             const falling = e.style === 'arrows';
-            this.pdata.length < MAX_PARTICLES && this.pdata.push({ x: e.x + Math.cos(ang) * d, y: falling ? 3 : 0.1, z: e.y + Math.sin(ang) * d, vx: 0, vy: falling ? -9 : 1.2, vz: 0, life: falling ? 330 : 800, age: 0, c: col(c1), grav: 0 });
+            this.pdata.length < Q.particles && this.pdata.push({ x: e.x + Math.cos(ang) * d, y: falling ? 3 : 0.1, z: e.y + Math.sin(ang) * d, vx: 0, vy: falling ? -9 : 1.2, vz: 0, life: falling ? 330 : 800, age: 0, c: col(c1), grav: 0 });
           }
           break;
         }

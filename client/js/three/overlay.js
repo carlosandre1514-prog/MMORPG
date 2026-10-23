@@ -14,7 +14,7 @@ export class Overlay {
   }
 
   resize(W, H) {
-    const dpr = Math.min(quality().low ? 1.5 : 2, window.devicePixelRatio || 1); // textos não precisam da resolução cheia no modo leve
+    const dpr = Math.min(quality().textDpr, window.devicePixelRatio || 1); // textos não precisam da resolução cheia nos perfis leves
     this.dpr = dpr;
     this.canvas.width = Math.floor(W * dpr);
     this.canvas.height = Math.floor(H * dpr);

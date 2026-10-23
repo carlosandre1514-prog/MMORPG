@@ -9,6 +9,7 @@ import { Effects3D } from './fx3d.js';
 import { characters, LOOKS } from './characters.js';
 import { buildCreature, buildNpcProp } from './creatures.js';
 import { medieval } from './medieval.js';
+import { arms } from './arms.js';
 import { itemIcon } from '../sprites.js';
 import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
@@ -48,6 +49,8 @@ const LOOT_WEAPON = {
   ranger: ['bow_A_withString', 'bow_B_withString', 'bow_B_withString'],
   cleric: ['hammer_A', 'hammer_B', 'hammer_C'],
 };
+// armas de nível 30 (Solar): modelos de Sahaar, quando o reino já carregou
+const LOOT_SOLAR = { warrior: 'Scimitar', ranger: 'Bow_Golden', cleric: 'Hammer_Small' };
 const LOOT_RESOURCE = { mat_ore: 'Iron_Nuggets', enh_stone: 'Silver_Nugget_Large', mat_ember: 'Gold_Nugget_Large' };
 
 export class Renderer3D {
@@ -335,10 +338,12 @@ export class Renderer3D {
     let model = null;
     if (base.type === 'weapon' && LOOT_WEAPON[base.cls]) {
       const list = LOOT_WEAPON[base.cls];
-      const name = base.unique ? list[2] : base.tier >= 4 ? list[1] : list[0];
-      if (medieval.has(name)) {
-        const sz = medieval.size(name);
-        model = medieval.mesh(name, medieval.fit(name, 0.85, 0.85, 0.85));
+      const solar = !base.unique && base.tier >= 7 && LOOT_SOLAR[base.cls];
+      const name = solar && arms.has(solar) ? solar : base.unique ? list[2] : base.tier >= 4 ? list[1] : list[0];
+      const lib = arms.has(name) ? arms : medieval;
+      if (lib.has(name)) {
+        const sz = lib.size(name);
+        model = lib.mesh(name, lib.fit(name, 0.85, 0.85, 0.85));
         // armas altas ficam deitadas no chão
         if (sz.y > sz.x && sz.y > sz.z) { const lay = new THREE.Group(); lay.add(model); lay.rotation.z = Math.PI / 2; model = lay; }
       }

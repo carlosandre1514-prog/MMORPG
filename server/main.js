@@ -27,6 +27,7 @@ export async function startServer(opts = {}) {
     { prefix: '/village/', dir: path.join(ROOT, 'assets', 'village') },
     { prefix: '/voxel/', dir: path.join(ROOT, 'assets', 'voxel') },
     { prefix: '/brackeys/', dir: path.join(ROOT, 'assets', 'brackeys') },
+    { prefix: '/weapons/', dir: path.join(ROOT, 'assets', 'weapons') },
     { prefix: '/', dir: path.join(ROOT, 'client') },
   ]);
   const server = http.createServer((req, res) => {

@@ -1,4 +1,16 @@
-Prédios em voxel do Reino de Sahaar (Tiny Building 01, Small Building 01, 03 e 04, Tall Building 01, 02 e 03, Large Building 01)
-Modelos MagicaVoxel (.vox/.obj + paleta .png) fornecidos pelo autor do projeto.
-Os arquivos deste diretório foram gerados por tools/voxel/convert.mjs: cores da paleta aplicadas aos vértices,
-base no chão, malha triangulada, e uma versão @lod bem simplificada de cada prédio.
+Prédios em voxel de Zahrim, no Reino de Sahaar (Tiny Building 01, Small Building 01, 03 e 04, Tall Building 01, 02 e 03, Large Building 01)
+
+ORIGEM E LICENÇA
+Os arquivos recebidos (MagicaVoxel .vox/.obj + paleta .png, datados de 2020) correspondem ao pacote "Voxel Desert Town", de monogon
+(Max Parata): https://maxparata.itch.io/voxel-desert-town
+Licença indicada na página do pacote: Creative Commons Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0).
+(Verificado por resumo de busca; os .zip recebidos não traziam arquivo de licença. Confirme na página do autor.)
+
+O QUE ISSO EXIGE
+- Atribuição obrigatória ao autor (monogon / Max Parata): consta no README e na janela de Ajuda do jogo.
+- ND (sem derivações): não se pode distribuir uma versão MODIFICADA do material. O voxel.glb deste diretório é uma versão
+  convertida (cores gravadas nos vértices, base no chão, escala e uma versão @lod simplificada de cada prédio), gerada por
+  tools/voxel/convert.mjs. Segundo um comentário informal do autor, jogos podem usar os prédios, mas os arquivos em si não podem ser
+  redistribuídos, mesmo modificados.
+- ANTES DE PUBLICAR o jogo para outras pessoas: peça autorização por escrito ao autor (itch.io) para incluir esta versão convertida,
+  ou troque os prédios por outro pacote livre. Para testes privados não há problema.

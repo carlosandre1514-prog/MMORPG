@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ZONES } from '../shared/data/zones.js';
+import { KINGDOMS } from '../shared/data/kingdoms.js';
 import { MONSTERS } from '../shared/data/monsters.js';
 import { QUESTS } from '../shared/data/quests.js';
 import { generateMap } from '../shared/mapgen.js';
@@ -79,4 +80,23 @@ test('arquivos do zumbi e do céu estão no repositório', () => {
   const hdr = fs.readFileSync(path.join(ROOT, 'assets/brackeys/sky/sky.hdr'));
   assert.ok(hdr.toString('latin1', 0, 10).startsWith('#?RADIANCE'));
   assert.ok(hdr.length < 400000, 'céu pequeno');
+});
+
+test('armas de Sahaar: toda arma pedida em characters.js existe no KayKit ou em assets/weapons, e o reino baixa o pacote', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'client/js/three/characters.js'), 'utf8');
+  const kaykit = new Set(fs.readdirSync(path.join(ROOT, 'assets/kaykit/weapons')).filter((f) => f.endsWith('.gltf')).map((f) => f.replace('.gltf', '')));
+  const extra = new Set(glbJson('assets/weapons/weapons.glb').nodes.map((n) => n.name));
+  const used = new Set([...src.matchAll(/\b(?:right|left): '([A-Za-z0-9_]+)'/g)].map((m) => m[1]));
+  assert.ok(used.size > 10);
+  for (const w of used) assert.ok(kaykit.has(w) || extra.has(w), `arma ${w} sem modelo`);
+  for (const w of ['Scimitar', 'Falchion', 'Sword_Golden', 'Shield_Celtic_Golden', 'Hammer_Double']) assert.ok(used.has(w), `${w} em uso`);
+  // o saque de nível 30 (Solar) usa modelos do pacote
+  const eng = fs.readFileSync(path.join(ROOT, 'client/js/three/engine.js'), 'utf8');
+  for (const w of eng.match(/LOOT_SOLAR = \{([^}]*)\}/)[1].matchAll(/'([A-Za-z_]+)'/g)) assert.ok(extra.has(w[1]), `saque ${w[1]}`);
+  // Sahaar carrega o pacote de armas junto com as torres; Alvorada não
+  assert.ok(KINGDOMS.sahaar.assets.includes('arms'));
+  assert.ok(!KINGDOMS.alvorada.assets.includes('arms'));
+  // a licença CC BY exige o crédito: README e ajuda do jogo citam o autor
+  for (const f of ['README.md', 'client/js/ui/windows.js']) assert.match(fs.readFileSync(path.join(ROOT, f), 'utf8'), /Alstra Infinite/, f);
+  assert.match(fs.readFileSync(path.join(ROOT, 'assets/weapons/LICENSE.txt'), 'utf8'), /CC BY 4\.0/);
 });

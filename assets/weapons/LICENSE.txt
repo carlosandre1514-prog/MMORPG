@@ -1,0 +1,14 @@
+Armas extras do Reino de Sahaar (weapons.glb, gerado por tools/weapons/convert.mjs)
+
+Contém 8 modelos de dois pacotes. As cores foram gravadas nos vértices e as armas foram reescaladas e reposicionadas (cabo na origem);
+não há texturas.
+
+1) Quaternius — "Medieval Weapons Pack" / "LowPoly Medieval Weapons" (quaternius.itch.io/lowpoly-medieval-weapons)
+   Modelos usados: Sword_Golden, Shield_Celtic_Golden, Dagger_2, Hammer_Small, Hammer_Double, Bow_Golden.
+   Licença: Creative Commons Zero (CC0 1.0), conforme a página do pacote. O .zip recebido não trazia arquivo de licença.
+
+2) Alstra Infinite — "Medieval Swords - PolyPack Asset" (alstrainfinite.itch.io/medieval-swords)
+   Modelos usados: Sword_Scimitar (Scimitar) e Sword_Falchion (Falchion).
+   Licença: Creative Commons Attribution 4.0 (CC BY 4.0), conforme a listagem do pacote: o crédito ao autor é OBRIGATÓRIO
+   (está no README e na janela de Ajuda do jogo). O autor pede que o pacote original não seja republicado; aqui só entram
+   duas armas convertidas, dentro do jogo. O .zip recebido não trazia arquivo de licença; confira a licença na página do autor.

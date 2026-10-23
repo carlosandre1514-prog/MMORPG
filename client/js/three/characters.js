@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import { arms } from './arms.js';
 
 const BASE = '/kaykit/';
 const MODELS = ['Barbarian', 'Knight', 'Mage', 'Ranger', 'Rogue', 'Rogue_Hooded',
@@ -52,15 +53,15 @@ export const LOOKS = {
   // Reino de Sahaar: NPCs
   soraya: { model: 'Mage', right: 'staff', hue: 45, sat: 1.25, bright: 1.25 },
   jamil: { model: 'Rogue', hue: 15, sat: 1.3, bright: 1.1 },
-  dahmir: { model: 'Barbarian', hue: 28, sat: 0.9, bright: 0.85, scale: 1.05 },
+  dahmir: { model: 'Barbarian', right: 'Hammer_Double', hue: 28, sat: 0.9, bright: 0.85, scale: 1.05 },
   safiya: { model: 'Mage', left: 'spellbook_open', hue: 165, sat: 0.9 },
   karim: { model: 'Ranger', left: 'bow_withString', hue: 25, sat: 0.9, bright: 1.15 },
   nefer: { model: 'Rogue_Hooded', hue: 160, sat: 1.0, bright: 1.15 },
   // Reino de Sahaar: inimigos (escorpiões são criaturas procedurais em creatures.js; mumia e guardião são mortos-vivos)
-  sand_bandit: { model: 'Rogue', right: 'dagger', left: 'dagger', hue: 35, sat: 1.35, bright: 0.95 },
+  sand_bandit: { model: 'Rogue', right: 'Scimitar', left: 'Falchion', hue: 35, sat: 1.35, bright: 0.95 },
   dune_sorcerer: { model: 'Mage', right: 'staff', hue: 18, sat: 1.5, bright: 1.05, emissive: [0.08, 0.03, 0] },
   mummy: { kind: 'zombie', rise: true, hue: 38, sat: 0.4, bright: 1.5 },
-  tomb_guard: { model: 'Skeleton_Warrior', right: 'Skeleton_Blade', left: 'Skeleton_Shield_Large_A', scale: 1.12, tint: [1.7, 1.3, 0.45], eyes: [1.0, 0.8, 0.2], emissive: [0.12, 0.08, 0], rise: true },
+  tomb_guard: { model: 'Skeleton_Warrior', right: 'Sword_Golden', left: 'Shield_Celtic_Golden', scale: 1.12, tint: [1.7, 1.3, 0.45], eyes: [1.0, 0.8, 0.2], emissive: [0.12, 0.08, 0], rise: true },
   sun_king: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', tint: [1.9, 1.45, 0.35], eyes: [1.0, 0.85, 0.25], emissive: [0.4, 0.26, 0.02], float: 0.35, spawnClip: 'Spawn_Air' },
   // zumbis (Ruínas de Cinza): sobem do chão ao aparecer; kind 'zombie' usa o modelo do Kenney em vez do KayKit
   zombie: { kind: 'zombie', rise: true },
@@ -183,7 +184,8 @@ class CharacterLibrary {
       let slot = null;
       model.traverse((o) => { if (!slot && o.name.replace(/[._]/g, '').toLowerCase() === bone) slot = o; });
       if (slot) {
-        const w = this.weapons[look[side]].clone();
+        const w = this.weapons[look[side]]?.clone() || arms.held(look[side]); // armas de Sahaar só existem depois que o reino carrega
+        if (!w) continue;
         w.traverse((o) => { if (o.isMesh) { o.material = this.applyTint(o.material.clone(), look); mats.push(o.material); } });
         slot.add(w);
       }

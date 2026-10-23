@@ -12,7 +12,7 @@ export const KINGDOMS = {
     desc: 'O último reino dos homens, cercado pela Névoa Cinzenta. Sua capital, Alvorada, guarda a Chama reacesa.',
   },
   sahaar: {
-    id: 'sahaar', name: 'Reino de Sahaar', hub: 'zahrim', theme: 'deserto', assets: ['voxel'],
+    id: 'sahaar', name: 'Reino de Sahaar', hub: 'zahrim', theme: 'deserto', assets: ['voxel', 'arms'],
     zones: ['zahrim', 'dunes', 'tombs'],
     desc: 'O reino das areias ardentes, de torres de barro e tumbas de reis-sol, ao norte das Ruínas de Cinza.',
   },

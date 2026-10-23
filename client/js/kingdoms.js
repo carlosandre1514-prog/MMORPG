@@ -1,12 +1,13 @@
 // Recursos de arte por reino. O cliente só baixa e monta o que o reino onde o jogador está precisa:
-// Alvorada usa as peças modulares do Medieval Village (prédios com interior); Sahaar usa as torres em voxel.
+// Alvorada usa as peças modulares do Medieval Village (prédios com interior); Sahaar usa as torres em voxel e armas próprias (cimitarras, espada e escudo dourados).
 // Ao atravessar a fronteira, o jogo mostra uma tela de travessia enquanto o pacote do novo reino chega.
 // Os pacotes de reinos já visitados ficam em memória (voltar é instantâneo); a cena da zona é sempre descartada ao sair dela.
 import { KINGDOMS } from '/shared/data/kingdoms.js';
 import { village } from './three/village.js';
 import { voxel } from './three/voxel.js';
+import { arms } from './three/arms.js';
 
-const PACKS = { village, voxel };
+const PACKS = { village, voxel, arms };
 const loads = new Map(); // nome do pacote -> promessa de carga (uma só por pacote)
 
 export function kingdomReady(id) {

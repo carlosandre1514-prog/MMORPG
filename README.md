@@ -79,6 +79,9 @@ Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa
 ## O que existe no jogo
 
 - **História**: a campanha "A Chama Partida" em 4 atos + epílogo (20 missões), com diálogos, reviravoltas e final; missões secundárias, contratos repetíveis e pedras de memória com lore.
+- **Altares de viagem**: cada portal é um altar de pedra (arco, runas, cristal) que acende quando você o descobre; do Mapa (M) dá para viajar entre os altares descobertos do reino (de graça ao lado de um altar, com uma taxa em ouro de longe).
+- **Minimapa** redondo que gira com a câmera (botão para travar o norte), com bússola, cone de visão e seta na direção em que o personagem anda.
+- **Interface**: todos os cartões (janelas, avisos, diálogos) seguem a moldura dourada do login; ícones desenhados em SVG (nenhum emoji); no celular a barra de habilidades e poções fica embaixo, no centro.
 - **Legado (tecla N)**: 105 feitos com títulos e patentes de Glória, maestria sem teto depois do nível 30 (380 pontos para gastar), bestiário com dano extra por espécie e desafios do dia e da semana: o que mantém o personagem crescendo por anos.
 - **Classes**: Guerreiro (espada e escudo), Berserker (machado), Assassino (adagas), Mago, Arqueiro e Clérigo (manto, maça e auréola), cada uma com 6 habilidades (provocar, investida, salto, frenesi, meteoros, teleporte, chuva de flechas, cura, ressurreição...).
 - **Mundo**: Cidade de Alvorada (capital murada e segura, com castelo, mercado, bairros, becos e 125 construções com interior visitável), Campos Verdejantes, Floresta Sussurrante, Minas de Ferro Negro, Ruínas de Cinza e Arena de Sangue — mapas procedurais determinísticos, ciclo dia/noite e iluminação dinâmica.

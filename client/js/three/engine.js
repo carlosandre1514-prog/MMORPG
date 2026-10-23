@@ -14,7 +14,8 @@ import { Overlay } from './overlay.js';
 import { updateSeeThrough } from './seethrough.js';
 import { roomAt } from '/shared/housegeom.js';
 import { GuideFx } from './guide3d.js';
-import { quality, onGfxChange, lowerAutoPreset, PRESET_NAMES, showFps } from '../device.js';
+import { quality, bootQuality, onGfxChange, lowerAutoPreset, PRESET_NAMES, showFps } from '../device.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 
 const Q = quality(); // objeto único, atualizado no lugar quando o jogador muda os gráficos
 
@@ -75,6 +76,8 @@ export class Renderer3D {
     this.sun.shadow.bias = -0.0006;
     this.sun.shadow.normalBias = 0.03;
     this.scene.add(this.hemi, this.sun, this.sun.target);
+    this.envOn = false;
+    if (bootQuality().pbr) this.loadSky(); // céu de verdade como luz ambiente (só com materiais realistas: os leves não usam)
     this.pool = [];
     this.playerLight = new THREE.PointLight(0xffe0b0, 0, 12, 1.4);
     this.scene.add(this.playerLight);
@@ -116,6 +119,22 @@ export class Renderer3D {
       if (sh.map) { sh.map.dispose(); sh.map = null; } // o three recria o mapa no próximo quadro
     }
     if (was !== on) this.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) m.needsUpdate = true; } });
+  }
+
+  // Luz ambiente vinda do céu (HDR do Poly Haven reduzido por tools/sky/convert.mjs): clareia o lado da sombra com a cor do céu
+  async loadSky() {
+    try {
+      const tex = await new HDRLoader().loadAsync('/brackeys/sky/sky.hdr');
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      const pm = new THREE.PMREMGenerator(this.renderer);
+      this.envRT = pm.fromEquirectangular(tex);
+      pm.dispose();
+      tex.dispose();
+      this.scene.environment = this.envRT.texture;
+      this.envOn = true;
+    } catch (e) {
+      console.warn('[cenário] céu HDR indisponível', e);
+    }
   }
 
   capGap() { return Q.fps ? Math.round(1000 / Q.fps) : 0; }
@@ -236,7 +255,7 @@ export class Renderer3D {
       a = { kind: 'char', model: characters.create(e.cls) };
     } else if (e.k === 'm') {
       const def = MONSTERS[e.m];
-      if (LOOKS[def.id] && characters.ready) a = { kind: 'char', model: characters.create(def.id) };
+      if (characters.has(def.id)) a = { kind: 'char', model: characters.create(def.id) };
       else a = { kind: 'creature', model: buildCreature(def) };
       if (a.kind === 'char') a.model.root.scale.setScalar(def.size);
       if (LOOKS[def.id]?.float) a.float = LOOKS[def.id].float;
@@ -421,7 +440,10 @@ export class Renderer3D {
     const far = this.scene.fog.far + 25;
     if (Math.abs(this.camera.far - far) > 2) { this.camera.far = far; this.camera.updateProjectionMatrix(); }
     const cave = this.game.zone.def.gen.type === 'cave';
-    this.hemi.intensity = lerp(cave ? 0.9 : 1.7, 0.45, dark);
+    // com o céu HDR ligado ele faz parte da luz ambiente: some de noite e nas cavernas
+    const env = this.envOn ? (cave ? 0.04 : lerp(0.5, 0.08, dark)) : 0;
+    if (this.envOn) this.scene.environmentIntensity = env;
+    this.hemi.intensity = lerp(cave ? 0.9 : 1.7, 0.45, dark) * (this.envOn && !cave ? lerp(0.8, 1, dark) : 1);
     this.hemi.color.set(0xfff4e0).lerp(new THREE.Color(0x7080c0), dark);
     this.hemi.groundColor.set(this.game.zone.id === 'ruins' ? 0x5a3a30 : 0x4a5a3a).lerp(new THREE.Color(0x1a2030), dark);
     this.sun.intensity = lerp(cave ? 0.8 : 2.4, 0.45, dark);

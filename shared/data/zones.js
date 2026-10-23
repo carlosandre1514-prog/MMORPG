@@ -182,6 +182,8 @@ export const ZONES = {
       { m: 'cultist', n: 14, x: 66, y: 26, r: 10 },
       { m: 'cultist', n: 5, x: 47, y: 50, r: 5 },
       { m: 'wraith', n: 12, x: 44, y: 73, r: 11 },
+      { m: 'zombie', n: 14, x: 72, y: 70, r: 10 },
+      { m: 'zombie_brute', n: 5, x: 78, y: 82, r: 6 },
       { m: 'ash_knight', n: 9, x: 34, y: 28, r: 9 },
       { m: 'morvath', n: 1, x: 22, y: 53, r: 1 },
     ],

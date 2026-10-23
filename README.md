@@ -41,6 +41,8 @@ Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DE
 
 Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa e sem mapa de normais, há 2 luzes de ponto no máximo (uma delas serve de luz da casa), telhados, molduras e janelas já usam as versões simplificadas, o interior só aparece a poucos tiles de distância e a resolução segue um orçamento de pixels. Desempenho: os prédios distantes trocam telhado, moldura de porta, janela e chaminé por versões simplificadas (LOD, gerado por `tools/village/lod.mjs`), o interior só é desenhado de perto e as muralhas são cortadas por blocos; isso tirou quase metade dos triângulos nas ruas da capital. O jogo precisa de WebGL.
 
+**Bairro das Torres e zumbis:** na capital, o quarteirão sudeste (a leste da Avenida Sul, entre a praça e o Portão Sul) tem torres de adobe em voxel no lugar de parte das casas, e uma ou outra aparece nos demais bairros. São construções maciças (sem porta nem interior) que o servidor trata como paredes; de longe o jogo troca cada torre por uma versão com 12% dos triângulos e as esconde além do alcance da névoa. Nas Ruínas de Cinza, ao sul do acampamento, aparecem o **Zumbi das Cinzas** (nv 19–21) e o **Brutamontes Putrefato** (nv 22–24, com pancada em área), e o Quadro de Contratos ganhou o contrato repetível **Mortos Famintos**. Com materiais realistas (perfis Alto e Ultra) o céu HDR do Poly Haven ilumina o cenário do lado da sombra; de noite e nas cavernas ele se apaga.
+
 ## Controles
 
 | Ação | Tecla |
@@ -97,7 +99,11 @@ shared/   dados e regras usados pelos dois lados (classes, itens, monstros, miss
 client/   jogo no navegador (Three.js em client/vendor, cena 3D em client/js/three, interface, áudio procedural)
 assets/kaykit/   modelos 3D KayKit (CC0): personagens (aventureiros e esqueletos), armas e animações; medieval/, resources/, dungeon/, weaponbits/ e tools/ com os GLB do cenário
 assets/village/  peças modulares e texturas do Medieval Village MegaKit (CC0) para os prédios
+assets/voxel/    torres de adobe em voxel (MagicaVoxel) da capital, em um GLB com cores por vértice e versão @lod
+assets/brackeys/ pacote do Brackeys (CC0): o zumbi do Kenney com animações e o céu HDR reduzido
 tools/bake/      gera os retratos 2D dos personagens a partir dos modelos 3D (Three.js + Chromium)
+tools/voxel/     converte os prédios em voxel (.obj + paleta) para assets/voxel/voxel.glb
+tools/sky/       reduz o HDR de céu (4096×2048) para o equirretangular de 256×128 usado como luz ambiente
 tools/medieval/  converte os packs KayKit (Medieval Hexagon, Resource Bits, Dungeon, Weapons Bits, Tools Bits) em GLB compactos para o jogo
 tools/village/   converte o Medieval Village MegaKit (FBX + texturas) em assets/village
 docs/GAME_DESIGN.md   documento de design: história, mecânicas e fórmulas
@@ -116,6 +122,8 @@ node tools/village/convert.mjs <pasta-com-fbx-e-texturas>          # peças dos 
 - Personagens 3D: **KayKit Adventurers 2.0** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Cenário 3D: **KayKit Medieval Hexagon Pack**, **Resource Bits**, **Dungeon**, **Skeletons**, **Fantasy Weapons Bits** e **RPG Tools Bits** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Prédios: **Medieval Village MegaKit** por Quaternius — quaternius.com (licença CC0).
+- Torres em voxel do Bairro das Torres: *Tall Building 01–03* e *Small Building 01* (MagicaVoxel), fornecidos pelo autor do projeto.
+- Zumbi: **Animated Characters** por Kenney — kenney.nl (CC0), reempacotado no pacote 3D do Brackeys; céu: **autumn_field_puresky** por Poly Haven — polyhaven.com (CC0). O esqueleto mago e as peças de masmorra do mesmo pacote já estavam no jogo (KayKit).
 - Motor 3D: **Three.js** (licença MIT).
 - Fontes: Cinzel e Alegreya Sans (Google Fonts).
 

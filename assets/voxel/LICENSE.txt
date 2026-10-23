@@ -1,0 +1,4 @@
+Prédios em voxel (Tall Building 01, 02, 03 e Small Building 01)
+Modelos MagicaVoxel (.vox/.obj + paleta .png) fornecidos pelo autor do projeto.
+Os arquivos deste diretório foram gerados por tools/voxel/convert.mjs: cores da paleta aplicadas aos vértices,
+base no chão, malha triangulada, e uma versão @lod bem simplificada de cada prédio.

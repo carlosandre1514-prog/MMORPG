@@ -7,7 +7,7 @@ import { addBlocker } from './collision.js';
 // Largura da fachada em tiles e número de módulos de 2 m (o cliente monta as paredes nessa grade)
 export const frontWidth = (st) => (st.face === 'e' || st.face === 'w' ? st.h : st.w);
 export const modules = (st) => Math.max(2, Math.floor(frontWidth(st) / 2));
-const NO_DOOR = new Set(['keeptower', 'belltower', 'market']);
+const NO_DOOR = new Set(['keeptower', 'belltower', 'market', 'voxel']); // construções maciças: sem porta nem interior
 
 export const WALL_IN = 0.314; // m: da linha do módulo para dentro (face interna da parede)
 export const DOOR_HALF = 0.7; // m: meia largura do vão da porta nos retângulos de colisão

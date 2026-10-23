@@ -10,6 +10,8 @@ const WEAPONS = ['axe_2handed', 'sword_1handed', 'shield_badge_color', 'staff', 
   'Skeleton_Axe', 'Skeleton_Blade', 'Skeleton_Crossbow', 'Skeleton_Staff', 'Skeleton_Shield_Large_A', 'Skeleton_Shield_Small_A',
   'sword_2handed', 'sword_2handed_color', 'axe_1handed'];
 const TARGET_HEIGHT = 1.45; // altura de um humano adulto em tiles
+// Zumbi (Kenney, CC0, reempacotado pelo Brackeys): o modelo e cada animação vêm em um GLB; só tem parado, correndo e pulando
+const ZOMBIE_BASE = '/brackeys/zombie/';
 
 // Aparências: modelo, armas, variação de cor (matiz em graus, saturação, brilho), escala e brilho emissivo.
 // Mortos-vivos: eyes = cor do brilho dos olhos; rise = sobem do chão ao aparecer; ghost = translúcido.
@@ -47,6 +49,9 @@ export const LOOKS = {
   wraith: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', eyes: [0.4, 1.0, 0.95], ghost: true, float: 0.4, emissive: [0.05, 0.16, 0.2], spawnClip: 'Spawn_Air' },
   goblin: { model: 'Rogue', right: 'dagger', scale: 0.72, hue: 70, sat: 1.2 },
   goblin_shaman: { model: 'Mage', right: 'staff', scale: 0.72, hue: 95, sat: 1.1 },
+  // zumbis (Ruínas de Cinza): sobem do chão ao aparecer; kind 'zombie' usa o modelo do Kenney em vez do KayKit
+  zombie: { kind: 'zombie', rise: true },
+  zombie_brute: { kind: 'zombie', rise: true, hue: -40, sat: 1.15, bright: 0.72 },
   morvath: { model: 'Knight', right: 'staff', sat: 0.15, bright: 0.6, emissive: [0.4, 0.08, 0.02], float: 0.35 },
 };
 
@@ -75,7 +80,18 @@ class CharacterLibrary {
       ['anim', 'move', `${BASE}animations/Rig_Medium_MovementBasic.glb`],
     ];
     let done = 0;
-    await Promise.all(jobs.map(async ([kind, name, url]) => {
+    // o zumbi é opcional: se os arquivos faltarem, os monstros caem no modelo simples de primitivas
+    const zombie = (async () => {
+      try {
+        const [m, idle, run, jump] = await Promise.all(['zombie', 'zombie_idle', 'zombie_run', 'zombie_jump'].map((n) => load(`${ZOMBIE_BASE}${n}.glb`)));
+        m.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+        const box = new THREE.Box3().setFromObject(m.scene);
+        const clips = {};
+        for (const c of [...idle.animations, ...run.animations, ...jump.animations]) clips[c.name] = c;
+        if (clips.Idle && clips.Run && clips.jump) this.zombie = { scene: m.scene, height: box.max.y - box.min.y, clips };
+      } catch (e) { console.warn('[personagens] zumbi indisponível', e); }
+    })();
+    await Promise.all([zombie, ...jobs.map(async ([kind, name, url]) => {
       const g = await load(url);
       if (kind === 'model') {
         g.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
@@ -88,11 +104,11 @@ class CharacterLibrary {
         for (const c of g.animations) this.clips[c.name] = c;
       }
       onProgress(++done / jobs.length);
-    }));
+    })]);
     this.ready = true;
   }
 
-  has(key) { return this.ready && !!LOOKS[key]; }
+  has(key) { return this.ready && !!LOOKS[key] && (LOOKS[key].kind !== 'zombie' || !!this.zombie); }
 
   // Arma solta (saque no chão), na mesma escala das armas nas mãos dos personagens
   weaponModel(name) {
@@ -134,6 +150,7 @@ class CharacterLibrary {
   // Cria uma instância animada de um personagem.
   create(key) {
     const look = LOOKS[key];
+    if (look.kind === 'zombie') return this.createZombie(key, look);
     const src = this.models[look.model];
     const model = SkeletonUtils.clone(src.scene);
     const mats = [];
@@ -161,6 +178,105 @@ class CharacterLibrary {
     model.scale.setScalar(scale);
     root.add(model);
     return new CharacterActor(root, model, mats, key, this.clips, look);
+  }
+
+  createZombie(key, look) {
+    const src = this.zombie;
+    const model = SkeletonUtils.clone(src.scene);
+    const mats = [];
+    model.traverse((o) => {
+      if (!o.isMesh) return;
+      o.material = this.applyTint(o.material.clone(), look);
+      mats.push(o.material);
+    });
+    const root = new THREE.Group();
+    // altura de um humano um pouco encurvado: o modelo está de pé, de braços abertos, com 3,8 de altura
+    const scale = (TARGET_HEIGHT * 1.05 / src.height) * (look.scale || 1);
+    model.scale.setScalar(scale);
+    root.add(model);
+    return new ZombieActor(root, model, mats, key, src.clips, look, src.height * scale);
+  }
+}
+
+// Zumbi do Kenney: sem clipes de andar, atacar ou morrer, então "andar" é a corrida em câmera lenta, o ataque é o pulo
+// (o bote) e a morte é uma queda para trás feita à mão.
+class ZombieActor {
+  constructor(root, model, mats, key, clips, look, height) {
+    this.root = root;
+    this.model = model;
+    this.mats = mats;
+    this.key = key;
+    this.look = look;
+    this.height = height; // altura do modelo já escalada (para o buraco de onde ele sobe)
+    this.born = performance.now();
+    this.mixer = new THREE.AnimationMixer(model);
+    this.actions = { idle: this.mixer.clipAction(clips.Idle), run: this.mixer.clipAction(clips.Run), attack: this.mixer.clipAction(clips.jump) };
+    this.actions.attack.setLoop(THREE.LoopOnce, 1);
+    this.actions.attack.clampWhenFinished = true;
+    this.state = null;
+    this.baseEmissive = mats.map((m) => (m.emissive ? m.emissive.clone() : null));
+    this.mixer.update(Math.random() * 1.0); // cada zumbi começa num ponto diferente da animação
+    this.play('idle', 0);
+  }
+
+  play(name, fade = 0.2) {
+    const next = this.actions[name];
+    if (!next) return;
+    const cur = this.actions[this.state];
+    if (this.state === name && name !== 'attack') return;
+    next.reset();
+    next.setEffectiveWeight(1);
+    next.play();
+    if (cur && cur !== next) cur.crossFadeTo(next, fade, false);
+    this.state = name;
+  }
+
+  update(dt, st) {
+    const now = st.now;
+    const model = this.model;
+    if (st.dead) {
+      // tomba para trás e afunda um pouco; a animação fica congelada na última pose
+      const d = Math.min(1, (now - (st.deathStart || now)) / 700);
+      model.rotation.x = -d * (Math.PI / 2) * 0.96;
+      model.position.y = -d * this.height * 0.07;
+      return;
+    }
+    if (model.rotation.x) { model.rotation.x = 0; model.position.y = 0; }
+    // sobe do chão ao aparecer
+    const rise = this.look.rise ? Math.min(1, (now - this.born) / 1500) : 1;
+    model.position.y = -(1 - rise) * this.height * 0.95;
+    let want;
+    if (rise < 1) want = 'idle';
+    else if (st.atkStart && now - st.atkStart < 600) want = 'attack';
+    else if (st.moving) want = 'run';
+    else want = 'idle';
+    if (want === 'attack') {
+      if (this.lastAtk !== st.atkStart) { this.lastAtk = st.atkStart; this.play('attack', 0.08); this.actions.attack.timeScale = 1.1; }
+    } else if (this.state !== want && !(this.state === 'attack' && this.actions.attack.isRunning() && this.actions.attack.time < this.actions.attack.getClip().duration * 0.8)) {
+      this.play(want, 0.2);
+    }
+    if (this.state === 'run') this.actions.run.timeScale = Math.max(0.45, Math.min(1, st.speed / 5));
+    this.mixer.update(dt);
+    // recuo e brilho vermelho ao sofrer dano
+    const flash = st.hurt ? Math.max(0, 1 - (now - st.hurt) / 200) : 0;
+    model.rotation.x = -flash * 0.18;
+    if (flash > 0 || this.flashing) {
+      this.mats.forEach((m, i) => {
+        if (!m.emissive) return;
+        const base = this.baseEmissive[i];
+        m.emissive.setRGB(base.r + flash * 0.6, base.g + flash * 0.12, base.b + flash * 0.1);
+      });
+      this.flashing = flash > 0;
+    }
+  }
+
+  setOpacity(a) { for (const m of this.mats) { m.transparent = a < 1; m.opacity = a; } }
+
+  dispose() {
+    this.mixer.stopAllAction();
+    this.mixer.uncacheRoot(this.model);
+    this.model.traverse((o) => { if (o.isSkinnedMesh && o.skeleton) o.skeleton.dispose(); });
+    for (const m of this.mats) m.dispose();
   }
 }
 

@@ -330,7 +330,7 @@ export class MapArt {
       ctx.closePath(); ctx.fill();
     };
     for (const st of zone.structures) {
-      if (st.kind === 'house') { const len = 0.35 + (st.floors || 1) * 0.42 + (/tower/.test(st.type) ? 1.2 : 0); poly(st.x, st.y, st.x + st.w, st.y + st.h, len, len); }
+      if (st.kind === 'house') { const len = 0.35 + (st.floors || 1) * 0.42 + (/tower|voxel/.test(st.type) ? (st.type === 'voxel' ? 2 : 1.2) : 0); poly(st.x, st.y, st.x + st.w, st.y + st.h, len, len); }
       else if (st.kind === 'wall') poly(st.x, st.y, st.x + st.w, st.y + st.h, 0.9, 0.9);
       else if (st.kind === 'tower') poly(st.x, st.y, st.x + st.w, st.y + st.h, 1.5, 1.5);
     }
@@ -538,10 +538,26 @@ export class MapArt {
     ctx.stroke();
   }
 
+  // torre de adobe em voxel: terraço de areia com parapeito, parede da frente mais escura e a porta
+  voxelTower(st) {
+    const { S, ctx } = this;
+    const x = st.x * S + 0.5, y = st.y * S + 0.5, w = st.w * S - 1, h = st.h * S - 1;
+    const fh = Math.min(5, h * 0.4);
+    const rh = h - fh;
+    const sand = this.r(st.x, st.y, 31) < 0.5 ? ['#c7ab78', '#8d7449'] : ['#bfa36f', '#85703f'];
+    ctx.fillStyle = sand[1]; ctx.fillRect(x, y + rh, w, fh);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(x, y + rh, w, 0.8);
+    ctx.fillStyle = sand[0]; ctx.fillRect(x, y, w, rh);
+    ctx.strokeStyle = '#5a4630'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, rh - 1);
+    ctx.fillStyle = 'rgba(70,40,25,0.55)'; ctx.fillRect(x + 1.5, y + 1.5, w - 3, 1);
+    ctx.fillStyle = '#2f2418'; ctx.fillRect(x + w / 2 - 1.2, y + h - Math.min(3, fh - 0.5), 2.4, Math.min(3, fh - 0.5));
+  }
+
   house(st) {
     const { S, ctx } = this;
     const k = st.seed || 1;
     const type = st.type || 'house';
+    if (type === 'voxel') { this.voxelTower(st); return; }
     const stoneWall = STONE_TYPES.has(type) || (type === 'house' && this.r(st.x, st.y, 17) < 0.45);
     const wallCol = (stoneWall ? WALL_STONE : WALL_PLASTER)[k % 3];
     const tall = /tower/.test(type);

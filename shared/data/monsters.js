@@ -158,6 +158,21 @@ export const MONSTERS = {
     questDrops: [{ id: 'q_sigil', chance: 0.5, quest: 'ms16' }],
     abilities: [{ type: 'pools', cd: 12, radius: 1.6, delay: 1.4, mult: 1.2, style: 'void' }],
   },
+  zombie: {
+    id: 'zombie', name: 'Zumbi das Cinzas', lvl: [19, 21], hp: 1.5, dmg: 1.05, def: 1.0,
+    speed: 2.4, aggro: 5, atkRange: 1.5, atkInterval: 1.9, sprite: 'skeleton', color: '#7d8f69', size: 1.15, undead: true,
+    gold: [14, 28], equipChance: 0.12,
+    drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'mat_bone', chance: 0.3 }, { id: 'mat_essence', chance: 0.15 }],
+    lore: 'Os soldados de Lúmen que a Névoa não deixou descansar. Arrastam-se pelas ruínas sem lembrar por que lutavam.',
+  },
+  zombie_brute: {
+    id: 'zombie_brute', name: 'Brutamontes Putrefato', lvl: [22, 24], hp: 2.5, dmg: 1.3, def: 1.4,
+    speed: 2.0, aggro: 4, atkRange: 1.9, atkInterval: 2.2, sprite: 'skeleton', color: '#8a5a44', size: 1.45, undead: true,
+    gold: [22, 44], equipChance: 0.16,
+    drops: [{ id: 'mat_ash', chance: 0.4 }, { id: 'mat_essence', chance: 0.25 }, { id: 'enh_stone', chance: 0.03 }],
+    abilities: [{ type: 'stomp', cd: 12, radius: 2.6, delay: 1.2, mult: 1.5, stun: 0.6, name: 'Pancada Podre' }],
+    lore: 'Um guarda de Lúmen que a Névoa inchou até virar uma muralha de carne podre. Cada passo faz o chão tremer.',
+  },
   wraith: {
     id: 'wraith', name: 'Espectro Cinzento', lvl: [20, 22], hp: 1.1, dmg: 1.1, def: 0.9,
     speed: 3.4, aggro: 6, atkRange: 1.4, atkInterval: 1.5, sprite: 'wraith', color: '#aab7b8', size: 1.1, undead: true, flying: true,

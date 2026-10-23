@@ -8,6 +8,7 @@ import { hash2 } from '/shared/rng.js';
 import { medieval, OBJECT_MODELS, structurePlan } from './medieval.js';
 import { applySeeThrough } from './seethrough.js';
 import { village, villagePlan } from './village.js';
+import { voxel } from './voxel.js';
 import { quality, bootQuality } from '../device.js';
 import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
@@ -266,6 +267,7 @@ export class ZoneScene {
 
   // interiores só por perto do jogador (no máximo a cada 200 ms e quando ele se mexeu)
   cull(px, pz, force = false) {
+    if (this.voxels) this.voxels.update(px, pz, force);
     if (!this.propGroup) return;
     if (this.hearthFlames) {
       const r2 = quality().cullR ** 2;
@@ -619,8 +621,13 @@ export class ZoneScene {
   }
 
   buildStructures() {
-    const forts = [], houses = [];
-    for (const st of this.zone.structures) (st.kind === 'wall' || st.kind === 'tower' || st.kind === 'gate' ? forts : houses).push(st);
+    const forts = [], houses = [], voxels = [];
+    for (const st of this.zone.structures) {
+      if (st.kind === 'wall' || st.kind === 'tower' || st.kind === 'gate') forts.push(st);
+      else if (st.type === 'voxel' && voxel.has(st.model)) voxels.push(st); // torres em voxel: modelo próprio, sem porta nem interior
+      else houses.push(st);
+    }
+    if (voxels.length) { this.voxels = voxel.build(voxels); this.group.add(this.voxels.group); this.voxels.update(this.zone.w / 2, this.zone.h / 2, true); }
     if (forts.length) {
       this.group.add(buildFortifications(forts, this.fortMaterials(), (x, y, z, castle) => this.towerFlag(x, y, z, castle)));
       if (medieval.ready) this.wallBanners(bannerSpots(forts, { x: this.zone.w / 2, y: this.zone.h / 2 }));
@@ -883,7 +890,7 @@ export class ZoneScene {
       // materiais e geometrias dos packs são compartilhados entre zonas: só os prédios unidos são descartados
       if (o.material?.userData?.shared) {
         if (o.isInstancedMesh || o.isBatchedMesh) o.dispose();
-        if (o.geometry && !medieval.shared.has(o.geometry)) o.geometry.dispose();
+        if (o.geometry && !medieval.shared.has(o.geometry) && !voxel.shared.has(o.geometry)) o.geometry.dispose();
         return;
       }
       if (o.geometry && !objGeoCacheHas(o.geometry)) o.geometry.dispose();

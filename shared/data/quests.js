@@ -410,6 +410,14 @@ export const QUESTS = {
     objectives: [{ type: 'kill', target: 'cultist', count: 12 }],
     rewards: { xp: 11000, gold: 600 },
   },
+  rb_zombie: {
+    id: 'rb_zombie', repeatable: true, name: 'Contrato: Mortos Famintos', giver: 'board', turnIn: 'board', lvl: 19,
+    desc: 'Destrua 14 Zumbis das Cinzas ou Brutamontes Putrefatos nas Ruínas de Cinza.',
+    offer: 'CARTAZ: "Os soldados caídos de Lúmen vagam pelas ruínas, ao sul do acampamento. A Última Vigília paga por cada um que descansar de vez."',
+    progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Última Vigília.',
+    objectives: [{ type: 'kill', target: ['zombie', 'zombie_brute'], count: 14 }],
+    rewards: { xp: 15000, gold: 800 },
+  },
   rb_knight: {
     id: 'rb_knight', repeatable: true, name: 'Contrato: Cavaleiros Caídos', giver: 'board', turnIn: 'board', lvl: 21,
     desc: 'Derrote 8 Cavaleiros das Cinzas e 8 Espectros nas Ruínas de Cinza.',

@@ -28,7 +28,7 @@ const center = (g) => [(g.inner[0] + g.inner[2]) / 2, (g.inner[1] + g.inner[3]) 
 const outside = (g, dist) => [g.door[0] - g.inward[0] * dist, g.door[1] - g.inward[1] * dist];
 
 test('todas as construções com porta viram casas visitáveis', () => {
-  const doors = map.structures.filter((s) => s.kind === 'house' && !['keeptower', 'belltower', 'market'].includes(s.type));
+  const doors = map.structures.filter((s) => s.kind === 'house' && !['keeptower', 'belltower', 'market', 'voxel'].includes(s.type));
   assert.equal(map.rooms.length, doors.length);
   assert.ok(map.rooms.length > 100);
 });

@@ -6,6 +6,7 @@
 // (curva de potência igual), então não há silêncio nem "pulo" entre uma volta e outra.
 // Os navegadores só liberam áudio depois de um toque ou tecla: a música começa no primeiro gesto do jogador.
 import { audio } from './audio.js';
+import { icoHTML } from './ui/icons.js';
 
 const FILES = ['theme.mp3', 'theme.ogg', 'theme.m4a', 'theme.wav'];
 const MAX = 0.55;          // volume máximo da música
@@ -90,7 +91,7 @@ export const themeMusic = {
   sync() {
     if (this.btn) {
       this.btn.style.display = this.ok && this.screen === 'menu' ? 'flex' : 'none';
-      this.btn.textContent = this.muted ? '🔇' : '🔊';
+      this.btn.innerHTML = icoHTML(this.muted ? 'mute' : 'sound');
       this.btn.title = this.muted ? 'Ligar a música' : 'Desligar a música';
     }
     if (this.ok) this.start();

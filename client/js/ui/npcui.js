@@ -8,6 +8,7 @@ import { EQUIP_SLOTS, SLOT_NAMES, NPC_RANGE, RARITY } from '/shared/constants.js
 import { itemName, itemStats, rarityColor, sellPrice } from '/shared/itemgen.js';
 import { enhanceChance, enhanceCost, MAX_PLUS } from '/shared/formulas.js';
 import { h, clear, esc, fmt } from './dom.js';
+import { ico, icoHTML } from './icons.js';
 import { slotEl } from './itemview.js';
 import { drawNpc, itemIcon } from '../sprites.js';
 import { canAccept, almostAvailable, isComplete, progress, need, countItem } from '../questlogic.js';
@@ -75,24 +76,24 @@ export const npcMixin = {
     body.appendChild(this.npcHeader(npc));
     const v = this.npcView;
     const opts = h('div', { class: 'npc-opts' });
-    const opt = (label, fn, cls = '') => opts.appendChild(h('div', { class: 'npc-opt ' + cls, onclick: () => { audio.play('click'); fn(); } }, label));
+    const opt = (label, fn, cls = '', icon = null) => opts.appendChild(h('div', { class: 'npc-opt ' + cls, onclick: () => { audio.play('click'); fn(); } }, icon ? ico(icon, 'sm') : null, icon ? ' ' : null, label));
     const back = () => { this.npcView = { mode: 'main' }; this.renderNpc(); };
 
     if (v.mode === 'main') {
       body.appendChild(h('div', { class: 'npc-text' }, fill(npc.greeting, me)));
       const qs = Object.values(QUESTS);
-      for (const q of qs) if (q.turnIn === npc.id && me.quests.active[q.id] && isComplete(me, q)) opt(`✔ ${q.name}`, () => { this.npcView = { mode: 'turnin', q: q.id }; this.renderNpc(); }, 'q-done');
-      for (const q of qs) if (q.giver === npc.id && canAccept(me, q)) opt(`${q.repeatable ? '↻' : '!'} ${q.name}${q.main || q.saga ? '  ★' : ''}`, () => { this.npcView = { mode: 'offer', q: q.id }; this.renderNpc(); }, q.repeatable ? 'q-rep' : 'q-new');
+      for (const q of qs) if (q.turnIn === npc.id && me.quests.active[q.id] && isComplete(me, q)) opt(q.name, () => { this.npcView = { mode: 'turnin', q: q.id }; this.renderNpc(); }, 'q-done', 'check');
+      for (const q of qs) if (q.giver === npc.id && canAccept(me, q)) opt(`${q.repeatable ? '' : '! '}${q.name}`, () => { this.npcView = { mode: 'offer', q: q.id }; this.renderNpc(); }, q.repeatable ? 'q-rep' : 'q-new', q.repeatable ? 'loop' : null);
       for (const q of qs) if (q.turnIn === npc.id && me.quests.active[q.id] && !isComplete(me, q)) opt(`… ${q.name} (em andamento)`, () => { this.npcView = { mode: 'progress', q: q.id }; this.renderNpc(); }, 'q-prog');
-      for (const q of qs) if (q.giver === npc.id && almostAvailable(me, q)) opts.appendChild(h('div', { class: 'npc-opt disabled' }, `🔒 ${q.name} (requer nível ${q.lvl})`));
+      for (const q of qs) if (q.giver === npc.id && almostAvailable(me, q)) opts.appendChild(h('div', { class: 'npc-opt disabled' }, ico('lock', 'sm'), ` ${q.name} (requer nível ${q.lvl})`));
       const S = npc.services;
-      if (S.includes('shop')) opt('🛒 Comprar e vender', () => this.openService('shop'), 'svc');
-      if (S.includes('craft')) opt(npc.craft === 'smith' ? '⚒ Forjar' : '⚗ Alquimia', () => this.openService('craft'), 'svc');
-      if (S.includes('enhance')) opt('✦ Aprimorar equipamento', () => this.openService('enhance'), 'svc');
-      if (S.includes('stash')) opt('🗝 Abrir baú', () => this.openService('stash'), 'svc');
-      if (S.includes('teleport')) opt('🌀 Viajar', () => this.openService('teleport'), 'svc');
-      if (S.includes('ranking')) opt('🏆 Quadro de Honra', () => this.openWin('ranking'), 'svc');
-      if (npc.talk && npc.talk.length) opt(S.includes('lore') ? '📖 Ler inscrições' : '💬 Conversar', () => { this.npcView = { mode: 'talk' }; this.talkIdx = 0; this.renderNpc(); });
+      if (S.includes('shop')) opt('Comprar e vender', () => this.openService('shop'), 'svc', 'cart');
+      if (S.includes('craft')) opt(npc.craft === 'smith' ? 'Forjar' : 'Alquimia', () => this.openService('craft'), 'svc', npc.craft === 'smith' ? 'anvil' : 'flask');
+      if (S.includes('enhance')) opt('Aprimorar equipamento', () => this.openService('enhance'), 'svc', 'gem');
+      if (S.includes('stash')) opt('Abrir baú', () => this.openService('stash'), 'svc', 'key');
+      if (S.includes('teleport')) opt('Viajar', () => this.openService('teleport'), 'svc', 'swirl');
+      if (S.includes('ranking')) opt('Quadro de Honra', () => this.openWin('ranking'), 'svc', 'ranking');
+      if (npc.talk && npc.talk.length) opt(S.includes('lore') ? 'Ler inscrições' : 'Conversar', () => { this.npcView = { mode: 'talk' }; this.talkIdx = 0; this.renderNpc(); }, '', S.includes('lore') ? 'legacy' : 'chat');
       opt('Até logo.', () => this.closeNpcWindows(), 'bye');
     } else if (v.mode === 'talk') {
       const line = npc.talk[this.talkIdx % npc.talk.length];
@@ -105,13 +106,13 @@ export const npcMixin = {
       if (v.mode === 'offer') {
         body.append(h('div', { class: 'npc-text' }, fill(q.offer, me)),
           h('div', { class: 'ql-sub' }, 'Objetivos'),
-          ...q.objectives.map((o) => h('div', { class: 'ql-obj' }, `◦ ${objText(o)}${o.type === 'talk' ? '' : ` (${need(o)})`}`)),
+          ...q.objectives.map((o) => h('div', { class: 'ql-obj' }, ico('dot', 'sm'), ` ${objText(o)}${o.type === 'talk' ? '' : ` (${need(o)})`}`)),
           h('div', { class: 'ql-sub' }, 'Recompensas'), rewardsEl(q.rewards));
         opt('Aceitar missão', () => { this.send({ t: 'qa', q: q.id }); this.npcView = { mode: 'main' }; setTimeout(() => this.renderNpc(), 150); }, 'q-new');
         opt('Agora não.', back, 'bye');
       } else if (v.mode === 'progress') {
         body.append(h('div', { class: 'npc-text' }, fill(q.progress, me)),
-          ...q.objectives.map((o, i) => { const p = progress(me, q, i), n = need(o); return h('div', { class: 'ql-obj' + (p >= n ? ' ok' : '') }, `${p >= n ? '✔' : '◦'} ${objText(o)}${o.type === 'talk' ? '' : `: ${p}/${n}`}`); }));
+          ...q.objectives.map((o, i) => { const p = progress(me, q, i), n = need(o); return h('div', { class: 'ql-obj' + (p >= n ? ' ok' : '') }, ico(p >= n ? 'check' : 'dot', 'sm'), ` ${objText(o)}${o.type === 'talk' ? '' : `: ${p}/${n}`}`); }));
         opt('Voltar', back, 'bye');
       } else if (v.mode === 'turnin') {
         body.append(h('div', { class: 'npc-text' }, fill(q.complete, me)), h('div', { class: 'ql-sub' }, 'Recompensas'), rewardsEl(q.rewards));
@@ -187,7 +188,7 @@ export const npcMixin = {
         const m = h('span', { class: 'mat ' + (have >= n ? 'ok' : 'bad'), 'data-tip': `<b>${esc(ITEMS[id].name)}</b><div class="tt-desc">${esc(ITEMS[id].desc || '')}</div>` }, h('img', { src: itemIcon(id, 18) }), `${have}/${n}`);
         mats.appendChild(m);
       }
-      mats.appendChild(h('span', { class: 'mat ' + (me.gold >= r.gold ? 'ok' : 'bad') }, h('span', { class: 'gold' }, '● '), String(r.gold)));
+      mats.appendChild(h('span', { class: 'mat ' + (me.gold >= r.gold ? 'ok' : 'bad') }, ico('coin', 'sm'), ' ' + String(r.gold)));
       let resultEl;
       if (r.result.id) resultEl = slotEl({ id: r.result.id, q: r.result.qty, r: 0 }, { me, compare: false });
       else {
@@ -233,16 +234,16 @@ export const npcMixin = {
       const cur = itemStats(it), next = itemStats({ ...it, p: p + 1 });
       const stones = countItem(me.inv, 'enh_stone');
       const lines = [];
-      if (cur.dmg) lines.push(`Dano: ${cur.dmg} → <b class="up">${next.dmg}</b>`);
-      if (cur.def) lines.push(`Armadura: ${cur.def} → <b class="up">${next.def}</b>`);
-      for (const k of Object.keys(next)) if (k !== 'dmg' && k !== 'def' && next[k] !== cur[k]) lines.push(`${k.toUpperCase()}: ${cur[k] || 0} → <b class="up">${next[k]}</b>`);
+      if (cur.dmg) lines.push(`Dano: ${cur.dmg} ${icoHTML('arrow')} <b class="up">${next.dmg}</b>`);
+      if (cur.def) lines.push(`Armadura: ${cur.def} ${icoHTML('arrow')} <b class="up">${next.def}</b>`);
+      for (const k of Object.keys(next)) if (k !== 'dmg' && k !== 'def' && next[k] !== cur[k]) lines.push(`${k.toUpperCase()}: ${cur[k] || 0} ${icoHTML('arrow')} <b class="up">${next[k]}</b>`);
       det.append(
-        h('div', { class: 'enh-arrow' }, `+${p}  ➜  +${p + 1}`),
+        h('div', { class: 'enh-arrow' }, `+${p}  `, ico('arrow', 'sm'), `  +${p + 1}`),
         h('div', { class: 'small', html: lines.join('<br>') }),
         h('div', { class: 'enh-chance ' + (chance >= 0.8 ? 'ok' : chance >= 0.5 ? 'mid' : 'bad') }, `Chance de sucesso: ${Math.round(chance * 100)}%`),
         h('div', {}, h('span', { class: (me.gold >= cost.gold ? '' : 'bad') }, `Custo: ${fmt(cost.gold)} ouro`), ' · ',
           h('span', { class: stones >= cost.stones ? '' : 'bad' }, h('img', { src: itemIcon('enh_stone', 16), style: { verticalAlign: 'middle' } }), ` ${stones}/${cost.stones} pedra(s)`)),
-        p >= 5 ? h('div', { class: 'bad small' }, '⚠ Em caso de falha, o item perde 1 nível de aprimoramento.') : h('div', { class: 'muted small' }, 'Falhas abaixo de +5 não causam perda.'),
+        p >= 5 ? h('div', { class: 'bad small' }, ico('warn', 'sm'), ' Em caso de falha, o item perde 1 nível de aprimoramento.') : h('div', { class: 'muted small' }, 'Falhas abaixo de +5 não causam perda.'),
         h('button', { class: 'btn', disabled: me.gold >= cost.gold && stones >= cost.stones ? null : true, onclick: () => this.send({ t: 'enh', n: npc.id, src: sel.src, slot: sel.slot }) }, 'Aprimorar'));
     }
     body.appendChild(det);

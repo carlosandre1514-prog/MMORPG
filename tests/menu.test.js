@@ -168,3 +168,26 @@ test('minimapa redondo gira com a câmera e a seta usa a direção real', () => 
   assert.match(ui, /lastMiniMap > \(quality\(\)\.low \? 66 : 33\)/);
   assert.match(win, /Math\.PI - \(g\.me\.facing \|\| 0\)/);
 });
+
+test('nenhum emoji no jogo: tudo é ícone desenhado (icons.js) e todo ícone usado existe', async () => {
+  const dirs = ['client/js', 'server', 'shared'];
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(new URL('../' + d, import.meta.url), { withFileTypes: true })) { const p = d + '/' + e.name; if (e.isDirectory()) walk(p); else if (p.endsWith('.js')) files.push(p); } };
+  dirs.forEach(walk);
+  files.push('client/index.html', 'client/style.css');
+  const bad = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{2191}\u{2193}-\u{21FF}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/u;
+  for (const f of files) {
+    if (f.includes('vendor')) continue;
+    const src = read(f);
+    const m = src.match(bad);
+    assert.ok(!m, `${f}: símbolo/emoji "${m && m[0]}" (U+${m && m[0].codePointAt(0).toString(16)}) — use um ícone de icons.js`);
+  }
+  const { ICONS, STATUS_ICON } = await import('../client/js/ui/icons.js');
+  const used = new Set();
+  for (const f of files.filter((x) => x.startsWith('client/js'))) for (const m of read(f).matchAll(/\bico(?:HTML)?\('([a-z]+)'/g)) used.add(m[1]);
+  for (const v of Object.values(STATUS_ICON)) used.add(v);
+  for (const f of ['client/js/ui/ui.js']) for (const m of read(f).matchAll(/'(?:inventory|character|skills|quests|map|social|guild|legacy|ranking|help|options)', '[^']+', '[^']+', '([a-z]+)'/g)) used.add(m[1]);
+  for (const m of read('client/js/ui/windows.js').matchAll(/SLOT_ICONS = \{([^}]*)\}/g)) for (const n of m[1].matchAll(/: '([a-z]+)'/g)) used.add(n[1]);
+  for (const name of used) assert.ok(ICONS[name], `ícone "${name}" não existe em icons.js`);
+  assert.ok(used.size >= 30, `${used.size} ícones usados`);
+});

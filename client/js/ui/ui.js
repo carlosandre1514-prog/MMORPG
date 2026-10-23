@@ -18,6 +18,7 @@ import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
 import { legacyMixin } from './legacyui.js';
+import { ico, icoHTML, STATUS_ICON } from './icons.js';
 import { MobileControls } from './mobile.js';
 import { chatBox } from './chatbox.js';
 import { MapArt } from '../mapart.js';
@@ -88,10 +89,11 @@ export class UI {
     // barra do guia de missão: destino, distância e botões Ir / Parar
     this.guideLabel = h('span', { class: 'gb-label' });
     this.guideDist = h('span', { class: 'gb-dist' });
-    this.guideGo = h('button', { class: 'gb-btn go', onclick: () => this.guideToggleAuto() }, '▶ Ir');
+    this.guideGo = h('button', { class: 'gb-btn go', onclick: () => this.guideToggleAuto() });
+    this.guideGo.innerHTML = icoHTML('play') + ' Ir';
     this.guideBar = h('div', { id: 'guidebar', style: { display: 'none' } },
-      h('span', { class: 'gb-pin' }, '📍'), h('div', { class: 'gb-text' }, this.guideLabel, this.guideDist), this.guideGo,
-      h('button', { class: 'gb-btn', title: 'Ocultar a sinalização', onclick: () => this.game.guide.stop(true) }, '✕'));
+      h('span', { class: 'gb-pin' }, ico('pin')), h('div', { class: 'gb-text' }, this.guideLabel, this.guideDist), this.guideGo,
+      h('button', { class: 'gb-btn', title: 'Ocultar a sinalização', onclick: () => this.game.guide.stop(true) }, ico('close')));
     R.appendChild(this.guideBar);
     // chat
     this.chatLog = h('div', { id: 'chat-log' });
@@ -127,13 +129,13 @@ export class UI {
     R.appendChild(h('div', { id: 'bottom' }, sb, h('div', { id: 'xpbar' }, this.xpFill, this.xpText)));
     // menu
     const menu = [
-      ['inventory', 'Inventário', 'I', '🎒'], ['character', 'Personagem', 'C', '🛡'], ['skills', 'Habilidades', 'K', '✦'],
-      ['quests', 'Missões', 'J', '📜'], ['map', 'Mapa', 'M', '🗺'], ['social', 'Grupo', 'P', '👥'], ['guild', 'Clã', 'G', '⚑'],
-      ['legacy', 'Legado', 'N', '📖'], ['ranking', 'Ranking', 'O', '🏆'], ['help', 'Ajuda', 'H', '?'], ['options', 'Opções', 'Esc', '⚙'],
+      ['inventory', 'Inventário', 'I', 'bag'], ['character', 'Personagem', 'C', 'armor'], ['skills', 'Habilidades', 'K', 'skills'],
+      ['quests', 'Missões', 'J', 'quests'], ['map', 'Mapa', 'M', 'map'], ['social', 'Grupo', 'P', 'group'], ['guild', 'Clã', 'G', 'guild'],
+      ['legacy', 'Legado', 'N', 'legacy'], ['ranking', 'Ranking', 'O', 'ranking'], ['help', 'Ajuda', 'H', 'help'], ['options', 'Opções', 'Esc', 'gear'],
     ];
     const mb = h('div', { id: 'menubar' });
     for (const [id, name, key, icon] of menu) {
-      mb.appendChild(h('button', { class: 'mb-btn', 'data-tip': `${esc(name)} <span class="key">${key}</span>`, onclick: () => { audio.init(); this.toggle(id); } }, icon));
+      mb.appendChild(h('button', { class: 'mb-btn', 'data-tip': `${esc(name)} <span class="key">${key}</span>`, onclick: () => { audio.init(); this.toggle(id); } }, ico(icon)));
     }
     R.appendChild(mb);
     this.toasts = h('div', { id: 'toasts' });
@@ -188,7 +190,7 @@ export class UI {
     this.pfName.innerHTML = `${esc(me.name)} <span class="pf-lvl">Nv ${me.level} ${cls ? cls.name : ''}</span>`;
     this.hpBar.set(me.hp, me.mhp);
     this.mpBar.set(me.mp, me.mmp);
-    this.pfGold.innerHTML = `<span class="gold">●</span> ${fmt(me.gold)} ouro` + (me.points ? ` · <span class="pts">${me.points} ponto(s)!</span>` : '');
+    this.pfGold.innerHTML = `${icoHTML('coin')} ${fmt(me.gold)} ouro` + (me.points ? ` · <span class="pts">${me.points} ponto(s)!</span>` : '');
     const pct = me.nx ? me.xp / me.nx : 1;
     this.xpFill.style.width = (pct * 100).toFixed(2) + '%';
     this.xpText.textContent = me.nx ? `Nível ${me.level} — ${fmt(me.xp)} / ${fmt(me.nx)} XP (${(pct * 100).toFixed(1)}%)` : `Nível ${me.level} (máximo)`;
@@ -231,8 +233,7 @@ export class UI {
     const box = clear(this.statusBox);
     for (const s of this.me.statuses) {
       const good = ['buff', 'shield', 'dr', 'invuln'].includes(s.t);
-      const icon = { stun: '💫', root: '🌿', slow: '❄', burn: '🔥', poison: '☠', shield: '🛡', invuln: '✨', buff: '▲', dr: '🛡' }[s.t] || '•';
-      const el = h('div', { class: 'status ' + (good ? 'good' : 'bad') }, h('span', {}, icon), h('small', {}));
+      const el = h('div', { class: 'status ' + (good ? 'good' : 'bad') }, ico(STATUS_ICON[s.t] || 'dot'), h('small', {}));
       el.dataset.tip = `<b>${esc(s.n || s.id)}</b>`;
       el._st = s;
       box.appendChild(el);
@@ -248,7 +249,7 @@ export class UI {
         const b = bar('hp'); b.set(m.hp, m.mhp);
         const mb = bar('mp'); mb.set(m.mp, m.mmp);
         const el = h('div', { class: 'party-member frame' + (m.d ? ' dead' : '') },
-          h('div', { class: 'pm-name' }, `${m.id === p.leader ? '♛ ' : ''}${m.n}`, h('small', {}, ` Nv ${m.l} ${CLASSES[m.c].name}`)),
+          h('div', { class: 'pm-name' }, m.id === p.leader ? ico('crown', 'sm') : null, m.n, h('small', {}, ` Nv ${m.l} ${CLASSES[m.c].name}`)),
           b.el, mb.el,
           m.z !== this.game.zone.id ? h('div', { class: 'pm-zone' }, ZONES[m.z]?.name || '') : null);
         el.addEventListener('click', () => { if (this.game.entities.has(m.id)) this.game.target = m.id; });
@@ -348,12 +349,12 @@ export class UI {
         name = n.name; col = '#f9e79f'; info = n.title || '';
       }
       const flags = [];
-      if (t.f & F.STUN) flags.push('💫'); if (t.f & F.ROOT) flags.push('🌿'); if (t.f & F.SLOW) flags.push('❄');
-      if (t.f & F.BURN) flags.push('🔥'); if (t.f & F.POISON) flags.push('☠'); if (t.f & F.SHIELD) flags.push('🛡'); if (t.f & F.BUFF) flags.push('▲');
-      if (t.f & F.CAST) flags.push('⚠');
+      if (t.f & F.STUN) flags.push('stun'); if (t.f & F.ROOT) flags.push('root'); if (t.f & F.SLOW) flags.push('snow');
+      if (t.f & F.BURN) flags.push('flame'); if (t.f & F.POISON) flags.push('skull'); if (t.f & F.SHIELD) flags.push('shield'); if (t.f & F.BUFF) flags.push('up');
+      if (t.f & F.CAST) flags.push('warn');
       this.tgName.style.color = col;
       this.tgName.textContent = name;
-      this.tgInfo.textContent = info + (flags.length ? '  ' + flags.join(' ') : '');
+      this.tgInfo.innerHTML = esc(info) + (flags.length ? ' ' + flags.map((f) => icoHTML(f)).join('') : '');
       if (t.k === 'n') this.tgBar.el.style.display = 'none';
       else { this.tgBar.el.style.display = ''; this.tgBar.set(t.hp, t.mhp); }
     } else this.tgEl.style.display = 'none';
@@ -526,9 +527,9 @@ export class UI {
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
     const tday = g.dayTime();
     const hours = Math.floor(tday * 24), mins = Math.floor((tday * 24 - hours) * 60);
-    const icon = tday > 0.25 && tday < 0.8 ? '☀' : '☾';
+    const icon = icoHTML(tday > 0.25 && tday < 0.8 ? 'sun' : 'moon');
     const info = `${Math.floor(me.x)}, ${Math.floor(me.y)} · ${icon} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} · ${this.net.latency}ms`;
-    if (info !== this.mmInfoText) this.mmInfo.textContent = this.mmInfoText = info;
+    if (info !== this.mmInfoText) this.mmInfo.innerHTML = this.mmInfoText = info;
   }
 
   // ------------------------------------------------------------------ rastreador
@@ -545,9 +546,9 @@ export class UI {
       const go = h('button', {
         class: 'tr-go' + (tracked && this.game.guide.auto ? ' on' : ''), title: 'Ir até o local da missão (anda sozinho)',
         onclick: (ev) => { ev.stopPropagation(); this.goToQuest(q.id); },
-      }, '📍 Ir');
+      }, ico('pin'), ' Ir');
       const el = h('div', { class: 'tr-quest' + (done ? ' done' : '') + (tracked ? ' tracked' : '') },
-        h('div', { class: 'tr-head' }, h('div', { class: 'tr-name' }, ((q.main || q.saga) ? '★ ' : q.repeatable ? '↻ ' : '• ') + q.name), go));
+        h('div', { class: 'tr-head' }, h('div', { class: 'tr-name' }, ico((q.main || q.saga) ? 'star' : q.repeatable ? 'loop' : 'dot', 'sm'), ' ' + q.name), go));
       if (done) el.appendChild(h('div', { class: 'tr-obj ok' }, `Volte para ${NPCS[q.turnIn].name}`));
       else {
         q.objectives.forEach((o, i) => {
@@ -590,7 +591,7 @@ export class UI {
     const where = gd.dest.zone !== this.game.zone.id ? ` · ${ZONES[gd.dest.zone].name}` : '';
     this.guideLabel.textContent = (gd.wp?.portal ? gd.wp.label : gd.dest.label) + where;
     this.guideDist.textContent = gd.arrived ? 'Você chegou' : `${Math.round(gd.dist)} m`;
-    this.guideGo.textContent = gd.auto ? '■ Parar' : '▶ Ir';
+    this.guideGo.innerHTML = gd.auto ? icoHTML('stop') + ' Parar' : icoHTML('play') + ' Ir';
     this.guideGo.classList.toggle('on', gd.auto);
   }
 

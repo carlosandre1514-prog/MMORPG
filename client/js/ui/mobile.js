@@ -2,6 +2,7 @@
 // atalhos de menu, chat, missões e câmera. Em telas de toque o corpo da página ganha a classe "touch-ui" e o CSS
 // reorganiza o HUD (barra de habilidades vira uma grade de botões no canto direito).
 import { h } from './dom.js';
+import { ico } from './icons.js';
 import { touchUiEnabled, prefs } from '../device.js';
 import { enterLandscape } from '../orientation.js';
 
@@ -30,18 +31,18 @@ export class MobileControls {
       b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up);
       return b;
     };
-    this.btnAttack = act('attack', '⚔', () => this.game?.attackNearest(), true);
-    this.btnInteract = act('interact', '💬', () => this.game?.interactNearest());
-    this.btnTarget = act('target', '🎯', () => this.game?.cycleTarget());
-    this.btnCam = act('cam', '👁', () => this.game?.ui.toast(CAM_LABEL[this.game.renderer.cycleCam()], 'info'));
+    this.btnAttack = act('attack', ico('sword'), () => this.game?.attackNearest(), true);
+    this.btnInteract = act('interact', ico('chat'), () => this.game?.interactNearest());
+    this.btnTarget = act('target', ico('target'), () => this.game?.cycleTarget());
+    this.btnCam = act('cam', ico('eye'), () => this.game?.ui.toast(CAM_LABEL[this.game.renderer.cycleCam()], 'info'));
     R.appendChild(h('div', { id: 'mob-actions', class: 'mob' }, this.btnCam, this.btnTarget, this.btnInteract, this.btnAttack));
     // atalhos do topo: missões, chat, menu, tela cheia
     const top = (icon, cls, fn) => h('button', { class: 'mob-top ' + cls, onclick: fn }, icon);
     this.topBar = h('div', { id: 'mob-top', class: 'mob' },
-      top('⛶', 'fs', () => this.fullscreen()),
-      top('📜', 'tr', () => this.toggleClass('show-tracker')),
-      top('💬', 'ch', () => this.game?.ui.chatInput.focus()),
-      top('☰', 'mn', () => this.toggleClass('show-menu')));
+      top(ico('expand'), 'fs', () => this.fullscreen()),
+      top(ico('quests'), 'tr', () => this.toggleClass('show-tracker')),
+      top(ico('chat'), 'ch', () => this.game?.ui.chatInput.focus()),
+      top(ico('menu'), 'mn', () => this.toggleClass('show-menu')));
     R.append(this.zone, this.topBar);
     // fechar menu ao escolher uma janela
     const mb = R.querySelector('#menubar');

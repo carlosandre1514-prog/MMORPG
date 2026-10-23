@@ -247,7 +247,7 @@ function killPlayer(zone, p, killer) {
     killer.char.record.pvpKills++;
     killer.dirty.legacy = true;
     onPvpKill(killer);
-    zone.chatAll({ t: 'chat', c: 'sistema', m: `⚔ ${killer.name} derrotou ${p.name} na arena!` });
+    zone.chatAll({ t: 'chat', c: 'sistema', m: `${killer.name} derrotou ${p.name} na arena!` });
   } else if (!zone.def.pvp) {
     const loss = Math.min(p.char.xp, deathXpPenalty(p.level));
     p.char.xp -= loss;

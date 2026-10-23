@@ -32,7 +32,7 @@ export function setupLandscape() {
     + '<small>O jogo só funciona deitado.</small><button type="button">Tela cheia (travar na horizontal)</button>';
   ov.querySelector('button').addEventListener('click', enterLandscape);
   document.body.appendChild(ov);
-  // o primeiro toque do jogador liga a tela cheia e a trava (uma vez só; depois o botão ⛶ e o aviso fazem isso)
+  // o primeiro toque do jogador liga a tela cheia e a trava (uma vez só; depois o botão de tela cheia e o aviso fazem isso)
   const first = () => { enterLandscape(); window.removeEventListener('pointerup', first, true); window.removeEventListener('click', first, true); };
   window.addEventListener('pointerup', first, true);
   window.addEventListener('click', first, true);

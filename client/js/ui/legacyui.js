@@ -8,6 +8,7 @@ import {
 } from '/shared/data/legacy.js';
 import { h, clear, fmt } from './dom.js';
 import { audio } from '../audio.js';
+import { ico } from './icons.js';
 
 const pct = (v, d = 1) => `${(v * 100).toFixed(d).replace('.', ',')}%`;
 const TIER_COLORS = ['#b08d57', '#c0c4cc', '#f1c40f', '#5dade2', '#c060ff', '#ff9a1f', '#ff5a5a'];
@@ -65,7 +66,7 @@ export const legacyMixin = {
         h('div', { class: 'lc-s' }, `${d.ti.length} título${d.ti.length === 1 ? '' : 's'} conquistado${d.ti.length === 1 ? '' : 's'}`))));
     const tabs = [['feitos', 'Feitos'], ['maestria', 'Maestria'], ['bestiario', 'Bestiário'], ['desafios', 'Desafios']];
     body.appendChild(h('div', { class: 'tabs' }, ...tabs.map(([id, n]) => h('button', { class: 'tab' + (tab === id ? ' on' : ''), onclick: () => { this.legTab = id; this.drawLegacy(); } },
-      n, id === 'maestria' && atMax && this.masteryFree(d) > 0 ? ' ●' : '', id === 'desafios' && this.claimable(d) ? ' ●' : ''))));
+      n, (id === 'maestria' && atMax && this.masteryFree(d) > 0) || (id === 'desafios' && this.claimable(d)) ? ico('dot', 'sm badge') : null))));
     const pane = h('div', { class: 'lc-pane' });
     body.appendChild(pane);
     ({ feitos: this.legFeitos, maestria: this.legMaestria, bestiario: this.legBestiario, desafios: this.legDesafios })[tab].call(this, pane, d);
@@ -101,7 +102,7 @@ export const legacyMixin = {
       const v = Math.min(a.goal, this.legValue(d, a.counter)), ok = done.has(a.id);
       const tier = Math.min(TIER_COLORS.length - 1, Math.max(0, Math.floor(Math.log10(Math.max(1, a.pts)) * 2.3) - 1));
       pane.appendChild(h('div', { class: 'ach-row' + (ok ? ' done' : '') },
-        h('div', { class: 'ach-medal', style: { background: ok ? TIER_COLORS[tier] : '#2a2f3a' } }, ok ? '✓' : '·'),
+        h('div', { class: 'ach-medal', style: { background: ok ? TIER_COLORS[tier] : '#2a2f3a' } }, ok ? ico('check', 'sm') : null),
         h('div', { class: 'ach-main' },
           h('div', { class: 'ach-name' }, a.name, a.title ? h('small', { class: 'gold' }, `  título: ${a.title}`) : null),
           h('div', { class: 'ach-desc' }, a.desc),
@@ -141,7 +142,7 @@ export const legacyMixin = {
     for (const mon of list) {
       const k = d.bs[mon.id] || 0, rk = bestiaryRank(k), next = BESTIARY_STEPS[rk];
       grid.appendChild(h('div', { class: 'be-card' + (k ? '' : ' unknown') + (mon.boss ? ' boss' : '') },
-        h('div', { class: 'be-name' }, k ? mon.name : '???', mon.boss ? h('small', { class: 'gold' }, ' ☠ chefe') : null),
+        h('div', { class: 'be-name' }, k ? mon.name : '???', mon.boss ? h('small', { class: 'gold' }, ' ', ico('skull', 'sm'), ' chefe') : null),
         h('div', { class: 'ach-desc' }, k ? `Nível ${mon.lvl[0]}–${mon.lvl[1]}` : 'Ainda não enfrentado'),
         k ? progressBar(k, next || BESTIARY_STEPS[BESTIARY_STEPS.length - 1], rk >= BESTIARY_STEPS.length ? 'gold' : '') : null,
         h('div', { class: 'be-meta' }, h('span', {}, `${fmt(k)} abate${k === 1 ? '' : 's'}${next ? ` · próximo: ${fmt(next)}` : ' · completo'}`), h('b', { class: 'up' }, rk ? `+${pct(bestiaryBonus(k), 0)} dano` : ''))));

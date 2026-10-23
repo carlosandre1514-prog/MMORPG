@@ -19,9 +19,10 @@ import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
 import { logoMark } from './logo.js';
+import { ico, icoHTML, drawIcon } from './icons.js';
 import { altarList, altarsIn, altarNear, travelFee } from '/shared/altars.js';
 
-const SLOT_ICONS = { weapon: '⚔', head: '⛑', chest: '👕', legs: '👖', feet: '👢', ring: '💍', amulet: '📿' };
+const SLOT_ICONS = { weapon: 'sword', head: 'helm', chest: 'chest', legs: 'legs', feet: 'boots', ring: 'ring', amulet: 'amulet' };
 
 export const windowsMixin = {
   buildWindows() {
@@ -70,7 +71,7 @@ export const windowsMixin = {
     });
     body.append(grid,
       h('div', { class: 'inv-foot' },
-        h('span', {}, h('span', { class: 'gold' }, '● '), `${fmt(me.gold)} ouro`),
+        h('span', {}, ico('coin', 'sm'), ` ${fmt(me.gold)} ouro`),
         h('span', { class: 'muted' }, `${me.inv.filter(Boolean).length}/${me.inv.length}`)),
       h('div', { class: 'muted small' }, this.inventoryHint() || 'Clique: ações · Botão direito: usar/equipar · Arraste para reorganizar'));
   },
@@ -167,7 +168,7 @@ export const windowsMixin = {
     for (const k of ['str', 'dex', 'int', 'vit']) {
       const primary = cls.primary === k;
       const row = h('div', { class: 'attr-row' + (primary ? ' primary' : '') },
-        h('span', { class: 'attr-name', 'data-tip': esc(desc[k]) }, STAT_NAMES[k] + (primary ? ' ★' : '')),
+        h('span', { class: 'attr-name', 'data-tip': esc(desc[k]) }, STAT_NAMES[k] + ' ', primary ? ico('star', 'sm gold') : null),
         h('span', { class: 'attr-val' }, String(st[k])),
         me.points ? h('button', { class: 'btn tiny', title: 'Shift+clique: +5', onclick: (e) => this.send({ t: 'stat', s: k, n: e.shiftKey ? 5 : 1 }) }, '+') : null);
       attrs.appendChild(row);
@@ -194,7 +195,7 @@ export const windowsMixin = {
     ];
     attrs.appendChild(h('div', { class: 'derived' }, ...der.map(([a, b]) => h('div', { class: 'drow' }, h('span', {}, a), h('b', {}, b)))));
     const brasas = [['brasa_vida', 'Brasa da Vida', '+10% Vida', '#58d68d'], ['brasa_terra', 'Brasa da Terra', '+10% Defesa', '#e67e22'], ['brasa_espirito', 'Brasa do Espírito', '+10% Poder', '#85c1e9']];
-    attrs.appendChild(h('div', { class: 'brasas' }, ...brasas.map(([f, n, b, c]) => h('div', { class: 'brasa' + (me.flags[f] ? ' on' : ''), style: { color: me.flags[f] ? c : '' }, 'data-tip': `<b>${n}</b><br>${b}${me.flags[f] ? '' : '<br><i>Ainda não recuperada</i>'}` }, '🔥'))));
+    attrs.appendChild(h('div', { class: 'brasas' }, ...brasas.map(([f, n, b, c]) => h('div', { class: 'brasa' + (me.flags[f] ? ' on' : ''), style: { color: me.flags[f] ? c : '' }, 'data-tip': `<b>${n}</b><br>${b}${me.flags[f] ? '' : '<br><i>Ainda não recuperada</i>'}` }, ico('flame')))));
     const rec = me.record || {};
     attrs.appendChild(h('div', { class: 'muted small' }, `Monstros: ${fmt(rec.kills || 0)} · Chefes: ${rec.bossKills || 0} · Arena: ${rec.pvpKills || 0} · Mortes: ${rec.deaths || 0}`));
     body.appendChild(h('div', { class: 'char-wrap' }, doll, attrs));
@@ -236,7 +237,7 @@ export const windowsMixin = {
         list.appendChild(h('div', {
           class: 'ql-item' + (q.id === this.selectedQuest ? ' sel' : '') + (done ? ' done' : ''),
           onclick: () => { this.selectedQuest = q.id; this.renderQuests(); },
-        }, `${done ? '✔ ' : ''}${q.name}`, h('small', {}, ` (${q.lvl})`)));
+        }, done ? ico('check', 'sm') : null, ` ${q.name}`, h('small', {}, ` (${q.lvl})`)));
       }
     }
     if (!active.length) list.appendChild(h('div', { class: 'muted' }, 'Nenhuma missão ativa. Procure NPCs com "!" amarelo.'));
@@ -251,7 +252,7 @@ export const windowsMixin = {
         h('div', { class: 'ql-sub' }, 'Objetivos'),
         ...q.objectives.map((o, i) => {
           const p = progress(me, q, i), n = need(o);
-          return h('div', { class: 'ql-obj' + (p >= n ? ' ok' : '') }, `${p >= n ? '✔' : '◦'} ${objText(o)}${o.type === 'talk' ? '' : `: ${p}/${n}`}`);
+          return h('div', { class: 'ql-obj' + (p >= n ? ' ok' : '') }, ico(p >= n ? 'check' : 'dot', 'sm'), ` ${objText(o)}${o.type === 'talk' ? '' : `: ${p}/${n}`}`);
         }),
         h('div', { class: 'ql-sub' }, 'Entregar para'),
         h('div', {}, `${NPCS[q.turnIn].name} — ${ZONES[NPCS[q.turnIn].zone].name}`),
@@ -259,7 +260,7 @@ export const windowsMixin = {
         rewardsEl(q.rewards, this.game.dev),
         h('div', { class: 'ql-story' }, fill(q.offer, me)),
         h('div', { class: 'row' },
-          h('button', { class: 'btn small', onclick: () => { this.goToQuest(q.id); this.wins.quests.close(); } }, '📍 Ir até o local'),
+          h('button', { class: 'btn small', onclick: () => { this.goToQuest(q.id); this.wins.quests.close(); } }, ico('pin', 'sm'), ' Ir até o local'),
           h('button', { class: 'btn ghost small', onclick: () => { this.game.guide.track(q.id, false); this.onGuide(); } }, 'Mostrar caminho')),
         h('div', { class: 'row' }, h('button', { class: 'btn ghost small', onclick: () => this.confirm(`Abandonar a missão <b>${esc(q.name)}</b>?`, () => this.send({ t: 'qx', q: q.id }), { yes: 'Abandonar' }) }, 'Abandonar')));
     }
@@ -317,7 +318,7 @@ export const windowsMixin = {
       ctx.lineWidth = 3;
       if (d.boss) {
         ctx.fillStyle = '#ff9a1f'; ctx.font = 'bold 14px sans-serif';
-        ctx.strokeText('☠', x, y + 5); ctx.fillText('☠', x, y + 5);
+        drawIcon(ctx, 'skull', x - 9, y - 9, 18, '#ff9a1f');
         ctx.font = 'bold 10px sans-serif';
         ctx.strokeText(d.name, x, y - 9); ctx.fillText(d.name, x, y - 9);
       } else {
@@ -400,7 +401,7 @@ export const windowsMixin = {
     const near = altarNear(z.id, g.me.x, g.me.y), free = !!near, fee = travelFee(g.me.level);
     const found = altarList().filter((a) => !a.pvp && a.kingdom === z.def.kingdom && (g.me.altars || []).includes(a.id)).length;
     side.appendChild(h('div', { class: 'map-travel' + (free ? ' free' : '') },
-      h('b', {}, '✦ Viagem rápida'),
+      h('b', {}, ico('swirl', 'sm'), ' Viagem rápida'),
       h('div', { class: 'small' }, found ? (free ? 'Você está ao lado de um altar: viajar é de graça.' : `Longe de um altar a viagem custa ${fee} de ouro.`) : 'Aproxime-se de um altar de pedra para descobri-lo; depois dá para viajar até ele daqui.')));
     // zonas agrupadas por reino; um reino que o personagem nunca pisou aparece como "???"
     for (const kid of KINGDOM_ORDER) {
@@ -417,13 +418,14 @@ export const windowsMixin = {
           if (a.pvp || !(g.me.altars || []).includes(a.id)) continue;
           const here = near && near.id === a.id;
           side.appendChild(h('div', { class: 'map-altar' },
-            h('span', {}, '✦ rumo a ', h('b', {}, a.label)),
+            h('span', {}, ico('swirl', 'sm'), ' rumo a ', h('b', {}, a.label)),
             here ? h('small', { class: 'muted' }, 'você está aqui')
               : h('button', { class: 'btn tiny', title: free ? 'Grátis: você está ao lado de um altar' : `Custa ${fee} de ouro`, onclick: () => { this.send({ t: 'atp', id: a.id }); this.wins.map.close(); } }, free ? 'Viajar' : `Viajar · ${fee} ouro`)));
         }
       }
     }
-    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ◆ altar (aceso: descoberto) · ☠ chefe'));
+    const sw = (c) => h('span', { class: 'lg-sw', style: { background: c } });
+    side.appendChild(h('div', { class: 'small muted map-legend', style: { marginTop: '10px' } }, sw('#f7dc6f'), ' NPC  ', sw('#85c1e9'), ' Pedra do Caminho  ', ico('swirl', 'sm'), ' altar (aceso: descoberto)  ', ico('skull', 'sm'), ' chefe'));
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para mover · roda para aproximar · duplo clique para voltar.'));
     body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
     this.drawWorldMap();
@@ -464,7 +466,7 @@ export const windowsMixin = {
       body.appendChild(h('div', { class: 'ql-sub' }, `Seu grupo (${p.m.length}/4)`));
       for (const m of p.m) {
         body.appendChild(h('div', { class: 'soc-row' },
-          h('span', {}, `${m.id === p.leader ? '♛ ' : ''}${m.n}`), h('small', { class: 'muted' }, ` Nv ${m.l} ${CLASSES[m.c].name} · ${ZONES[m.z]?.name || ''}`),
+          h('span', {}, m.id === p.leader ? ico('crown', 'sm') : null, m.n), h('small', { class: 'muted' }, ` Nv ${m.l} ${CLASSES[m.c].name} · ${ZONES[m.z]?.name || ''}`),
           p.leader === g.me.id && m.id !== g.me.id ? h('button', { class: 'btn tiny ghost', onclick: () => this.send({ t: 'party', op: 'kick', name: m.n }) }, 'Remover') : null));
       }
       body.appendChild(h('button', { class: 'btn ghost small', onclick: () => this.send({ t: 'party', op: 'leave' }) }, 'Sair do grupo'));
@@ -500,7 +502,7 @@ export const windowsMixin = {
     const list = h('div', { class: 'guild-list' });
     for (const m of gd.m.sort((a, b) => (b.on ? 1 : 0) - (a.on ? 1 : 0))) {
       list.appendChild(h('div', { class: 'soc-row' + (m.on ? '' : ' off') },
-        h('span', {}, `${m.n === gd.leader ? '♛ ' : ''}${m.n}`), h('small', { class: 'muted' }, ` Nv ${m.l} ${CLASSES[m.c]?.name || ''}${m.on ? ' · ' + m.z : ' · offline'}`),
+        h('span', {}, m.n === gd.leader ? ico('crown', 'sm') : null, m.n), h('small', { class: 'muted' }, ` Nv ${m.l} ${CLASSES[m.c]?.name || ''}${m.on ? ' · ' + m.z : ' · offline'}`),
         leader && m.n !== g.me.name ? h('button', { class: 'btn tiny ghost', onclick: () => this.confirm(`Expulsar ${esc(m.n)}?`, () => this.send({ t: 'guild', op: 'kick', name: m.n })) }, 'Expulsar') : null));
     }
     body.appendChild(list);
@@ -528,7 +530,7 @@ export const windowsMixin = {
     if (!rows.length) body.appendChild(h('div', { class: 'muted' }, 'Ninguém ainda. Seja o primeiro!'));
     rows.forEach((r, i) => {
       body.appendChild(h('div', { class: 'rank-row' + (r.n === this.me.name ? ' me' : '') },
-        h('span', { class: 'rank-pos' }, ['🥇', '🥈', '🥉'][i] || `${i + 1}.`),
+        h('span', { class: 'rank-pos' }, i < 3 ? ico('medal', 'medal-' + (i + 1)) : `${i + 1}.`),
         h('span', { class: 'rank-name' }, r.n, r.g ? h('small', {}, ` <${r.g}>`) : null),
         h('span', { class: 'muted small' }, `${CLASSES[r.c].name} ${r.l}`),
         h('b', {}, tab === 'level' ? `Nv ${r.l}` : String(r.v))));
@@ -565,9 +567,9 @@ export const windowsMixin = {
         <div>
           <div class="ql-sub">Dicas</div>
           <ul class="tips">
-            <li>Siga as missões <b class="gold">★ principais</b>: elas contam a história e levam você por todas as regiões.</li>
+            <li>Siga as missões <b class="gold">${icoHTML('star')} principais</b>: elas contam a história e levam você por todas as regiões.</li>
             <li>NPCs com <b class="gold">!</b> têm missões; <b class="gold">?</b> amarelo indica missão pronta para entregar.</li>
-            <li>A cada nível você ganha 3 pontos de atributo (C). O atributo marcado com ★ aumenta seu Poder.</li>
+            <li>A cada nível você ganha 3 pontos de atributo (C). O atributo marcado com ${icoHTML('star')} aumenta seu Poder.</li>
             <li>Chefes avisam seus golpes com <b style="color:#ff6b6b">círculos vermelhos</b> no chão — saia deles!</li>
             <li>Toque nas <b style="color:#85c1e9">Pedras do Caminho</b> para viajar rapidamente entre regiões descobertas do mesmo reino.</li>
             <li>O mundo é dividido em <b class="gold">reinos</b>: só o reino onde você está é carregado. Ao atravessar a fronteira o jogo carrega o novo reino; suas missões e progresso ficam guardados, e o Pergaminho de Retorno e o renascimento levam à capital do reino atual.</li>
@@ -642,7 +644,7 @@ export const windowsMixin = {
     const w = this.wins.trade;
     w.setTitle(`Comércio com ${t.with}`);
     const body = clear(w.body);
-    const mine = h('div', { class: 'trade-col' }, h('div', { class: 'ql-sub' }, 'Sua oferta' + (t.mine.ok ? ' ✔' : '')));
+    const mine = h('div', { class: 'trade-col' }, h('div', { class: 'ql-sub' }, 'Sua oferta', t.mine.ok ? ico('check', 'sm') : null));
     const mg = h('div', { class: 'inv-grid small' });
     for (const s of t.mine.slots) {
       const it = this.me.inv[s];
@@ -655,7 +657,7 @@ export const windowsMixin = {
     gold.addEventListener('keydown', (e) => e.stopPropagation());
     gold.addEventListener('change', () => this.send({ t: 'trade', op: 'gold', gold: parseInt(gold.value, 10) || 0 }));
     mine.append(mg, h('div', { class: 'row' }, h('span', { class: 'gold' }, 'Ouro: '), gold));
-    const theirs = h('div', { class: 'trade-col' }, h('div', { class: 'ql-sub' }, `Oferta de ${t.with}` + (t.theirs.ok ? ' ✔' : '')));
+    const theirs = h('div', { class: 'trade-col' }, h('div', { class: 'ql-sub' }, `Oferta de ${t.with}`, t.theirs.ok ? ico('check', 'sm') : null));
     const tg = h('div', { class: 'inv-grid small' });
     for (const it of t.theirs.items) tg.appendChild(slotEl(it, { me: this.me }));
     for (let i = t.theirs.items.length; i < 8; i++) tg.appendChild(slotEl(null));
@@ -699,7 +701,7 @@ export function rewardsEl(r, dev) {
     const el = slotEl(it, { cls: 'mini' });
     box.appendChild(el);
   }
-  if (r.flag) box.appendChild(h('span', { class: 'rw flag' }, '🔥 Bênção de uma Brasa'));
+  if (r.flag) box.appendChild(h('span', { class: 'rw flag' }, ico('flame', 'sm'), ' Bênção de uma Brasa'));
   if (r.title) box.appendChild(h('span', { class: 'rw title' }, `Título: ${r.title}`));
   return box;
 }

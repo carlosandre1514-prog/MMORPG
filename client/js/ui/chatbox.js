@@ -3,6 +3,7 @@
 // campo de digitar; ao sair do campo (enviar, Esc ou clicar no jogo) volta a ser o balão. Posição e tamanho do chat aberto ficam
 // salvos no navegador (um conjunto para telas de toque e outro para o computador).
 import { h } from './dom.js';
+import { ico } from './icons.js';
 import { isTouchDevice, prefs } from '../device.js';
 
 const MIN_W = 200, MIN_H = 90;
@@ -14,8 +15,8 @@ export function chatBox(log, input) {
   try { const j = JSON.parse(prefs.get(key, '')); if (j && typeof j === 'object') st = { x: j.x, y: j.y, w: j.w, h: j.h }; } catch { /* sem posição salva */ }
   const save = () => prefs.set(key, JSON.stringify(st));
 
-  const reset = h('button', { title: 'Voltar ao lugar e ao tamanho originais' }, '↺');
-  const head = h('div', { id: 'chat-head', title: 'Arraste para mover o chat' }, h('span', { class: 'ch-title' }, '💬 Chat'), reset);
+  const reset = h('button', { title: 'Voltar ao lugar e ao tamanho originais' }, ico('loop', 'sm'));
+  const head = h('div', { id: 'chat-head', title: 'Arraste para mover o chat' }, h('span', { class: 'ch-title' }, ico('chat', 'sm'), ' Chat'), reset);
   const grip = h('div', { id: 'chat-grip', title: 'Arraste para mudar o tamanho' });
   // tabindex -1: clicar no histórico mantém o foco dentro da caixa (e ela aberta)
   const box = h('div', { id: 'chat', class: 'frame', tabindex: '-1' }, head, log, h('div', { id: 'chat-bar' }, input, grip));

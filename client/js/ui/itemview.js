@@ -5,13 +5,14 @@ import { RARITY, SLOT_NAMES, STAT_NAMES, PERCENT_STATS } from '/shared/constants
 import { itemName, itemStats, sellPrice, rarityColor } from '/shared/itemgen.js';
 import { itemIcon } from '../sprites.js';
 import { h, esc } from './dom.js';
+import { ico } from './icons.js';
 
 const TYPE_NAMES = { weapon: 'Arma', armor: 'Armadura', accessory: 'Acessório', consumable: 'Consumível', material: 'Material', quest: 'Item de missão' };
 const STAT_ORDER = ['str', 'dex', 'int', 'vit', 'hp', 'mp', 'power', 'def', 'crit', 'haste', 'lifesteal', 'speed'];
 
 export function slotEl(item, opts = {}) {
   const el = h('div', { class: 'slot' + (opts.cls ? ' ' + opts.cls : '') });
-  if (opts.empty && !item) el.appendChild(h('span', { class: 'slot-empty' }, opts.empty));
+  if (opts.empty && !item) el.appendChild(h('span', { class: 'slot-empty' }, ico(opts.empty))); // opts.empty = nome de um ícone
   if (item) {
     const base = ITEMS[item.id];
     el.appendChild(h('img', { src: itemIcon(item.id), draggable: 'false', alt: '' }));

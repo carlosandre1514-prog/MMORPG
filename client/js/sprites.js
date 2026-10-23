@@ -766,13 +766,36 @@ export function drawIcon(ctx, icon) {
       ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(16, 14); ctx.lineTo(22, 21); ctx.lineTo(16, 28); ctx.lineTo(10, 21); ctx.closePath(); ctx.fill();
       ctx.shadowColor = c2; ctx.shadowBlur = 6; circle(ctx, 16, 21, 3, c2); ctx.shadowBlur = 0;
       break;
-    case 'potion':
-      ctx.fillStyle = 'rgba(220,230,240,0.35)'; ctx.beginPath(); ctx.arc(16, 20, 9, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = c1; ctx.beginPath(); ctx.arc(16, 20, 8, -0.2, Math.PI + 0.2); ctx.fill();
-      ctx.fillStyle = '#d5dbdb'; ctx.fillRect(13, 6, 6, 6);
-      ctx.fillStyle = '#8b5a2b'; ctx.fillRect(12.5, 4, 7, 3);
-      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(11, 15, 2.5, 5);
+    case 'potion': {
+      // frasco de vidro com líquido brilhante, rolha com frisos, brilho de vidro e bolhas
+      ctx.save();
+      ctx.shadowColor = c1; ctx.shadowBlur = 6;
+      ctx.fillStyle = 'rgba(205,225,245,0.30)';
+      ctx.beginPath(); ctx.arc(16, 20, 9.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(13, 8, 6, 6);
+      ctx.shadowBlur = 0;
+      // líquido: recortado no corpo, com degradê e superfície clara
+      ctx.save();
+      ctx.beginPath(); ctx.arc(16, 20, 8.4, 0, Math.PI * 2); ctx.clip();
+      const lg = ctx.createLinearGradient(0, 14, 0, 29);
+      lg.addColorStop(0, shade(c1, 0.35)); lg.addColorStop(0.45, c1); lg.addColorStop(1, shade(c1, -0.45));
+      ctx.fillStyle = lg; ctx.fillRect(6, 15.5, 20, 15);
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.beginPath(); ctx.ellipse(16, 15.6, 7.6, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // vidro: contorno e reflexos
+      ctx.strokeStyle = 'rgba(235,245,255,0.9)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(16, 20, 9.2, Math.PI * 0.62, Math.PI * 2.38); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(13, 11); ctx.lineTo(13, 13.2); ctx.moveTo(19, 11); ctx.lineTo(19, 13.2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.ellipse(11.6, 18.2, 1.3, 3.4, 0.25, 0, Math.PI * 2); ctx.fill();
+      circle(ctx, 19.5, 22, 1.1, 'rgba(255,255,255,0.65)'); circle(ctx, 17.2, 25, 0.8, 'rgba(255,255,255,0.55)');
+      // rolha
+      const cg = ctx.createLinearGradient(0, 4, 0, 9);
+      cg.addColorStop(0, '#c99a62'); cg.addColorStop(1, '#7a5230');
+      ctx.fillStyle = cg; rr(ctx, 12.3, 3.6, 7.4, 5.2, 1.4); ctx.fill();
+      ctx.fillStyle = 'rgba(60,35,15,0.55)'; ctx.fillRect(14.2, 4.2, 0.8, 4); ctx.fillRect(16.8, 4.2, 0.8, 4);
+      ctx.restore();
       break;
+    }
     case 'elixir':
       ctx.fillStyle = 'rgba(220,230,240,0.35)'; ctx.beginPath(); ctx.moveTo(10, 10); ctx.lineTo(22, 10); ctx.lineTo(25, 27); ctx.lineTo(7, 27); ctx.closePath(); ctx.fill();
       ctx.fillStyle = c1; ctx.beginPath(); ctx.moveTo(9, 16); ctx.lineTo(23, 16); ctx.lineTo(25, 27); ctx.lineTo(7, 27); ctx.closePath(); ctx.fill();
@@ -907,7 +930,12 @@ export function skillIcon(sk, size = 44) {
   ctx.shadowColor = c1; ctx.shadowBlur = 6;
   const P = (pts) => { ctx.beginPath(); ctx.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); };
   switch (sym) {
-    case 'sword': P([10, 30, 28, 12]); ctx.stroke(); P([24, 8, 32, 16]); ctx.stroke(); P([8, 26, 14, 32]); ctx.stroke(); break;
+    case 'sword': // lâmina em diagonal com guarda, cabo e pomo
+      ctx.save(); ctx.translate(20, 20); ctx.rotate(-Math.PI / 4);
+      ctx.beginPath(); ctx.moveTo(-3.2, 7); ctx.lineTo(-3.2, -13); ctx.lineTo(0, -20); ctx.lineTo(3.2, -13); ctx.lineTo(3.2, 7); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fillRect(-0.8, -15, 1.6, 20); ctx.fillStyle = c1;
+      ctx.fillRect(-9, 7, 18, 3.2); ctx.fillRect(-2, 10, 4, 7); circle(ctx, 0, 19, 2.6, c1);
+      ctx.restore(); break;
     case 'shout': for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(12, 20, 6 + i * 6, -0.8, 0.8); ctx.stroke(); } circle(ctx, 10, 20, 3, c1); break;
     case 'charge': P([6, 20, 22, 20]); ctx.stroke(); P([18, 12, 30, 20, 18, 28]); ctx.stroke(); P([6, 12, 12, 12]); ctx.stroke(); P([6, 28, 12, 28]); ctx.stroke(); break;
     case 'whirl': ctx.beginPath(); for (let a = 0; a < 12; a += 0.2) { const r = 2 + a * 1.2; ctx.lineTo(20 + Math.cos(a) * r, 20 + Math.sin(a) * r); } ctx.stroke(); break;
@@ -941,7 +969,18 @@ export function skillIcon(sk, size = 44) {
     default: circle(ctx, 20, 20, 8, c1);
   }
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 2; ctx.strokeRect(1, 1, 38, 38);
+  // brilho de vidro no alto e moldura dourada em bisel
+  const sheen = ctx.createLinearGradient(0, 0, 0, 24);
+  sheen.addColorStop(0, 'rgba(255,255,255,0.30)'); sheen.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sheen; ctx.fillRect(2, 2, 36, 22);
+  const vig = ctx.createRadialGradient(20, 20, 12, 20, 20, 30);
+  vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.5)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, 40, 40);
+  const edge = ctx.createLinearGradient(0, 0, 40, 40);
+  edge.addColorStop(0, '#ffe9a0'); edge.addColorStop(0.5, '#c98a24'); edge.addColorStop(1, '#5e3a0e');
+  ctx.lineWidth = 2.4; ctx.strokeStyle = edge; ctx.strokeRect(1.4, 1.4, 37.2, 37.2);
+  ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeRect(0.5, 0.5, 39, 39);
+  ctx.strokeStyle = 'rgba(255,240,190,0.28)'; ctx.strokeRect(3.2, 3.2, 33.6, 33.6);
   const url = cv.toDataURL();
   skillIconCache.set(key, url);
   return url;

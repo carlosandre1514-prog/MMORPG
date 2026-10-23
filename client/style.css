@@ -223,7 +223,7 @@ input { font-family: var(--font); user-select: text; }
 #chat:hover { opacity: 1; background: rgba(10, 10, 16, 0.4); }
 #chat:not(.open):has(#chat-log:empty) { display: none; }
 #chat-head { display: none; }
-/* fechado, o campo de digitar fica escondido mas focável (Enter, / e o botão 💬 só precisam dar foco nele para abrir o chat) */
+/* fechado, o campo de digitar fica escondido mas focável (Enter, / e o botão de chat só precisam dar foco nele para abrir o chat) */
 #chat-bar { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
 #chat.open #chat-head { display: flex; align-items: center; gap: 2px; margin: -4px -4px 2px; padding: 2px 6px; font-size: 11px; color: #c9b784; background: rgba(0, 0, 0, 0.35); border-bottom: 1px solid rgba(255, 255, 255, 0.08); cursor: grab; touch-action: none; user-select: none; }
 #chat-head.grab { cursor: grabbing; }
@@ -340,7 +340,7 @@ input { font-family: var(--font); user-select: text; }
 .slot-qty { position: absolute; right: 2px; bottom: 0; font-size: 11px; font-weight: 700; text-shadow: 0 0 2px #000, 0 0 2px #000; }
 .slot-plus { position: absolute; left: 2px; top: 0; font-size: 10px; font-weight: 700; color: #ffd27a; text-shadow: 0 0 2px #000, 0 0 2px #000; }
 .slot-eq { position: absolute; right: 2px; top: 0; font-size: 9px; font-weight: 700; color: #82e0aa; }
-.slot-empty { color: #555; font-size: 18px; }
+.slot-empty { color: #555; font-size: 18px; } /* o ícone vem de icons.js */
 .slot-locked img { filter: sepia(1) hue-rotate(-30deg) saturate(3) brightness(0.6); }
 .gear-result { color: var(--gold); font-size: 22px; font-weight: 700; }
 
@@ -569,10 +569,12 @@ body.touch-ui #stickzone { position: absolute; left: 0; bottom: 0; width: 46%; h
 .js-knob { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); border: 2px solid rgba(255, 255, 255, 0.7); }
 /* ponto fixo onde o polegar deve tocar, visível quando o direcional não está em uso */
 body.touch-ui #stickzone::after { content: ''; position: absolute; left: 22px; bottom: 26px; width: 100px; height: 100px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.22); pointer-events: none; }
-body.touch-ui #mob-actions { position: absolute; right: 8px; bottom: 134px; display: flex; align-items: flex-end; gap: 10px; z-index: 4; }
-.mob-btn { border: 2px solid rgba(255, 210, 122, 0.65); background: radial-gradient(rgba(60, 50, 30, 0.85), rgba(20, 16, 10, 0.85)); color: #ffd27a; border-radius: 50%; width: 46px; height: 46px; font-size: 19px; line-height: 1; touch-action: none; padding: 0; }
-.mob-btn.attack { width: 78px; height: 78px; font-size: 34px; background: radial-gradient(rgba(150, 50, 40, 0.9), rgba(70, 15, 10, 0.9)); border-color: #ff9a8a; }
-.mob-btn.interact { width: 56px; height: 56px; font-size: 24px; }
+/* no toque a barra de habilidades e poções fica embaixo, no centro, como no computador; os botões de ação ficam em coluna na direita */
+body.touch-ui { --sk: clamp(34px, calc((100vw - 210px) / 8.7), 48px); }
+body.touch-ui #mob-actions { position: absolute; right: 10px; bottom: 22px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; z-index: 4; }
+.mob-btn { border: 2px solid rgba(255, 210, 122, 0.65); background: radial-gradient(rgba(60, 50, 30, 0.85), rgba(20, 16, 10, 0.85)); color: #ffd27a; border-radius: 50%; width: 42px; height: 42px; font-size: 19px; line-height: 1; touch-action: none; padding: 0; display: flex; align-items: center; justify-content: center; }
+.mob-btn.attack { width: 70px; height: 70px; font-size: 34px; background: radial-gradient(rgba(150, 50, 40, 0.9), rgba(70, 15, 10, 0.9)); border-color: #ff9a8a; }
+.mob-btn.interact { width: 46px; height: 46px; font-size: 24px; }
 .mob-btn.down { transform: scale(0.92); filter: brightness(1.5); }
 body.touch-ui #mob-top { position: absolute; right: 150px; top: 10px; display: flex; gap: 6px; z-index: 5; }
 .mob-top { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #6b5a30; background: rgba(15, 14, 22, 0.88); color: #ffd27a; font-size: 18px; padding: 0; }
@@ -596,14 +598,15 @@ body.touch-ui #chat-head button { font-size: 17px; padding: 0 9px; }
 body.touch-ui #chat-grip { width: 30px; }
 body.touch-ui.show-menu #menubar { display: flex; flex-wrap: wrap; width: 244px; right: 150px; top: 54px; bottom: auto; z-index: 6; }
 body.touch-ui .mb-btn { width: 44px; height: 44px; font-size: 20px; }
-body.touch-ui #bottom { left: auto; right: 6px; width: auto; align-items: stretch; }
-body.touch-ui #skillbar { display: grid; grid-template-columns: repeat(4, 52px); gap: 5px; padding: 5px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 18px; background: rgba(15, 14, 22, 0.55); box-shadow: none; }
-body.touch-ui .sb-sep { display: none; }
-body.touch-ui .sk-slot { width: 50px; height: 50px; border-radius: 50%; }
+body.touch-ui #bottom { left: 0; right: 0; width: auto; align-items: center; }
+body.touch-ui #skillbar { display: flex; gap: 4px; padding: 5px 7px 6px; margin-bottom: 10px; border: 2px solid; border-color: var(--card-edge); border-radius: 12px; background: linear-gradient(150deg, rgba(10, 15, 24, 0.82), rgba(7, 9, 16, 0.78)); box-shadow: 0 0 0 1px #000, 0 6px 16px rgba(0, 0, 0, 0.55); }
+body.touch-ui .sb-sep { display: block; width: 3px; }
+body.touch-ui .sk-slot { width: var(--sk); height: var(--sk); border-radius: 8px; }
 body.touch-ui .sk-key { display: none; }
+body.touch-ui .sk-cdtext { font-size: 14px; }
 body.touch-ui #xpbar { position: fixed; left: 0; right: 0; bottom: 0; height: 8px; }
 body.touch-ui #xpbar span { display: none; }
-body.touch-ui #castbar { bottom: 30px; }
+body.touch-ui #castbar { bottom: calc(var(--sk) + 36px); }
 body.touch-ui #toasts { top: 104px; width: 70vw; }
 body.touch-ui .win { max-width: 96vw; max-height: 92vh; }
 #rotate-overlay { display: none; }
@@ -617,8 +620,8 @@ body.touch-ui .win { max-width: 96vw; max-height: 92vh; }
 }
 @keyframes ro-turn { 0%, 25% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
 @media (max-height: 420px) and (orientation: landscape) {
-  body.touch-ui #mob-actions { bottom: 138px; }
-  body.touch-ui .mob-btn.attack { width: 68px; height: 68px; }
+  body.touch-ui .mob-btn.attack { width: 62px; height: 62px; }
+  body.touch-ui .mob-btn.interact { width: 42px; height: 42px; }
 }
 body.touch-ui .win, body.touch-ui .win *, body.touch-ui #chat-log, body.touch-ui #tracker { touch-action: pan-y; }
 
@@ -902,3 +905,55 @@ body:has(.lg-screen) #music-btn { display: none !important; }
 .ch-row.ready { border-color: #f6c55e; box-shadow: 0 0 14px rgba(255, 170, 50, 0.22); } .ch-row.done { opacity: 0.55; }
 .ch-main { flex: 1; min-width: 0; }
 @media (max-width: 760px) { .lc-sum { grid-template-columns: 1fr; } .be-grid { grid-template-columns: 1fr; } }
+
+/* ---------- ícones desenhados (icons.js) ---------- */
+.ico { display: inline-flex; width: 1.2em; height: 1.2em; vertical-align: -0.24em; line-height: 0; flex: none; }
+.ic { display: inline-block; width: 1.2em; height: 1.2em; vertical-align: -0.24em; overflow: visible; } /* ícone solto (texto montado em innerHTML) */
+.ico .ic { width: 100%; height: 100%; display: block; vertical-align: baseline; }
+.ico.sm { width: 1em; height: 1em; vertical-align: -0.15em; }
+.ico.gold { color: #ffd475; }
+.ico.badge { color: #ff6b5a; }
+.mb-btn { display: flex; align-items: center; justify-content: center; padding: 0; }
+.mb-btn .ico { width: 22px; height: 22px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6)); }
+.status .ico { width: 18px; height: 18px; }
+.status.good .ico { color: #7fc4f0; } .status.bad .ico { color: #ff8a7a; }
+.slot-empty { display: flex; align-items: center; justify-content: center; opacity: 0.4; }
+.slot-empty .ico { width: 26px; height: 26px; color: #8a7a58; }
+.medal-1 { color: #f5c542; } .medal-2 { color: #cfd6de; } .medal-3 { color: #cd7f32; }
+.rank-pos .ico { width: 20px; height: 20px; }
+.lg-sw { display: inline-block; width: 9px; height: 9px; border: 1px solid #000; vertical-align: -0.05em; }
+.map-legend .ico { color: #bfe3ff; }
+.gb-btn .ico, #guidebar .gb-pin .ico { width: 14px; height: 14px; vertical-align: -2px; }
+#guidebar .gb-pin .ico { width: 20px; height: 20px; color: #ffd475; }
+.mob-btn .ico { width: 56%; height: 56%; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7)); }
+.mob-top .ico { width: 20px; height: 20px; }
+.lg-box .ico { width: 14px; height: 14px; }
+#music-btn .ico { width: 22px; height: 22px; }
+#chat-head button .ico { width: 14px; height: 14px; vertical-align: -2px; }
+.gfx-l .ico { color: #ffd475; margin-left: 5px; }
+.tr-name .ico { color: #ffd475; }
+.npc-opt .ico { color: #ffd475; width: 1.15em; height: 1.15em; }
+.npc-opt.q-done .ico { color: #82e0aa; }
+.ql-obj .ico { color: #ffd475; } .ql-obj.ok .ico { color: #82e0aa; }
+.brasa .ico { width: 26px; height: 26px; }
+.tg-info .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
+.mm-info .ic { width: 12px; height: 12px; vertical-align: -2px; color: #ffd475; }
+.inv-foot .ico, .pf-gold .ic, .mat .ico { color: #f4d03f; }
+.pf-gold .ic { width: 14px; height: 14px; vertical-align: -2px; }
+.enh-arrow .ico, .small .ic { color: #ffd475; }
+.enh-arrow .ico { width: 20px; height: 20px; vertical-align: -4px; }
+.gb-btn .ic { width: 14px; height: 14px; vertical-align: -2px; }
+.keys .ic, .help-cols .ic { width: 1em; height: 1em; color: #ffd475; }
+#music-btn .ic { width: 22px; height: 22px; vertical-align: middle; }
+
+/* telas baixas (celular deitado): diálogos e introdução cabem na tela e rolam se precisar */
+.modal { max-height: 94vh; overflow-y: auto; }
+@media (max-height: 480px) {
+  .modal { padding: 12px 18px; gap: 6px; }
+  .modal.intro .aw { width: min(40vw, 190px); }
+  .modal.intro .intro-sub { font-size: 10px; margin: -2px 0 2px; }
+  .modal .ql-story { max-height: 26vh; font-size: 12.5px; }
+  .modal.intro .intro-tip { font-size: 12px; padding: 5px 8px; }
+  .menu-panel { padding: 16px 20px; gap: 6px; }
+  .menu-panel .logo .aw { width: min(44vw, 220px); }
+}

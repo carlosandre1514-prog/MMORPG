@@ -7,6 +7,7 @@ import { PRESET_ORDER, PRESET_NAMES, gfxState, setGfxPreset } from '../device.js
 import { GAME_VERSION } from '/shared/constants.js';
 import { FIREBASE_CONFIG } from '/shared/firebase.js';
 import { logoMark } from './logo.js';
+import { ico } from './icons.js';
 
 // Ícones próprios (24x24, preenchidos com a cor do texto); o "G" do Google segue as cores oficiais da marca
 const ICONS = {
@@ -77,7 +78,7 @@ export function lgNotice() {
 }
 
 export function lgCheck(label, input) {
-  return h('label', { class: 'lg-check' }, input, h('span', { class: 'lg-box', 'aria-hidden': 'true' }, '✓'), h('span', {}, label));
+  return h('label', { class: 'lg-check' }, input, h('span', { class: 'lg-box', 'aria-hidden': 'true' }, ico('check')), h('span', {}, label));
 }
 
 // Cartão dourado com os quatro cantos e o losango da base

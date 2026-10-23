@@ -17,6 +17,7 @@ import { title } from './three/title.js';
 import { themeMusic } from './music.js';
 import { firebaseAuth, errorText } from './auth.js';
 import { logoMark } from './ui/logo.js';
+import { ico } from './ui/icons.js';
 import { icon, lgField, peekButton, lgTabs, lgSubmit, lgNotice, lgCheck, lgCard, loginStage } from './ui/loginui.js';
 
 setupLandscape();
@@ -216,7 +217,7 @@ function legacyLoginScreen(info = {}) {
   const form = h('form', { novalidate: true, onsubmit: (e) => { e.preventDefault(); go(); } },
     lgField('user', user), lgField('lock', pass, peekButton(pass, pass2)), confirmField, submit.el);
   user.value = store.get('aethra_user');
-  const back = info.fb ? h('button', { class: 'lg-link small', type: 'button', onclick: () => loginScreen(info) }, '← Voltar para o login com e-mail') : null;
+  const back = info.fb ? h('button', { class: 'lg-link small', type: 'button', onclick: () => loginScreen(info) }, ico('back', 'sm'), ' Voltar para o login com e-mail') : null;
   const card = lgCard(canRegister ? tabs.el : h('div', { class: 'lg-legacy-note' }, 'Conta antiga, de antes do login por e-mail'),
     note.el, form, h('p', { class: 'lg-lore' }, LORE), h('div', { class: 'lg-legacy' }, back));
   setMode('login');

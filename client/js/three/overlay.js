@@ -4,6 +4,7 @@ import { MONSTERS } from '/shared/data/monsters.js';
 import { NPCS } from '/shared/data/npcs.js';
 import { ITEMS } from '/shared/data/items.js';
 import { quality } from '../device.js';
+import { drawIcon } from '../ui/icons.js';
 
 export class Overlay {
   constructor(canvas, renderer, game) {
@@ -116,7 +117,7 @@ export class Overlay {
         label(ctx, `${d.name}  Nv ${e.lv}`, x, top - 17, col, (d.boss ? 13 : 11) * k, d.boss);
         if (d.boss) label(ctx, d.title, x, top - 31 * k, '#f5cba7', 10 * k);
       }
-      if (e.f & F.CAST) label(ctx, '⚠', x + 30 * k, top - 17, '#ff5252', 14 * k, true);
+      if (e.f & F.CAST) drawIcon(ctx, 'warn', x + 22 * k, top - 30 * k, 16 * k, '#ff5252');
     } else if (e.k === 'n') {
       const n = NPCS[e.n];
       label(ctx, n.name, x, top - 4, '#f9e79f', 12 * k, true);

@@ -1,6 +1,7 @@
 // Opções > Gráficos: capacidade do aparelho, perfis (Automática … Ultra), ajustes individuais ao vivo,
 // medidor de FPS e teste de desempenho. Os valores moram em device.js; o motor 3D aplica as mudanças na hora.
 import { h } from './dom.js';
+import { ico } from './icons.js';
 import {
   GFX_FIELDS, PRESET_ORDER, PRESET_NAMES, PRESET_DESC, deviceProfile, gfxState, setGfxPreset, setGfxOption, setGfxAdapt, resetGfx,
   needsReload, quality, showFps, setShowFps,
@@ -79,7 +80,7 @@ export function graphicsPanel(ui) {
         ctl.addEventListener('change', () => change(() => setGfxOption(f.key, Number(ctl.value))));
       }
       out.push(h('label', { class: 'gfx-row' + (f.key in g.over ? ' mod' : '') },
-        h('span', { class: 'gfx-l' }, f.label + (f.reload ? ' ↻' : ''), h('small', {}, f.hint)), ctl));
+        h('span', { class: 'gfx-l' }, f.label, f.reload ? ico('loop', 'sm') : null, h('small', {}, f.hint)), ctl));
     }
 
     const adapt = h('input', { type: 'checkbox' });
@@ -122,10 +123,10 @@ export function graphicsPanel(ui) {
     // ---- recarregar
     if (needsReload()) {
       out.push(h('div', { class: 'gfx-reload' },
-        h('div', {}, 'Os itens marcados com ↻ só valem depois de recarregar (você volta à tela de login).'),
+        h('div', {}, 'Os itens marcados com o ícone de recarregar só valem depois de recarregar (você volta à tela de login).'),
         h('button', { class: 'btn small', onclick: () => location.reload() }, 'Recarregar agora')));
     } else {
-      out.push(h('div', { class: 'muted small' }, 'Itens com ↻ pedem recarregar a página para valer.'));
+      out.push(h('div', { class: 'muted small' }, 'Itens com o ícone de recarregar pedem recarregar a página para valer.'));
     }
     return out;
   }

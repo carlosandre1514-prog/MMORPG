@@ -1,0 +1,14 @@
+Música de abertura do jogo
+==========================
+Coloque aqui o arquivo da música tema com um destes nomes: theme.mp3 (preferido), theme.ogg, theme.m4a ou theme.wav.
+Ela toca nas telas de login, personagens e criação (começa no primeiro toque ou tecla do jogador, com entrada suave, em
+repetição) e para ao entrar no jogo. Um botão de som aparece no canto da tela. Sem arquivo, nada muda.
+
+Dica: use uma faixa de 2 a 3 minutos, de preferência com começo e fim que combinem (para a repetição não "pular").
+Licença: guarde aqui também o comprovante do plano/termos usados para gerar a música (por exemplo, a data e o plano do Suno).
+
+Faixa atual: theme.mp3 — "Aethra: A Chama Partida" (instrumental, 3:44), criada no Suno por carlosandre_ad1514 (gerada em 23/10/2026,
+id dc187d19-d773-4b77-be25-76915def4f9f, conforme os metadados do arquivo original). Reencodada em MP3 de 128 kbps, sem a capa embutida e sem
+o silêncio do final, para carregar mais rápido.
+LICENÇA: músicas do Suno só podem ser usadas comercialmente se foram geradas durante uma assinatura paga (Pro/Premier). Guarde o comprovante
+do plano da data da geração e confira os termos do Suno antes de publicar o jogo.

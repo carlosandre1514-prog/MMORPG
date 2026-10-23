@@ -321,7 +321,8 @@ vec4 shade(){
   float n = noi((vUv + vec2(wave * 0.05, 0.0)) * vec2(4.0, 2.0) + vec2(0.0, uTime * 0.4));
   float v = clamp(n * yy * 1.2 + pow(yy, 4.0), 0.0, 1.0);
   v = clamp(pow(v, 2.0) - uDecay, 0.0, 1.0);
-  return vec4(mix(uB, uA, v) * uEmis, v * uLife);
+  float side = pow(abs(dot(vV, vN)), 2.2); // bordas da coluna somem: sem "tubo" visível
+  return vec4(mix(uB, uA, v) * uEmis, v * uLife * side);
 }`,
   // ---- Explosion FX
   explsphere: `
@@ -355,6 +356,16 @@ vec4 shade(){
   float v = n * 1.3 - (1.0 - uLife) * 1.1 - pow(r, 3.0) * 0.9;
   vec3 col = mix(uC, uA, smoothstep(0.2, 0.7, n)) ;
   return vec4(col, clamp(v * 1.6, 0.0, 1.0));
+}`,
+  // névoa baixa em movimento (cena de abertura)
+  mist: `
+uniform vec3 uA; uniform float uLife; uniform float uScale; uniform vec2 uDrift;
+vec4 shade(){
+  vec2 p = vUv * uScale + uDrift * uTime;
+  float n = noi(p) * 0.6 + noi(p * 2.3 + 7.0) * 0.4;
+  float d = length(vUv - 0.5) * 2.0;
+  float a = smoothstep(0.38, 0.82, n) * (1.0 - smoothstep(0.45, 1.0, d)) * uLife;
+  return vec4(uA, a);
 }`,
   // ---- Battle FX: escudo (casca com fresnel e superfície em ruído)
   shell: `
@@ -464,6 +475,7 @@ const SPECS = {
   explsphere: { vert: 'mesh', blend: 'mix', u: { uA: C, uB: C, uEmis: 1.5, uDecay: 0 } },
   explring: { vert: 'mesh', blend: 'add', u: { uA: C, uB: C, uEmis: 1.5, uDecay: 0 } },
   smoke: { vert: 'bill', blend: 'mix', u: { uA: C, uC: C, uLife: 1, uSeed: 0, uRot: 0 } },
+  mist: { vert: 'mesh', blend: 'mix', u: { uA: C, uLife: 1, uScale: 4, uDrift: new THREE.Vector2(0.02, 0.01) } },
   shell: { vert: 'mesh', blend: 'add', u: { uA: C, uB: C, uEmis: 1.4, uDecay: 0 } },
   shield: { vert: 'mesh', blend: 'add', u: { uA: C, uB: C, uC: C, uEmis: 1.3, uDecay: 0 } },
   plus: { vert: 'bill', blend: 'add', u: { uA: C, uB: C, uEmis: 1.4, uLife: 1, uRand: 0, uRot: 0 } },
@@ -504,12 +516,12 @@ function shared(name, make) {
   if (!GEO[name]) { const g = flipV(make()); g.userData.shared = true; GEO[name] = g; }
   return GEO[name];
 }
-const geoQuad = () => shared('quad', () => new THREE.PlaneGeometry(1, 1));
-const geoFlat = () => shared('flat', () => new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2));
-const geoSphere = () => shared('sphere', () => new THREE.SphereGeometry(1, 22, 14));
-const geoColumn = () => shared('column', () => new THREE.CylinderGeometry(1, 1, 1, 28, 1, true).translate(0, 0.5, 0));
+export const geoQuad = () => shared('quad', () => new THREE.PlaneGeometry(1, 1));
+export const geoFlat = () => shared('flat', () => new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2));
+export const geoSphere = () => shared('sphere', () => new THREE.SphereGeometry(1, 22, 14));
+export const geoColumn = () => shared('column', () => new THREE.CylinderGeometry(1, 1, 1, 28, 1, true).translate(0, 0.5, 0));
 // projétil: cabeça redonda em +Z (v = 0) e cauda afilada
-const geoComet = () => {
+export const geoComet = () => {
   if (!GEO.comet) {
     const pts = [];
     const N = 14;
@@ -525,14 +537,14 @@ const geoComet = () => {
   return GEO.comet;
 };
 
-function quadMesh(mat, size, billboard = true) {
+export function quadMesh(mat, size, billboard = true) {
   const m = new THREE.Mesh(billboard ? geoQuad() : geoFlat(), mat);
   m.scale.setScalar(size);
   m.frustumCulled = false;
   m.renderOrder = 30;
   return m;
 }
-function meshOf(geo, mat, order = 30) { const m = new THREE.Mesh(geo, mat); m.frustumCulled = false; m.renderOrder = order; return m; }
+export function meshOf(geo, mat, order = 30) { const m = new THREE.Mesh(geo, mat); m.frustumCulled = false; m.renderOrder = order; return m; }
 const ease = (t) => 1 - (1 - t) * (1 - t);
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 

@@ -15,6 +15,7 @@ arquivo de licença e a informação vem da página do autor (resumo de busca): 
 | Weapons: Sword_Golden, Shield_Celtic_Golden, Dagger_2, Hammer_Small, Hammer_Double, Bow_Golden | Quaternius — "Medieval Weapons Pack" | CC0 (verificado por busca: página do pacote no itch.io) | nada |
 | Weapons: Scimitar e Falchion | Alstra Infinite — "Medieval Swords - PolyPack" | **CC BY 4.0** (verificado por busca) | **crédito ao autor** (README e Ajuda do jogo); não republicar o pacote original |
 | Torres em voxel de Zahrim (8 prédios) | monogon / Max Parata — "Voxel Desert Town" | **CC BY-ND 4.0** (verificado por busca) | **crédito ao autor**; **sem derivações**: o `voxel.glb` é uma versão convertida. Peça autorização por escrito ao autor ou troque os prédios antes de publicar |
+| Música de abertura (`assets/music/theme.mp3`) | Criada no Suno pelo autor do projeto | Termos do Suno | Uso comercial só se a música foi gerada durante um plano pago (Pro/Premier); guardar o comprovante e conferir os termos antes de publicar |
 | Motor 3D Three.js | mrdoob | MIT | manter a licença (client/vendor/three/LICENSE) |
 | Fontes Cinzel e Alegreya Sans | Google Fonts | OFL | — |
 

@@ -13,6 +13,8 @@ import { charSprites } from './charsprites.js';
 import { characters } from './three/characters.js';
 import { medieval } from './three/medieval.js';
 import { setupLandscape } from './orientation.js';
+import { title } from './three/title.js';
+import { menuMusic } from './music.js';
 
 setupLandscape();
 const net = new Net();
@@ -25,6 +27,7 @@ let ui = null, game = null, charList = [], maxChars = 4, account = '';
 function show(el) {
   clear(screens).appendChild(el);
   screens.style.display = 'flex';
+  menuMusic.setMenu(true);
   canvas.style.display = 'none';
   overlayCanvas.style.display = 'none';
   uiRoot.style.display = 'none';
@@ -32,14 +35,23 @@ function show(el) {
 
 function errorBox() { return h('div', { class: 'form-err' }); }
 
-// ------------------------------------------------------------------ fundo animado das telas de menu
+// ------------------------------------------------------------------ fundo animado e música das telas de menu
+// Cena 3D de abertura (client/js/three/title.js); se o navegador não der WebGL, cai no fundo simples em 2D.
+let flat2d = false;
 function startBackdrop() {
+  menuMusic.init();
+  if (flat2d) return; // fundo simples já em andamento (sem WebGL)
+  if (title.start()) return;
+  flat2d = true;
   const cv = document.getElementById('backdrop');
   const ctx = cv.getContext('2d');
   const parts = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), s: Math.random(), v: 0.2 + Math.random() * 0.6 }));
+  const fit = () => { cv.width = window.innerWidth; cv.height = window.innerHeight; };
+  fit();
+  window.addEventListener('resize', fit);
   const loop = (t) => {
-    if (screens.style.display === 'none') { requestAnimationFrame(loop); return; }
-    cv.width = window.innerWidth; cv.height = window.innerHeight;
+    requestAnimationFrame(loop);
+    if (screens.style.display === 'none') return;
     const W = cv.width, H = cv.height;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#0b0f1c'); g.addColorStop(0.6, '#1a1424'); g.addColorStop(1, '#2b1610');
@@ -59,7 +71,6 @@ function startBackdrop() {
       ctx.fillStyle = `rgba(255,${150 + p.s * 90},60,${0.4 + Math.sin(t / 300 + p.s * 20) * 0.3})`;
       ctx.fillRect(p.x * W, p.y * H, 1.5 + p.s * 2, 1.5 + p.s * 2);
     }
-    requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
 }
@@ -114,7 +125,7 @@ function onChars(m) {
   charList = m.list;
   maxChars = m.max;
   account = m.user;
-  if (game) { game.stop(); game = null; }
+  if (game) { game.stop(); game = null; startBackdrop(); } // de volta às telas de menu: a cena de abertura e a música voltam
   selectScreen(m.created);
 }
 
@@ -242,6 +253,8 @@ function createScreen() {
 
 // ------------------------------------------------------------------ jogo
 function enterGame() {
+  title.stop(); // libera a placa de vídeo para o mundo 3D
+  menuMusic.setMenu(false);
   screens.style.display = 'none';
   canvas.style.display = 'block';
   overlayCanvas.style.display = 'block';
@@ -299,6 +312,6 @@ async function boot() {
 }
 
 // acesso para depuração pelo console do navegador
-window.aethra = { get game() { return game; }, get ui() { return ui; }, net };
+window.aethra = { get game() { return game; }, get ui() { return ui; }, net, music: menuMusic };
 
 boot();

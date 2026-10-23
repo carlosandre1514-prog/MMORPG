@@ -1,0 +1,55 @@
+// Telas iniciais: cena de abertura 3D, música de abertura e arquivos servidos pelo servidor.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { bootServer } from './helpers.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+
+test('a música de abertura é um MP3 de tamanho razoável e o servidor a entrega (e responde 404 para o que não existe)', async () => {
+  const f = path.join(ROOT, 'assets/music/theme.mp3');
+  const b = fs.readFileSync(f);
+  assert.ok(b.length > 200_000 && b.length < 8_000_000, `tamanho ${b.length}`);
+  assert.ok(b.toString('latin1', 0, 3) === 'ID3' || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0), 'cabeçalho de MP3');
+  const srv = await bootServer();
+  try {
+    const base = `http://127.0.0.1:${srv.port}`;
+    const ok = await fetch(`${base}/music/theme.mp3`);
+    assert.equal(ok.status, 200);
+    assert.match(ok.headers.get('content-type') || '', /audio|mpeg|octet/);
+    assert.equal(Buffer.from(await ok.arrayBuffer()).length, b.length);
+    assert.equal((await fetch(`${base}/music/nao-existe.mp3`)).status, 404);
+    assert.equal((await fetch(`${base}/music/../server/main.js`)).status, 404);
+  } finally { await srv.close(); }
+});
+
+test('main.js liga a cena de abertura e a música: começam nas telas de menu e param ao entrar no jogo', () => {
+  const main = read('client/js/main.js');
+  assert.match(main, /import \{ title \} from '\.\/three\/title\.js'/);
+  assert.match(main, /import \{ menuMusic \} from '\.\/music\.js'/);
+  // enterGame desmonta a cena e para a música; voltar ao menu (lista de personagens) liga de novo
+  const enter = main.slice(main.indexOf('function enterGame()'));
+  assert.ok(enter.indexOf('title.stop()') > 0 && enter.indexOf('title.stop()') < 200);
+  assert.ok(enter.slice(0, 300).includes('menuMusic.setMenu(false)'));
+  assert.match(main, /game\.stop\(\); game = null; startBackdrop\(\)/);
+  assert.match(read('client/index.html'), /<canvas id="backdrop">/);
+});
+
+test('a cena de abertura só usa modelos que existem nos packs do KayKit', () => {
+  const src = read('client/js/three/title.js');
+  const names = new Set([...src.matchAll(/(?:place|medieval\.has)\('([a-zA-Z_]+)'/g)].map((m) => m[1]));
+  const list = [...src.matchAll(/\['([a-zA-Z_]+)', [0-9.]+\]/g)].map((m) => m[1]); // colunas do altar: [nome, altura]
+  const trees = [...src.matchAll(/'((?:trees?|rock|mountain|building)_[a-zA-Z_]+)'/g)].map((m) => m[1]);
+  const all = new Set([...names, ...list, ...trees]);
+  assert.ok(all.size >= 12, `só ${all.size} modelos achados`);
+  const packs = ['medieval', 'dungeon'].flatMap((p) => fs.readdirSync(path.join(ROOT, 'assets/kaykit', p)).filter((x) => x.endsWith('.glb')).map((x) => path.join(ROOT, 'assets/kaykit', p, x)));
+  const have = new Set();
+  for (const f of packs) {
+    const b = fs.readFileSync(f), len = b.readUInt32LE(12);
+    for (const n of JSON.parse(b.toString('utf8', 20, 20 + len)).nodes) have.add(n.name);
+  }
+  for (const n of all) assert.ok(have.has(n), `modelo ${n} não existe nos packs`);
+});

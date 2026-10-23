@@ -78,6 +78,7 @@ test('cada perfil traz valores coerentes e mais pesados a cada degrau', async ()
   assert.deepEqual(key('shadows'), [false, false, true, true, true]);
   assert.deepEqual(key('pbr'), [false, false, false, true, true]);
   assert.deepEqual(key('fuse'), [true, true, false, false, false]);
+  assert.deepEqual(key('water'), [0, 0, 1, 2, 2]); // água: simples nos fracos, com reflexo do cenário nos fortes
   assert.deepEqual(key('vfx'), [0, 0, 1, 2, 2]); // efeitos de habilidades em shader: simples nos fracos, completos nos fortes
   assert.equal(seen[4].pixels, Infinity);
   assert.ok(seen[0].pixels < seen[2].pixels);

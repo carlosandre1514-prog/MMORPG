@@ -74,6 +74,7 @@ export class Renderer3D {
     this.camera.near = this.camMode === 'first' ? 0.08 : 0.3;
     this.camera.updateProjectionMatrix();
     this.camTarget = new THREE.Vector3();
+    this._sunDir = new THREE.Vector3(); // direção do sol (para a água)
     this.hemi = new THREE.HemisphereLight(0xfff4e0, 0x4a5a3a, 1.6);
     this.sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
     this.sun.castShadow = true;
@@ -488,7 +489,7 @@ export class Renderer3D {
       const flick = L.dd >= 0 && !L.lava ? 0.9 + Math.sin(t * 11 + L.x) * 0.06 + Math.sin(t * 7 + L.z) * 0.05 : 1;
       l.intensity = L.i * flick;
     });
-    this.zoneScene.update(t, dark);
+    this.zoneScene.update(t, dark, sky, this._sunDir.set(-14, 26, 10));
   }
 
   updateRings(t) {
@@ -528,6 +529,7 @@ export class Renderer3D {
     this.updateRoom(dt, now);
     this.guideFx.update(g.guide, g.me, t, g.zone.id);
     updateSeeThrough(this.camera, g.me.x, g.me.y, this.W, this.H, this.dpr, this.dist, this.camMode === 'first', this.room);
+    this.zoneScene.prepareWater(this.renderer, this.scene, this.camera);
     this.renderer.render(this.scene, this.camera);
     this.overlay.draw(t);
   }

@@ -12,6 +12,7 @@ import { voxel } from './voxel.js';
 import { quality, bootQuality } from '../device.js';
 import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
+import { OceanWater } from './ocean.js';
 
 const CHUNK = 16;
 const GROUND_RES = bootQuality().groundRes; // pixels de textura por pixel de mundo 2D (32 px por tile)
@@ -390,13 +391,57 @@ export class ZoneScene {
     return g;
   }
 
+  // Geometria da água em pedaços de 16 × 16 tiles. Cada vértice leva a profundidade (0 raso … 1 fundo) e a "margem" (fração dos
+  // tiles em volta que são terra), os dois suavizados entre vizinhos, para a água ir escurecendo e sumindo devagar nas bordas.
+  waterChunks(y) {
+    const m = this.zone.map, CH = 16;
+    const isW = (x, z) => x >= 0 && z >= 0 && x < m.w && z < m.h && (m.tiles[z * m.w + x] === T.WATER || m.tiles[z * m.w + x] === T.DEEP);
+    const deepAt = (x, z) => (isW(x, z) && m.tiles[z * m.w + x] === T.DEEP ? 1 : 0);
+    const vert = (vx, vz) => {
+      let wet = 0, deep = 0, n = 0;
+      for (const [dx, dz] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) {
+        const x = vx + dx, z = vz + dz;
+        if (x < 0 || z < 0 || x >= m.w || z >= m.h) continue; // fora do mapa não conta como terra
+        n++;
+        if (isW(x, z)) { wet++; deep += deepAt(x, z); }
+      }
+      return [wet ? deep / wet : 0, n ? 1 - wet / n : 0];
+    };
+    const out = [];
+    for (let cz = 0; cz < Math.ceil(m.h / CH); cz++) {
+      for (let cx = 0; cx < Math.ceil(m.w / CH); cx++) {
+        const pos = [], dp = [], sh = [];
+        let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+        for (let tz = cz * CH; tz < Math.min(m.h, (cz + 1) * CH); tz++) {
+          for (let tx = cx * CH; tx < Math.min(m.w, (cx + 1) * CH); tx++) {
+            if (!isW(tx, tz)) continue;
+            for (const [a, b] of [[0, 0], [0, 1], [1, 1], [0, 0], [1, 1], [1, 0]]) {
+              const [d, s] = vert(tx + a, tz + b);
+              pos.push(tx + a, 0, tz + b); dp.push(d); sh.push(s);
+            }
+            x0 = Math.min(x0, tx); x1 = Math.max(x1, tx + 1); z0 = Math.min(z0, tz); z1 = Math.max(z1, tz + 1);
+          }
+        }
+        if (!pos.length) continue;
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        g.setAttribute('aDeep', new THREE.Float32BufferAttribute(dp, 1));
+        g.setAttribute('aShore', new THREE.Float32BufferAttribute(sh, 1));
+        g.computeBoundingSphere();
+        out.push({ geometry: g, box: new THREE.Box3(new THREE.Vector3(x0, y - 0.2, z0), new THREE.Vector3(x1, y + 0.2, z1)) });
+      }
+    }
+    return out;
+  }
+
   buildLiquids() {
-    const wg = this.quadsFor((t) => t === T.WATER || t === T.DEEP, 0.05);
-    if (wg) {
-      this.waterMat = new THREE.MeshStandardMaterial({ color: 0x4a9be0, transparent: true, opacity: 0.45, roughness: 0.08, metalness: 0.3 });
-      const w = new THREE.Mesh(wg, this.waterMat);
-      w.receiveShadow = true;
-      this.group.add(w);
+    const chunks = this.waterChunks(0.05);
+    if (chunks.length) {
+      // água em Opções > Gráficos: 2 = reflexo de verdade (a cena é desenhada de novo, de cabeça para baixo); 1 e 0 refletem só o céu
+      const q = quality();
+      this.water = new OceanWater({ chunks, y: 0.05, mirror: q.water >= 2, taps4: q.water >= 1, mirrorWanted: () => q.water >= 2 });
+      this.waterMat = this.water.material;
+      this.group.add(this.water.group);
     }
     const lg = this.quadsFor((t) => t === T.LAVA, 0.04);
     if (lg) {
@@ -913,7 +958,7 @@ export class ZoneScene {
     }
   }
 
-  update(t, darkness) {
+  update(t, darkness, sky, sunDir) {
     for (const f of this.flames) {
       const u = f.userData;
       const k = u.flicker ? 1 + Math.sin(t * 12 + u.ph) * 0.12 + Math.sin(t * 7.3 + u.ph) * 0.08 : 1;
@@ -926,11 +971,17 @@ export class ZoneScene {
     }
     this.windowMat.emissiveIntensity = darkness * 1.6;
     if (village.mats.WindowGlass) village.mats.WindowGlass.emissiveIntensity = darkness * 1.5;
-    if (this.waterMat) this.waterMat.opacity = 0.42 + Math.sin(t * 1.3) * 0.05;
+    if (this.water) this.water.update(t, { dark: darkness, sky, sunDir });
     if (this.lavaMat) this.lavaMat.emissiveIntensity = 1.1 + Math.sin(t * 2) * 0.3;
   }
 
+  // antes de desenhar o quadro: refaz o reflexo da água, se houver água na tela
+  prepareWater(renderer, scene, camera) {
+    if (this.water) this.water.prepare(renderer, scene, camera);
+  }
+
   dispose() {
+    if (this.water) this.water.dispose();
     this.group.traverse((o) => {
       // materiais e geometrias dos packs são compartilhados entre zonas: só os prédios unidos são descartados
       if (o.material?.userData?.shared) {

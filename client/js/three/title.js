@@ -10,6 +10,7 @@ import { characters } from './characters.js';
 import { lite } from './lite.js';
 import { fxMaterial, vfxTime, palette, quadMesh, meshOf, geoFlat } from './vfx.js';
 import { glowTexture } from './world3d.js';
+import { OceanWater, planeChunk } from './ocean.js';
 import { fbm, mulberry32 } from '/shared/rng.js';
 
 const Q = quality();
@@ -55,26 +56,6 @@ void main(){
   #include <colorspace_fragment>
 }`;
 
-const WATER_VS = `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
-const WATER_FS = `
-uniform float uTime; uniform vec3 uSun; uniform vec3 uFog; varying vec3 vW;
-${NOISE}
-void main(){
-  vec3 V = normalize(cameraPosition - vW);
-  vec2 p = vW.xz * 0.3;
-  float a = vn(p * 3.0 + vec2(uTime * 0.05, uTime * 0.03)), b = vn(p * 7.0 - vec2(uTime * 0.08, 0.0)), d = vn(p * 5.0 + 7.0 + uTime * 0.04);
-  vec3 N = normalize(vec3((a + b * 0.5 - 0.75) * 0.5, 1.0, (d - 0.5) * 0.5));
-  vec3 R = reflect(-V, N);
-  float fr = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-  float sd = max(dot(R, uSun), 0.0);
-  vec3 sky = mix(vec3(0.04, 0.09, 0.28), vec3(0.95, 0.45, 0.16), pow(sd, 5.0) * 0.8);
-  vec3 col = mix(vec3(0.008, 0.04, 0.1), sky, 0.2 + fr * 0.6);
-  col += vec3(1.0, 0.6, 0.28) * pow(sd, 40.0) * 0.55;
-  col = mix(col, uFog, 1.0 - exp(-length(cameraPosition - vW) * 0.011));
-  gl_FragColor = vec4(col, 1.0);
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
-}`;
 const FALL_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const FALL_FS = `
 uniform float uTime; varying vec2 vUv;
@@ -253,12 +234,15 @@ function build(level, scene, camera) {
 
   // terreno, rio e montanhas
   scene.add(groundMesh(level));
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(420, 260).rotateX(-Math.PI / 2).translate(20, 0, -70),
-    level >= 1
-      ? new THREE.ShaderMaterial({ uniforms: { uTime: vfxTime, uSun: { value: SUN }, uFog: { value: fogColor } }, vertexShader: WATER_VS, fragmentShader: WATER_FS })
-      : new THREE.MeshBasicMaterial({ color: 0x1b3a5c, fog: true }));
-  water.renderOrder = -1;
-  scene.add(water);
+  // água: o shader "ocean" (ocean.js); com a água em "Com reflexo" a cena é desenhada de novo, de cabeça para baixo
+  {
+    const ocean = new OceanWater({ chunks: [planeChunk(420, 260, 20, -70, 0, 0.75, 0)], y: 0, mirror: Q.water >= 2, taps4: Q.water >= 1, mirrorWanted: () => Q.water >= 2, alpha: [1, 1], wave: 0.7, noiseScale: 0.07, distortion: 4,
+      reflect: 0.62, rf0: 0.08, tint: 0x5f9bff, waterColor: 0x1f84b4, deepColor: 0x0a3f78, sunDir: SUN });
+    ocean.group.renderOrder = -1;
+    scene.add(ocean.group);
+    const env = { sky: new THREE.Color(0.3, 0.33, 0.55), sunColor: new THREE.Color(1.0, 0.62, 0.3), sunDir: SUN };
+    parts.push({ update: (t) => ocean.update(t, env), prepare: (renderer, sc, cam) => ocean.prepare(renderer, sc, cam), dispose: () => ocean.dispose() });
+  }
   const ridges = [[-82, 20, 8, 0x3b4a82, 3, -20], [-118, 34, 14, 0x303c72, 7, 20], [-165, 50, 22, 0x27315f, 13, 0]];
   for (const [z, amp, base, color, seed, x0] of ridges.slice(0, level >= 1 ? 3 : 2)) scene.add(ridge(z, amp, base, color, seed, x0));
 
@@ -375,7 +359,7 @@ function build(level, scene, camera) {
   // tufos de grama espalhados pela campina (só nos perfis melhores)
   if (level >= 1) {
     const n = level >= 2 ? 900 : 450;
-    const blade = new THREE.ConeGeometry(0.028, 0.2, 3).translate(0, 0.1, 0);
+    const blade = new THREE.ConeGeometry(0.022, 0.15, 3).translate(0, 0.075, 0);
     const grass = new THREE.InstancedMesh(blade, lite(new THREE.MeshStandardMaterial({ roughness: 1 })), n);
     const m4 = new THREE.Matrix4(), col = new THREE.Color();
     let k = 0;
@@ -384,7 +368,7 @@ function build(level, scene, camera) {
       if (Math.hypot(x - FIRE.x, z - FIRE.z) < 1.1 || riverDist(x, z) < 4 || groundY(x, z) < 0.2) continue;
       m4.compose(new THREE.Vector3(x, groundY(x, z) - 0.02, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(R(-0.2, 0.2), R(0, 6.28), R(-0.2, 0.2))), new THREE.Vector3(1, R(0.6, 1.5), 1));
       grass.setMatrixAt(k, m4);
-      grass.setColorAt(k, col.setRGB(0.08 + R(0, 0.1), 0.22 + R(0, 0.2), 0.06 + R(0, 0.06)));
+      grass.setColorAt(k, col.setRGB(0.05 + R(0, 0.07), 0.15 + R(0, 0.14), 0.04 + R(0, 0.04)));
       k++;
     }
     grass.count = k;
@@ -543,6 +527,7 @@ export const title = {
       camera.position.set(Math.sin(t * 0.05) * 0.3 + state.x * 0.28, 2.35 + Math.sin(t * 0.037) * 0.07 - state.y * 0.12, 5.2 + Math.sin(t * 0.03) * 0.15);
       camera.lookAt(0.35 + state.x * 0.35, 2.15 - state.y * 0.2, -6);
       for (const p of parts) p.update(t, dt);
+      for (const p of parts) if (p.prepare) p.prepare(renderer, scene, camera);
       renderer.render(scene, camera);
     };
     resize();

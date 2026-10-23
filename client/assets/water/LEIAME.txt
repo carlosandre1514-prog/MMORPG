@@ -1,0 +1,8 @@
+Água do jogo (client/js/three/ocean.js).
+
+O shader é um porte do projeto "ocean" de Jérémy Bouny (https://github.com/jbouny/ocean), licença MIT: o texto está em
+LICENSE.txt (com o aviso de direitos autorais, que precisa acompanhar o código). O projeto original se baseia no espelho plano
+de Slayvin, na água de Stemkoski e nos slides de Jonas Wagner (http://29a.ch/slides/2012/webglwater).
+
+waternormals.jpg: mapa de normais que vem no pacote do "ocean" (mesma licença MIT do repositório; o mesmo arquivo existe nos
+exemplos do three.js, também MIT).

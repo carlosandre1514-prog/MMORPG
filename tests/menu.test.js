@@ -77,9 +77,30 @@ test('a tela de login: peças visuais, engrenagem, versão igual ao package.json
   // a cena de abertura é o acampamento: cavaleiro, fogueira, castelo, rio e cachoeiras
   const title = read('client/js/three/title.js'), chars = read('client/js/three/characters.js');
   assert.match(chars, /hero_camp: \{ model: 'Knight'/);
-  for (const k of ['FLAME_FS', 'WATER_FS', 'FALL_FS', 'bannerTexture', "'hero_camp'", 'building_castle_blue']) assert.ok(title.includes(k), k);
+  for (const k of ['FLAME_FS', 'OceanWater', 'FALL_FS', 'bannerTexture', "'hero_camp'", 'building_castle_blue']) assert.ok(title.includes(k), k);
   // o SDK do Firebase exporta o que o "Lembrar de mim" usa
   assert.match(read('tools/firebase/entry.js'), /browserSessionPersistence/);
+});
+
+test('a água usa o shader ocean (MIT): arquivos, licença, mundo, cena de abertura e opção de gráficos', () => {
+  const ocean = read('client/js/three/ocean.js');
+  assert.match(ocean, /Jérémy Bouny/);
+  assert.match(ocean, /export class OceanWater/);
+  for (const k of ['getNoise', 'reflectance', 'MIRROR', 'NOISE4', 'textureMatrix']) assert.ok(ocean.includes(k), k);
+  // o pacote original é MIT: o texto e o aviso de direitos autorais acompanham o código
+  const lic = read('client/assets/water/LICENSE.txt');
+  assert.match(lic, /MIT License/);
+  assert.match(lic, /Copyright \(c\) 2013 Jérémy Bouny/);
+  assert.ok(fs.statSync(path.join(ROOT, 'client/assets/water/waternormals.jpg')).size > 100 * 1024);
+  assert.match(read('docs/LICENCAS.md'), /ocean.*Bouny|Bouny.*ocean/i);
+  // o mundo cria a água a partir dos tiles e o motor refaz o reflexo antes de desenhar cada quadro
+  const world = read('client/js/three/world3d.js'), engine = read('client/js/three/engine.js');
+  assert.match(world, /new OceanWater\(/);
+  assert.match(world, /waterChunks\(/);
+  assert.match(engine, /zoneScene\.prepareWater\(this\.renderer, this\.scene, this\.camera\)/);
+  assert.match(read('client/js/three/title.js'), /new OceanWater\(/);
+  // a opção Água existe nos gráficos e o reflexo do cenário só vem ligado nos perfis fortes
+  assert.match(read('client/js/device.js'), /key: 'water', label: 'Água'/);
 });
 
 test('a música tema toca em repetição contínua, dentro do jogo, e some em combate', () => {

@@ -2,10 +2,10 @@
 // cliente: quem protege as contas são as regras do Firebase e a conferência do token que o servidor faz (server/firebase.js).
 // Para usar outro projeto: troque aqui, ou defina FIREBASE_PROJECT_ID no servidor e mude o objeto abaixo.
 export const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyAnJd0If2vTOGuviJVrYK4hkcHQtp3ick4',
-  authDomain: 'mmorpg-aethra.firebaseapp.com',
-  projectId: 'mmorpg-aethra',
-  storageBucket: 'mmorpg-aethra.firebasestorage.app',
-  messagingSenderId: '968836736176',
-  appId: '1:968836736176:web:8013e2f6c261feb025c775',
+  apiKey: 'AIzaSyCYTQm4qkJx-BX_hf-8fVfRK4ZpMKIZoR0',
+  authDomain: 'gen-lang-client-0119623458.firebaseapp.com',
+  projectId: 'gen-lang-client-0119623458',
+  storageBucket: 'gen-lang-client-0119623458.firebasestorage.app',
+  messagingSenderId: '1017499055535',
+  appId: '1:1017499055535:web:89f563e16fdf73cbe1eb5a',
 };

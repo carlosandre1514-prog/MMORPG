@@ -85,7 +85,7 @@ Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa
 
 ## Login com Firebase
 
-O jogador cria a conta e entra pelo Firebase Authentication (projeto `mmorpg-aethra`, configuração pública em `shared/firebase.js`). Fluxo: o navegador entra no Firebase, recebe um token assinado (JWT) e manda ao servidor na mensagem `fblogin`; o servidor confere a assinatura e o projeto com os certificados públicos do Google (`server/firebase.js`, só com `crypto`, sem Admin SDK nem chave secreta) e abre a conta do jogo ligada ao `uid`. O SDK do Firebase vem empacotado no repositório (`client/vendor/firebase/`, Apache-2.0; gerado por `tools/firebase/build.mjs`).
+O jogador cria a conta e entra pelo Firebase Authentication (projeto `gen-lang-client-0119623458`, configuração pública em `shared/firebase.js`). Fluxo: o navegador entra no Firebase, recebe um token assinado (JWT) e manda ao servidor na mensagem `fblogin`; o servidor confere a assinatura e o projeto com os certificados públicos do Google (`server/firebase.js`, só com `crypto`, sem Admin SDK nem chave secreta) e abre a conta do jogo ligada ao `uid`. O SDK do Firebase vem empacotado no repositório (`client/vendor/firebase/`, Apache-2.0; gerado por `tools/firebase/build.mjs`).
 
 Para funcionar, no console do Firebase (https://console.firebase.google.com, projeto do jogo):
 1. **Build → Authentication → Começar → Método de login**: ative **E-mail/senha** e, se quiser o botão do Google, **Google** (escolha um e-mail de suporte).

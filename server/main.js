@@ -34,6 +34,7 @@ export async function startServer(opts = {}) {
     { prefix: '/voxel/', dir: path.join(ROOT, 'assets', 'voxel') },
     { prefix: '/brackeys/', dir: path.join(ROOT, 'assets', 'brackeys') },
     { prefix: '/weapons/', dir: path.join(ROOT, 'assets', 'weapons') },
+    { prefix: '/farm/', dir: path.join(ROOT, 'assets', 'farm') },
     { prefix: '/music/', dir: path.join(ROOT, 'assets', 'music') },
     { prefix: '/', dir: path.join(ROOT, 'client') },
   ]);

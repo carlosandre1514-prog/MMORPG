@@ -4,6 +4,7 @@ import { mulberry32, fbm, hash2 } from './rng.js';
 import { NPCS } from './data/npcs.js';
 import { buildCapital } from './citygen.js';
 import { buildDesertCity } from './desertgen.js';
+import { farmLayout } from './farm.js';
 
 class Grid {
   constructor(w, h, base) {
@@ -338,6 +339,33 @@ function applyFeatures(grid, zone, rng) {
         placeForce(f.x - 1, f.y + 3, O.HAY);
         placeForce(f.x + f.w, f.y + 2, O.CART);
         placeForce(f.x + f.w, f.y + 5, O.TOOLS);
+        break;
+      }
+      case 'farmstead': { // a fazenda: construções, currais com cerca e portão, lagoa das aves e terra batida em volta (shared/farm.js)
+        const L = farmLayout();
+        const lock = (x, y) => { if (grid.in(x, y)) grid.lockMask[grid.i(x, y)] = 1; };
+        const clear = (x, y) => { if (grid.in(x, y)) { grid.setO(x, y, 0); lock(x, y); } };
+        grid.rect(L.yard.x, L.yard.y, L.yard.w, L.yard.h, (x, y) => { if (TILE_INFO[grid.t(x, y)].walk && !grid.pathMask[grid.i(x, y)]) { grid.setT(x, y, T.DIRT); clear(x, y); } });
+        for (const b of L.buildings) {
+          grid.rect(b.x, b.y, b.w, b.h, (x, y) => { grid.setT(x, y, T.DIRT); grid.setO(x, y, O.BUILDING); lock(x, y); });
+          grid.structures.push({ kind: 'farm', model: b.model, x: b.x, y: b.y, w: b.w, h: b.h, face: b.face });
+        }
+        for (const p of L.pens) {
+          grid.rect(p.x, p.y, p.w, p.h, (x, y) => {
+            const edge = x === p.x || y === p.y || x === p.x + p.w - 1 || y === p.y + p.h - 1;
+            const gate = p.gate.side === 'n' || p.gate.side === 's'
+              ? y === (p.gate.side === 'n' ? p.y : p.y + p.h - 1) && x >= p.gate.at && x < p.gate.at + p.gate.n
+              : x === (p.gate.side === 'w' ? p.x : p.x + p.w - 1) && y >= p.gate.at && y < p.gate.at + p.gate.n;
+            lock(x, y);
+            if (grid.o(x, y) === O.BUILDING) return;
+            grid.setO(x, y, edge && !gate ? O.FENCE : 0);
+            if (!edge) grid.setT(x, y, (x + y) % 5 === 0 ? T.DARKGRASS : T.GRASS);
+            else if (gate) grid.setT(x, y, T.DIRT);
+          });
+          if (p.pond) grid.rect(p.pond.x, p.pond.y, p.pond.w, p.pond.h, (x, y) => { grid.setT(x, y, T.WATER); grid.setO(x, y, 0); });
+          grid.structures.push({ kind: 'pen', x: p.x, y: p.y, w: p.w, h: p.h, animals: p.animals, pond: p.pond || null });
+        }
+        for (const p of L.props) grid.structures.push({ kind: 'farmprop', m: p.m, x: p.x, y: p.y, rot: p.rot });
         break;
       }
       case 'shrine': {

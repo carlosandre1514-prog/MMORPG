@@ -1,0 +1,16 @@
+Fazenda: construções, adereços, plantas e itens mágicos (GLBs gerados por tools/farm/convert.mjs a partir dos pacotes originais)
+
+farm.glb   — "LowPoly Farm Buildings" de Quaternius (https://quaternius.com, https://quaternius.itch.io/lowpoly-farm-buildings)
+             Licença: CC0 1.0 (domínio público; página do pacote no itch.io). Uso comercial e modificação livres, crédito opcional.
+props.glb  — "Small Props Pack" (Medieval Props - Small Pack Low Poly) de RG Poly (https://rg-poly.itch.io/medieval-props-small-pack-low-poly)
+             Pacote gratuito (pague o quanto quiser). O pacote não trouxe arquivo de licença e a página não pôde ser lida durante a
+             integração: CONFIRME os termos de uso comercial e de redistribuição na página do autor antes de publicar o jogo.
+flora.glb  — "HandPainted Plant Pack A" de WizP (https://wizp.itch.io/handpainted-fantasyplants-pack)
+             Termos do autor (resumo da página): gratuito para qualquer uso, pessoal ou comercial, sem revender o pacote.
+             Não é uma licença padrão como CC0: guarde uma cópia da página.
+magic.glb  — "HandPainted Magic Pack" (Magic1) de WizP (https://wizp.itch.io/handpainted-magic-pack)
+             Pacote gratuito (pague o quanto quiser); os termos de uso não puderam ser lidos durante a integração. É do mesmo autor do
+             pacote de plantas, mas CONFIRME na página antes de publicar.
+
+Os modelos foram convertidos (cores por vértice ou texturas reduzidas, base no chão, centralizados) e não são revendidos como pacote.
+Para trocar ou remover algum, é só apagar o arquivo (o jogo ignora o que não carregar) e rodar tools/farm/convert.mjs de novo.

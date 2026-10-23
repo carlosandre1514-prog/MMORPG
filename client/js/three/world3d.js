@@ -13,8 +13,14 @@ import { quality, bootQuality } from '../device.js';
 import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 import { OceanWater } from './ocean.js';
+import { Farm } from './animals.js';
 
 const CHUNK = 16;
+// plantas pintadas à mão por zona: p = chance por tile de grama, h = altura em tiles
+const FLORA = {
+  forest: { p: 0.08, h: 0.7, kinds: ['flora_Mushroom1', 'flora_Mushroom2', 'flora_Mushroom3', 'flora_Bell1', 'flora_Bell2', 'flora_Bell3'] },
+  fields: { p: 0.035, h: 0.55, kinds: ['flora_Flower1', 'flora_Flower2', 'flora_Flower3', 'flora_Bell2'] },
+};
 const GROUND_RES = bootQuality().groundRes; // pixels de textura por pixel de mundo 2D (32 px por tile)
 
 // ------------------------------------------------------------------ geometrias com cor por vértice
@@ -265,7 +271,7 @@ export class ZoneScene {
     this.buildObjects();
     this.buildStructures();
     this.buildPortals();
-    if (medieval.ready) { this.buildScenery(); this.buildWaterPlants(); }
+    if (medieval.ready) { this.buildScenery(); this.buildWaterPlants(); this.buildFarm(); this.buildFlora(); }
     // tudo que é sólido e alto pode ficar transparente perto do jogador
     this.group.traverse((o) => {
       if (!o.isMesh || !o.material) return;
@@ -309,6 +315,7 @@ export class ZoneScene {
 
   // interiores só por perto do jogador (no máximo a cada 200 ms e quando ele se mexeu)
   cull(px, pz, force = false) {
+    this.px = px; this.pz = pz;
     if (this.voxels) this.voxels.update(px, pz, force);
     if (!this.propGroup) return;
     if (this.hearthFlames) {
@@ -664,6 +671,69 @@ export class ZoneScene {
     }
   }
 
+  // Fazenda: construções, adereços e currais com animais (estruturas 'farm', 'farmprop' e 'pen' do mapa; layout em shared/farm.js)
+  buildFarm() {
+    const sts = this.zone.structures.filter((st) => st.kind === 'farm' || st.kind === 'farmprop' || st.kind === 'pen');
+    if (!sts.length) return;
+    for (const st of sts) {
+      if (st.kind !== 'farm' || !medieval.has('farm_' + st.model)) continue;
+      const name = 'farm_' + st.model;
+      this.group.add(this.facing(st, (W, D) => {
+        const k = medieval.fit(name, W * 0.98, D * 0.98);
+        const m = medieval.mesh(name, k);
+        const g = new THREE.Group();
+        g.add(m); // o modelo já vem centrado em x e z e com a base em y = 0
+        return g;
+      }));
+    }
+    // adereços (cada modelo é uma InstancedMesh): 0,8 tile por metro, como as construções
+    const byName = new Map();
+    for (const st of sts) if (st.kind === 'farmprop' && medieval.has('prop_' + st.m)) { const n = 'prop_' + st.m; (byName.get(n) || byName.set(n, []).get(n)).push(st); }
+    for (const [name, list] of byName) {
+      const k = 0.8, inst = new THREE.InstancedMesh(medieval.geo(name), medieval.mat(name), list.length);
+      list.forEach((p, i) => inst.setMatrixAt(i, medieval.placed(name, k, p.x, 0, p.y, p.rot || 0)));
+      inst.castShadow = true;
+      inst.receiveShadow = true;
+      this.addInst(inst);
+    }
+    if (sts.some((st) => st.kind === 'pen')) { this.farm = new Farm(this.zone); this.group.add(this.farm.group); }
+  }
+
+  // Flores, sinos e cogumelos que brilham, espalhados pela grama (plantas pintadas à mão do pacote da WizP)
+  buildFlora() {
+    const cfg = FLORA[this.zone.id];
+    if (!cfg) return;
+    const names = cfg.kinds.filter((n) => medieval.has(n));
+    if (!names.length) return;
+    const m = this.zone.map;
+    const used = new Uint8Array(m.w * m.h); // currais e construções ficam sem plantas
+    for (const st of this.zone.structures) if (st.kind === 'pen' || st.kind === 'farm') for (let y = st.y - 1; y <= st.y + st.h; y++) for (let x = st.x - 1; x <= st.x + st.w; x++) if (x >= 0 && y >= 0 && x < m.w && y < m.h) used[y * m.w + x] = 1;
+    const per = new Map(names.map((n) => [n, []]));
+    for (let y = 2; y < m.h - 2; y++) {
+      for (let x = 2; x < m.w - 2; x++) {
+        const i = y * m.w + x, t = m.tiles[i];
+        if ((t !== T.GRASS && t !== T.DARKGRASS) || m.objs[i] || used[i] || hash2(x, y, 311) >= cfg.p) continue;
+        per.get(names[Math.floor(hash2(x, y, 312) * names.length)]).push([x + 0.15 + hash2(x, y, 313) * 0.7, y + 0.15 + hash2(x, y, 314) * 0.7, hash2(x, y, 315)]);
+      }
+    }
+    const up = new THREE.Vector3(0, 1, 0);
+    for (const [name, list] of per) {
+      if (!list.length) continue;
+      const k = medieval.fit(name, 0, 0, cfg.h);
+      for (const part of [name, name + '_glow']) {
+        if (!medieval.has(part)) continue;
+        const inst = new THREE.InstancedMesh(medieval.geo(part), medieval.mat(part), list.length);
+        list.forEach(([x, z, r], j) => {
+          const s = k * (0.75 + r * 0.6);
+          inst.setMatrixAt(j, new THREE.Matrix4().compose(_v.set(x, 0, z), _q.setFromAxisAngle(up, r * 40), _s.set(s, s, s)));
+        });
+        inst.castShadow = false;
+        inst.receiveShadow = false;
+        this.addInst(inst);
+      }
+    }
+  }
+
   // Vitórias-régias e juncos na água rasa
   buildWaterPlants() {
     const m = this.zone.map;
@@ -713,6 +783,7 @@ export class ZoneScene {
   buildStructures() {
     const forts = [], houses = [], voxels = [];
     for (const st of this.zone.structures) {
+      if (st.kind === 'farm' || st.kind === 'farmprop' || st.kind === 'pen') continue; // a fazenda tem a própria função (buildFarm)
       if (st.kind === 'wall' || st.kind === 'tower' || st.kind === 'gate') forts.push(st);
       else if (st.type === 'voxel' && voxel.has(st.model)) voxels.push(st); // torres em voxel: modelo próprio, sem porta nem interior
       else houses.push(st);
@@ -959,6 +1030,9 @@ export class ZoneScene {
   }
 
   update(t, darkness, sky, sunDir) {
+    const dt = this._t === undefined ? 0 : Math.min(0.1, Math.max(0, t - this._t));
+    this._t = t;
+    if (this.farm && this.px !== undefined) this.farm.update(dt, t, this.px, this.pz, Math.max(10, quality().cullR * 1.8));
     for (const f of this.flames) {
       const u = f.userData;
       const k = u.flicker ? 1 + Math.sin(t * 12 + u.ph) * 0.12 + Math.sin(t * 7.3 + u.ph) * 0.08 : 1;

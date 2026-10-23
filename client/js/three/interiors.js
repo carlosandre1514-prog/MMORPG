@@ -37,6 +37,8 @@ const DEFAULT_H = {
   shield_A: 64, shield_B: 62, shield_C: 66, dagger_A: 32, dagger_B: 34, staff_A: 150, staff_B: 160, bow_A_withString: 110, bow_B_withString: 118, wand_A: 38, arrow_A: 70,
   Iron_Bars_Stack_Small: 26, Iron_Bars_Stack_Medium: 52, Gold_Bars_Stack_Small: 26, Gold_Bars_Stack_Medium: 52, Gold_Bars: 28, Copper_Bars_Stack_Small: 26, Silver_Bars_Stack_Small: 26,
   Wood_Log_Stack: 46, Wood_Planks_Stack_Small: 20, Wood_Planks_Stack_Medium: 34, Textiles_Stack_Small: 40, Textiles_Stack_Large_Colored: 46, Textiles_A: 18, Stone_Bricks_Stack_Small: 22,
+  magic_Cauldron: 62, magic_Gem: 14, magic_Candle: 14, magic_SkullCandle: 20, magic_Scroll: 9, magic_Lamp1: 30, magic_Lamp2: 30,
+  magic_BookRed: 7, magic_BookBlue: 6, magic_BookGreen: 6, magic_BookPurple: 7, magic_BookGrey: 7,
   weaponrack: 120, bucket_water: 40, bucket_arrows: 62, sack: 55, crate_A_small: 45, crate_A_big: 62, crate_open: 52, wheelbarrow: 60, ladder: 200, barrel: 78, resource_lumber: 40,
 };
 
@@ -215,6 +217,8 @@ const sw = (m, extra = {}) => ({ m, ...extra });
 
 const BEDS = ['bed_frame', 'bed_decorated'];
 const BOTTLES = ['bottle_A_green', 'bottle_B_brown', 'bottle_C_green', 'bottle_A_labeled_brown'];
+// livros, caveira com vela e pergaminho do pacote Magic1 (WizP) sobre as mesas do alquimista
+const magicOn = (r) => [{ m: pick(r, ['magic_BookBlue', 'magic_BookPurple', 'magic_BookRed', 'magic_BookGrey']), dx: -52, dz: -16, rot: r() * 3, h: 6 }, r() < 0.5 ? { m: 'magic_SkullCandle', dx: 24, dz: 18, h: 20 } : { m: 'magic_Scroll', dx: -14, dz: 28, h: 9, rot: 0.8 }];
 const bottlesOn = (r) => [{ m: pick(r, BOTTLES), dx: -34, dz: 4 }, { m: pick(r, BOTTLES), dx: -4, dz: -6 }, r() < 0.5 ? { m: 'candle_thin_lit', dx: 30, dz: 6 } : { m: pick(r, BOTTLES), dx: 30, dz: 4 }];
 const dinnerOn = (r) => [{ m: 'candle_lit', dx: -26 }, { m: 'plate_food_A', dx: 20, dz: 6 }, ...(r() < 0.5 ? [{ m: 'bottle_A_green', dx: 36, dz: -14 }] : [])];
 const shelfBottles = (r, n = 3) => Array.from({ length: n }, (_, i) => ({ m: pick(r, BOTTLES), dx: -48 + i * (96 / Math.max(1, n - 1)), dz: 0 }));
@@ -331,7 +335,11 @@ const THEMES = {
       room.hang('right', -IZ + 80 + i * 150, 'shelf_large', 105 + ((i + 1) % 2) * 40, { on: shelfBottles(r, 3), top: 7, gap0: 1 });
     }
     // mesa de trabalho central
-    room.tables([[0, 10], [-130, 10], [130, 10], [0, -20], [-200, 40], [200, 40]], 1, () => ({ name: 'table_medium', chairs: 2, stool: true, on: [...bottlesOn(r), { m: 'journal_open', dx: 0, dz: 22 }, { m: 'magnifying_glass', dx: 44, dz: 20, lay: true, rot: 0.5 }, { m: 'candle_lit', dx: 50, dz: -20 }] }));
+    room.tables([[0, 10], [-130, 10], [130, 10], [0, -20], [-200, 40], [200, 40]], 1, () => ({ name: 'table_medium', chairs: 2, stool: true, on: [...bottlesOn(r), { m: 'journal_open', dx: 0, dz: 22 }, { m: 'magnifying_glass', dx: 44, dz: 20, lay: true, rot: 0.5 }, { m: 'candle_lit', dx: 50, dz: -20 }, ...magicOn(r)] }));
+    // caldeirão fervendo perto da lareira, com livros e pergaminhos empilhados do outro lado
+    room.put('magic_Cauldron', IX - 250, -IZ + 74, 0.3, { h: 62 });
+    room.put('magic_BookGreen', -IX + 60, IZ - 70, 0.4, { h: 6, soft: true });
+    room.put('magic_Lamp1', IX - 60, IZ - 60, 0.2, { h: 30 });
     room.line('front', [sw('barrel_small'), sw('sack'), sw('bucket_metal')], { from: -IX, to: room.keep[0][0] });
     room.line('front', [sw('crates_stacked'), sw('box_small')], { from: room.keep[0][2], to: IX });
     room.line('left', [sw('chest')], { from: IZ - 220, to: IZ });

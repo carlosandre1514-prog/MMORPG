@@ -47,6 +47,7 @@ export const ZONES = {
         ['cross', 'farm'], ['farm', 'cat'], ['cross', 'hermit'], ['hermit', 'boss'], ['hermit', 'e']],
       features: [
         { type: 'farm', x: 39, y: 69, w: 9, h: 7 },
+        { type: 'farmstead' }, // a fazenda inteira (shared/farm.js): celeiros, silos, moinho, currais e animais
         { type: 'shrine', x: 76, y: 58, r: 4 },
         { type: 'ring', x: 92, y: 78, r: 7, obj: O.ROCK, gap: 'w' },
         { type: 'pond', x: 13, y: 76, r: 3 },

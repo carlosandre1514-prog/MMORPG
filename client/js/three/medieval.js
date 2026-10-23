@@ -9,7 +9,9 @@ import { lite } from './lite.js';
 
 // Packs convertidos por tools/medieval/convert.mjs; cada um tem o próprio atlas
 const PACKS = ['/kaykit/medieval/medieval.glb', '/kaykit/resources/resources.glb', '/kaykit/dungeon/dungeon.glb',
-  '/kaykit/weaponbits/weaponbits.glb', '/kaykit/tools/tools.glb'];
+  '/kaykit/weaponbits/weaponbits.glb', '/kaykit/tools/tools.glb',
+  // fazenda (tools/farm/convert.mjs): construções (Quaternius), adereços (RG Poly), plantas e magia (WizP; texturas pintadas à mão)
+  '/farm/farm.glb', '/farm/props.glb', '/farm/flora.glb', '/farm/magic.glb'];
 
 export const medieval = {
   ready: false,
@@ -23,24 +25,29 @@ export const medieval = {
     await Promise.all(PACKS.map(async (url, i) => {
       try {
         const gltf = await new GLTFLoader().loadAsync(url, (e) => { if (e.total) { prog[i] = e.loaded / e.total; onProgress(prog.reduce((a, b) => a + b, 0) / PACKS.length); } });
-        let mat = null, gltfMat = null;
+        // cada malha pode ter o próprio material (os packs pintados à mão têm uma textura por tipo); nos outros packs todos dividem um só
+        const gltfMats = new Set();
         gltf.scene.traverse((o) => {
           if (!o.isMesh) return;
           o.geometry.computeBoundingBox();
-          mat ||= o.material; gltfMat = mat;
+          gltfMats.add(o.material);
           this.geos.set(o.name, o.geometry);
-          this.mats.set(o.name, mat);
+          this.mats.set(o.name, o.material);
           this.shared.add(o.geometry);
         });
-        if (mat) {
-          mat = lite(mat);
-          for (const k of [...this.mats.keys()]) if (this.mats.get(k) === gltfMat) this.mats.set(k, mat);
+        const swap = new Map();
+        for (const gm of gltfMats) {
+          const mat = lite(gm);
+          swap.set(gm, mat);
           mat.userData.shared = true;
           mat.roughness = 0.85;
           mat.metalness = 0;
           if (mat.map) { mat.map.magFilter = THREE.LinearFilter; mat.map.generateMipmaps = false; mat.map.minFilter = THREE.LinearFilter; }
-          if (i === 0) this.material = mat;
+          // o brilho dos cogumelos é um cartão transparente que soma luz
+          if (gm.name === 'Glow') { mat.blending = THREE.AdditiveBlending; mat.depthWrite = false; mat.transparent = true; mat.fog = true; }
+          if (i === 0 && !this.material) this.material = mat;
         }
+        for (const k of [...this.mats.keys()]) if (swap.has(this.mats.get(k))) this.mats.set(k, swap.get(this.mats.get(k)));
       } catch (e) {
         console.warn('[cenário] pack indisponível, usando formas simples:', url, e);
       }

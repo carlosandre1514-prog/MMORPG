@@ -111,12 +111,13 @@ export const PRESET_DESC = {
 // res: resolução interna do 3D (multiplicador da tela, nunca acima do pixel ratio do aparelho) · pixels: teto de pixels por quadro (0 = sem teto)
 // shadows: tamanho do mapa de sombra (0 = sem sombras) · view: distância de visão (0–4) · fx: máximo de partículas
 // lights: luzes dinâmicas (tochas, fogo, magias) · fps: limite de quadros (0 = sem limite) · ground: textura do chão
+// vfx: efeitos de habilidades em shader (0 = simples, 1 = shaders, 2 = completo com fumaça, camadas extras e auras de estado)
 const PRESETS = {
-  minimo: { res: 1, pixels: 380000, shadows: 0, aa: false, view: 0, pbr: false, fx: 250, lights: 2, fps: 30, ground: 0.5 },
-  baixo: { res: 1.25, pixels: 520000, shadows: 0, aa: false, view: 1, pbr: false, fx: 450, lights: 2, fps: weakDevice() ? 30 : 60, ground: 0.5 },
-  medio: { res: 1.5, pixels: 900000, shadows: 1024, aa: false, view: 2, pbr: false, fx: 900, lights: 4, fps: 60, ground: 0.75 },
-  alto: { res: 1.5, pixels: 0, shadows: 2048, aa: true, view: 3, pbr: true, fx: 1600, lights: 6, fps: 0, ground: 0.75 },
-  ultra: { res: 2, pixels: 0, shadows: 4096, aa: true, view: 4, pbr: true, fx: 3000, lights: 8, fps: 0, ground: 1 },
+  minimo: { res: 1, pixels: 380000, shadows: 0, aa: false, view: 0, pbr: false, fx: 250, vfx: 0, lights: 2, fps: 30, ground: 0.5 },
+  baixo: { res: 1.25, pixels: 520000, shadows: 0, aa: false, view: 1, pbr: false, fx: 450, vfx: 0, lights: 2, fps: weakDevice() ? 30 : 60, ground: 0.5 },
+  medio: { res: 1.5, pixels: 900000, shadows: 1024, aa: false, view: 2, pbr: false, fx: 900, vfx: 1, lights: 4, fps: 60, ground: 0.75 },
+  alto: { res: 1.5, pixels: 0, shadows: 2048, aa: true, view: 3, pbr: true, fx: 1600, vfx: 2, lights: 6, fps: 0, ground: 0.75 },
+  ultra: { res: 2, pixels: 0, shadows: 4096, aa: true, view: 4, pbr: true, fx: 3000, vfx: 2, lights: 8, fps: 0, ground: 1 },
 };
 
 // alcance por nível de "distância de visão": objetos, detalhe dos prédios, interiores e névoa
@@ -135,6 +136,7 @@ export const GFX_FIELDS = [
   { key: 'shadows', label: 'Sombras', hint: 'Um dos itens mais pesados.', opts: [[0, 'Desligadas'], [1024, 'Baixa'], [2048, 'Média'], [4096, 'Alta']] },
   { key: 'view', label: 'Distância de visão', hint: 'Alcance de objetos, prédios e névoa.', opts: [[0, 'Muito curta'], [1, 'Curta'], [2, 'Média'], [3, 'Longa'], [4, 'Máxima']] },
   { key: 'fx', label: 'Partículas e efeitos', hint: 'Fogo, magias, faíscas.', opts: [[250, 'Mínimas'], [450, 'Baixas'], [900, 'Médias'], [1600, 'Altas'], [3000, 'Máximas']] },
+  { key: 'vfx', label: 'Efeitos de habilidades', hint: 'Golpes, magias, explosões e escudos em shader.', opts: [[0, 'Simples'], [1, 'Bonitos'], [2, 'Completos']] },
   { key: 'lights', label: 'Luzes dinâmicas', hint: 'Tochas, fogo e magias que iluminam.', opts: [[0, 'Nenhuma'], [2, '2 luzes'], [4, '4 luzes'], [6, '6 luzes'], [8, '8 luzes']] },
   { key: 'fps', label: 'Limite de quadros', hint: '30 poupa bateria e esquenta menos.', opts: [[30, '30 FPS'], [60, '60 FPS'], [0, 'Sem limite']] },
   { key: 'aa', label: 'Anti-serrilhado', hint: 'Suaviza as bordas.', bool: true, reload: true },
@@ -210,7 +212,7 @@ function build() {
     low: !c.pbr, // materiais leves (Lambert, sem mapa de normais)
     pbr: c.pbr, dprMax: c.res, antialias: c.aa, shadows: c.shadows > 0, shadowMap: c.shadows || 1024, groundRes: c.ground,
     lights: c.lights, fuse: c.lights <= 2, // com poucas luzes, uma só faz a luz do jogador e a do cômodo
-    cullR: v.cullR, lodR: v.lodR, innerR: v.innerR, farMul: v.farMul, particles: c.fx,
+    cullR: v.cullR, lodR: v.lodR, innerR: v.innerR, farMul: v.farMul, particles: c.fx, vfx: c.vfx,
     pixels: c.pixels || Infinity, fps: c.fps, adapt: g.adapt, textDpr: c.res <= 1.25 ? 1.5 : 2,
   };
 }

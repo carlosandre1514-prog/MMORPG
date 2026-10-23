@@ -290,14 +290,18 @@ export class Game {
         if (ev.ab) fx.text({ id: e.id, oy: 16 }, `(${ev.ab} absorvido)`, '#bb8fce', { size: 11 });
         if (mine || onMe) audio.play(ev.c ? 'crit' : 'hit', onMe ? 0.8 : 1);
         if (onMe && ev.v > me.mhp * 0.15) this.shake = 8;
-        if (ev.h !== 'o') fx.burst(at(e), ev.c ? 14 : 7, { color: e.k === 'm' ? MONSTERS[e.m].color : '#e74c3c', color2: '#ffffff', speed: 1.8, up: 1.6, life: 450, grav: -6 });
+        if (ev.h !== 'o') {
+          const tint = e.k === 'm' ? MONSTERS[e.m].color : '#e74c3c';
+          const shader = fx.hit(at(e), { crit: !!ev.c, color: ev.c ? '#ffb142' : tint });
+          fx.burst(at(e), shader ? (ev.c ? 8 : 3) : ev.c ? 14 : 7, { color: tint, color2: '#ffffff', speed: 1.8, up: 1.6, life: 450, grav: -6 });
+        }
         break;
       }
       case 'h': {
         const e = ent(ev.id);
         if (!e) break;
         fx.text({ id: e.id }, '+' + ev.v, '#58d68d', { size: 15 });
-        if (ev.v > 5) fx.burst(at(e, 0.3), 10, { style: 'heal', speed: 0.7, up: 2.4, life: 800, grav: 0.5 });
+        if (ev.v > 5 && !fx.heal(at(e, 0.3))) fx.burst(at(e, 0.3), 10, { style: 'heal', speed: 0.7, up: 2.4, life: 800, grav: 0.5 });
         break;
       }
       case 'mp': { const e = ent(ev.id); if (e) fx.text({ id: e.id }, '+' + ev.v, '#5dade2', { size: 14 }); break; }

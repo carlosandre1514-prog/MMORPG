@@ -1,0 +1,12 @@
+Efeitos de habilidades em shader (client/js/three/vfx.js)
+
+Os shaders foram portados da Godot para GLSL/Three.js a partir dos pacotes "Binbun VFX Vol. 2" de Binbun3D (bun3d.com):
+Stylized Hit FX, Battle FX, Elemental Magic FX, Dark Magic FX, Stylized Status FX e Stylized Explosion FX (versões Free).
+
+Licença de cada pacote (arquivo license.txt que vem dentro dele): Creative Commons Zero (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+"You're free to use the assets in this pack for personal, educational and commercial projects with no attribution required."
+(Pedido do autor, opcional: mencionar 'Binbun3D' ou 'bun3d.com'.)
+
+O que foi aproveitado: a lógica dos shaders (formas, cores, ondas, ruído). As texturas de ruído da Godot não vêm nos pacotes e foram
+substituídas por ruído calculado no próprio shader. Nenhum arquivo dos pacotes (cenas .tscn, scripts .gd, HDR, modelos de teste) é distribuído.

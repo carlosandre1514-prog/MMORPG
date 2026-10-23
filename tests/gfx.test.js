@@ -78,6 +78,7 @@ test('cada perfil traz valores coerentes e mais pesados a cada degrau', async ()
   assert.deepEqual(key('shadows'), [false, false, true, true, true]);
   assert.deepEqual(key('pbr'), [false, false, false, true, true]);
   assert.deepEqual(key('fuse'), [true, true, false, false, false]);
+  assert.deepEqual(key('vfx'), [0, 0, 1, 2, 2]); // efeitos de habilidades em shader: simples nos fracos, completos nos fortes
   assert.equal(seen[4].pixels, Infinity);
   assert.ok(seen[0].pixels < seen[2].pixels);
   assert.deepEqual(key('fps'), [30, 60, 60, 0, 0].map((v, i) => (i === 1 ? seen[1].fps : v)));
@@ -108,6 +109,7 @@ test('ajustes pessoais valem sobre o perfil, voltam ao perfil quando iguais e ig
   dev.setGfxOption('lights', 8);
   dev.setGfxOption('res', 99); // inválido
   dev.setGfxOption('aa', 'sim'); // inválido
+  dev.setGfxOption('vfx', 3); // inválido: só 0, 1 e 2
   dev.setGfxOption('naoexiste', 1);
   let g = dev.gfxState();
   assert.deepEqual(g.over, { shadows: 4096, lights: 8 });

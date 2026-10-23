@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { quality } from '../device.js';
 import { glowTexture } from './world3d.js';
+import { VFX } from './vfx.js';
 
 export const STYLE_COLORS = {
   fire: ['#ffb74d', '#ff5722'], frost: ['#d6f3ff', '#5dade2'], arcane: ['#e1bee7', '#9b59b6'],
@@ -47,6 +48,7 @@ export class Effects3D {
     this.group.add(this.points);
     this.ringGeo = new THREE.RingGeometry(0.92, 1, 48).rotateX(-Math.PI / 2);
     this.discGeo = new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2);
+    this.vfx = new VFX(this); // efeitos em shader (Opções > Gráficos > Efeitos de habilidades); nível 0 usa só os efeitos simples abaixo
   }
 
   now() { return performance.now(); }
@@ -56,9 +58,10 @@ export class Effects3D {
     this.list = [];
     this.pdata = [];
     this.texts = [];
+    this.vfx.clearParts();
   }
 
-  removeObj(e) { if (e.obj) { this.group.remove(e.obj); e.obj.traverse((o) => { if (o.material) o.material.dispose(); if (o.geometry && o.geometry !== this.ringGeo && o.geometry !== this.discGeo) o.geometry.dispose(); }); } }
+  removeObj(e) { if (e.obj) { this.group.remove(e.obj); e.obj.traverse((o) => { if (o.material) o.material.dispose(); if (o.geometry && o.geometry !== this.ringGeo && o.geometry !== this.discGeo && !o.geometry.userData.shared) o.geometry.dispose(); }); } }
 
   // posição 3D (x, altura, z) de uma entidade
   entPos(id, hFrac = 0.6) {
@@ -86,9 +89,21 @@ export class Effects3D {
     }
   }
 
+  // faísca de impacto em shader sobre quem levou o golpe; false = nível de efeitos simples (o chamador usa as partículas)
+  hit(p, opts) { return this.vfx.hit(p, opts); }
+  // sinais de mais subindo (cura)
+  heal(p) { return this.vfx.heal(p); }
+
   add(e) {
     e.start = e.start ?? this.now();
     const g = this.game;
+    if (!e.noBuild && this.vfx.build(e)) {
+      if (e.kind === 'aoe') this.burst({ x: e.x, y: e.y, h: 0.3 }, Math.min(30, 8 + e.r * 6), { style: e.style, speed: e.r * 2.2, life: 700, up: 2.5, grav: -5 });
+      if (e.kind === 'buff') { const p = this.entPos(e.id, 0.1); if (p) this.burst({ x: p.x, y: p.z, h: 0.2 }, 8, { style: e.style, speed: 0.8, up: 3, life: 900, grav: 1 }); }
+      this.group.add(e.obj);
+      this.list.push(e);
+      return e;
+    }
     switch (e.kind) {
       case 'proj': {
         const [c1, c2] = STYLE_COLORS[e.style] || ['#ffffff', '#aaaaaa'];
@@ -214,6 +229,7 @@ export class Effects3D {
 
   update(dt) {
     const now = this.now();
+    this.vfx.tick(now, dt);
     const keep = [];
     for (const e of this.list) {
       const t = (now - e.start) / e.dur;
@@ -221,6 +237,7 @@ export class Effects3D {
       keep.push(e);
       const o = e.obj;
       if (!o) continue;
+      if (e.v) { e.v.update(t, now); if (!e.v.positioned) continue; } // efeito em shader: ele mesmo cuida da posição, salvo projétil e meteoro
       switch (e.kind) {
         case 'proj': {
           const p = this.projPos(e, now);

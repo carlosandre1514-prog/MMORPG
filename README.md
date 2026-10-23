@@ -35,7 +35,7 @@ Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DE
 
 **Celular:** ao abrir em uma tela de toque aparecem os controles virtuais: direcional flutuante (toque e arraste na metade esquerda), botões de ataque, interagir, alvo e câmera, habilidades em grade à direita, atalhos de menu/chat/missões/tela cheia no topo; arraste na tela para girar a câmera e use a pinça para o zoom. Gire o celular para a horizontal. Dá para forçar ou desligar os controles de toque em Opções.
 
-Desempenho: o jogo precisa de WebGL. Em celulares e aparelhos fracos ele usa o modo leve sozinho (resolução menor, sem sombras, névoa mais curta, interiores só por perto); em Opções dá para escolher a qualidade. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
+Desempenho: os prédios distantes trocam telhado, moldura de porta, janela e chaminé por versões simplificadas (LOD, gerado por `tools/village/lod.mjs`), o interior só é desenhado de perto e as muralhas são cortadas por blocos; isso tirou quase metade dos triângulos nas ruas da capital. O jogo precisa de WebGL. Em celulares e aparelhos fracos ele usa o modo leve sozinho (resolução menor, sem sombras, névoa mais curta, interiores só por perto); em Opções dá para escolher a qualidade. Se rodar lento, ele reduz a resolução e desliga as sombras sozinho; dá para ligar/desligar as sombras em **Opções**.
 
 ## Controles
 

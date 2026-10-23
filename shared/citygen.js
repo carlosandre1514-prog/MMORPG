@@ -193,16 +193,18 @@ export function buildCapital(grid, zone) {
   pave(76, 27, 33, 2);         // rua atrás do cofre
   pave(44, 38, 26, 18);        // Praça da Chama
   pave(76, 39, 22, 16);        // Praça do Mercado
-  for (let x = 6; x < 108; x += 8) { lamp(x, 45); lamp(x + 4, 48); }
   for (let y = 30; y < 37; y += 3) { lamp(54, y); lamp(58, y); }
   for (const x of [8, 24, 40, 72, 100]) { lamp(x, 36); lamp(x + 6, 57); }
 
-  // Praça da Chama: fonte, árvores, canteiros, estandartes
+  // Praça da Chama, simétrica em torno do eixo da fonte (x = 56,5; y = 46,5): cruz de lajes de pedra com 3 tiles de largura,
+  // anel de lajes em volta da fonte, quatro postes no anel, quatro canteiros nas diagonais e uma árvore em cada canto
+  ground(55, 38, 3, 18, T.STONE); ground(44, 45, 26, 3, T.STONE);
+  grid.rect(53, 43, 7, 7, (x, y) => { if (x === 53 || x === 59 || y === 43 || y === 49) grid.setT(x, y, T.STONE); });
   grid.rect(55, 45, 3, 3, (x, y) => grid.setO(x, y, O.FOUNTAIN));
-  for (const [x, y] of [[45, 39], [68, 39], [45, 54], [68, 54]]) obj(x, y, O.TREE);
-  for (const [x, y] of [[47, 52], [48, 52], [65, 52], [66, 52], [47, 40], [66, 40]]) { ground(x, y, 1, 1, T.GRASS); obj(x, y, O.FLOWERS); }
-  obj(53, 38, O.BANNER); obj(59, 38, O.BANNER); obj(50, 43, O.LAMP); obj(63, 43, O.LAMP); obj(50, 50, O.LAMP); obj(63, 50, O.LAMP);
-  obj(51, 41, O.SIGN);
+  for (const [x, y] of [[45, 39], [67, 39], [45, 53], [67, 53]]) obj(x, y, O.TREE);
+  for (const [x, y] of [[53, 43], [59, 43], [53, 49], [59, 49]]) lamp(x, y);
+  for (const [x, y] of [[49, 43], [50, 43], [62, 43], [63, 43], [49, 49], [50, 49], [62, 49], [63, 49]]) { ground(x, y, 1, 1, T.GRASS); obj(x, y, O.FLOWERS); }
+  obj(53, 38, O.BANNER); obj(59, 38, O.BANNER);
 
   // Mercado: duas fileiras de barracas, caixotes e sacos
   for (const x of [79, 83, 87, 91]) { obj(x, 41, O.STALL); obj(x, 52, O.STALL); }
@@ -261,6 +263,13 @@ export function buildCapital(grid, zone) {
       if (!grid.in(x, y) || grid.o(x, y) === O.WALL || grid.o(x, y) === O.BUILDING) continue;
       if (OBJ_INFO[grid.o(x, y)].block) grid.setO(x, y, 0);
     }
+  }
+
+  // postes da rua do comércio: pares dos dois lados da rua, a cada 12 tiles, nunca na praça, no mercado nem na frente de uma porta
+  const doors = new Set();
+  for (const st of S) if (st.kind === 'house') for (const [x, y] of doorFront(st)) doors.add(y * grid.w + x);
+  for (const x of [10, 22, 34, 72, 102]) {
+    for (const y of [45, 48]) if (!doors.has(y * grid.w + x) && !grid.o(x, y)) lamp(x, y);
   }
 
   // portais: Portão Leste (Campos) e Portão Sul (Arena)

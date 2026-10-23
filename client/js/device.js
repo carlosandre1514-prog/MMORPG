@@ -32,6 +32,6 @@ export function quality() {
   const m = qualityMode();
   const low = m === 'low' || (m === 'auto' && (isTouchDevice() || weakDevice()));
   return low
-    ? { low: true, dprMax: 1.25, antialias: false, shadows: false, shadowMap: 1024, groundRes: 0.5, lights: 3, cullR: 14, particles: 700, farMul: 0.8 }
-    : { low: false, dprMax: 1.6, antialias: true, shadows: true, shadowMap: 2048, groundRes: 0.75, lights: 6, cullR: 22, particles: 1600, farMul: 1 };
+    ? { low: true, dprMax: 1.25, antialias: false, shadows: false, shadowMap: 1024, groundRes: 0.5, lights: 3, cullR: 10, lodR: 6, particles: 700, farMul: 0.8 }
+    : { low: false, dprMax: 1.6, antialias: true, shadows: true, shadowMap: 2048, groundRes: 0.75, lights: 6, cullR: 14, lodR: 8, particles: 1600, farMul: 1 };
 }

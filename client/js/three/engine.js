@@ -481,11 +481,13 @@ export class Renderer3D {
     const fps = this.fpsN / this.fpsT;
     this.fpsT = 0; this.fpsN = 0;
     if (fps >= 28) { this.qualityDone = true; return; }
-    if (this.dpr > 1) { this.maxDpr = 1; this.resize(); return; }
+    if (this.dpr > 1) { this.maxDpr = 1; this.resize(); return; } // 1º passo: resolução menor
     if (this.shadows) {
       this.setShadows(false, false);
       this.game.ui.toast('Sombras desligadas para melhorar o desempenho (Opções para religar).');
+      return; // mede de novo antes de ir mais longe
     }
+    if (this.dpr > 0.8) { this.maxDpr = 0.8; this.resize(); return; }
     this.qualityDone = true;
   }
 

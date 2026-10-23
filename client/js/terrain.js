@@ -197,8 +197,22 @@ export class Terrain {
         for (let i = 0; i < 3; i++) ellipse(ctx, px + hash2(X, Y, 100 + i) * 28 + 2, py + hash2(X, Y, 110 + i) * 28 + 2, 3, 2, 'rgba(90,25,10,0.45)');
         break;
       }
-      case T.COBBLE:
       case T.STONE: {
+        // lajes quadradas (pátios e praças): bem diferentes das pedras irregulares do calçamento
+        ctx.fillStyle = shade(base, -0.34);
+        ctx.fillRect(px, py, TILE, TILE);
+        for (let r = 0; r < 2; r++) {
+          for (let c = 0; c < 2; c++) {
+            const sx = px + c * 16, sy = py + r * 16;
+            ctx.fillStyle = shade(base, 0.06 + (hash2(X * 2 + c, Y * 2 + r, 3) - 0.5) * 0.14);
+            ctx.fillRect(sx + 1, sy + 1, 14, 14);
+            ctx.fillStyle = shade(base, 0.2);
+            ctx.fillRect(sx + 1, sy + 1, 14, 1); ctx.fillRect(sx + 1, sy + 1, 1, 14);
+          }
+        }
+        break;
+      }
+      case T.COBBLE: {
         ctx.fillStyle = shade(base, -0.25);
         ctx.fillRect(px, py, TILE, TILE);
         const off = (Y % 2) * 8;

@@ -94,8 +94,27 @@ export function bannerSpots(structs, center) {
 }
 
 // mats: { stone, trim, roof, iron } (materiais compartilhados ou simples, se o kit não carregou)
-export function buildFortifications(structs, mats, onFlag) {
-  const stone = new Builder(), trim = new Builder(), roof = new Builder(), iron = new Builder();
+export function buildFortifications(structs0, mats, onFlag) {
+  // muralhas compridas viram trechos de até 14 tiles e cada trecho vai para o bloco (20 × 20 tiles) em que está:
+  // cada bloco é uma malha com a própria esfera de corte, então só o que está na tela (ou na sombra) é desenhado
+  const structs = [];
+  for (const s of structs0) {
+    if (s.kind !== 'wall' || Math.max(s.w, s.h) <= 14) { structs.push(s); continue; }
+    const horiz = s.w >= s.h;
+    const len = horiz ? s.w : s.h, n = Math.ceil(len / 14);
+    for (let i = 0; i < n; i++) {
+      const a = Math.floor((len * i) / n), b = Math.floor((len * (i + 1)) / n);
+      structs.push(horiz ? { ...s, x: s.x + a, w: b - a } : { ...s, y: s.y + a, h: b - a });
+    }
+  }
+  let stone, trim, roof, iron;
+  const sets = new Map();
+  const use = (s) => {
+    const k = Math.floor((s.x + s.w / 2) / 20) + ',' + Math.floor((s.y + s.h / 2) / 20);
+    let set = sets.get(k);
+    if (!set) sets.set(k, (set = [new Builder(), new Builder(), new Builder(), new Builder()]));
+    [stone, trim, roof, iron] = set;
+  };
   const merlons = (x0, z0, x1, z1, y) => {
     // ameias ao longo das duas bordas do caminho de ronda
     const horiz = x1 - x0 >= z1 - z0;
@@ -109,6 +128,7 @@ export function buildFortifications(structs, mats, onFlag) {
     }
   };
   for (const s of structs) {
+    use(s);
     if (s.kind === 'wall') {
       const x0 = s.x, z0 = s.y, x1 = s.x + s.w, z1 = s.y + s.h;
       stone.box(x0, 0, z0, x1, WALL_H, z1);
@@ -154,6 +174,8 @@ export function buildFortifications(structs, mats, onFlag) {
     }
   }
   const g = new THREE.Group();
-  for (const [b, m] of [[stone, mats.stone], [trim, mats.trim], [roof, mats.roof], [iron, mats.iron]]) if (b.pos.length) g.add(b.mesh(m));
+  for (const set of sets.values()) {
+    for (const [b, m] of [[set[0], mats.stone], [set[1], mats.trim], [set[2], mats.roof], [set[3], mats.iron]]) if (b.pos.length) g.add(b.mesh(m));
+  }
   return g;
 }

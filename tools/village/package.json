@@ -1,0 +1,10 @@
+{
+  "name": "aethra-village-tools",
+  "private": true,
+  "type": "module",
+  "description": "Ferramentas de conversão e de LOD das peças do Medieval Village (só para quem for regerar os assets)",
+  "dependencies": {
+    "@gltf-transform/core": "^4.0.0",
+    "meshoptimizer": "^1.0.0"
+  }
+}

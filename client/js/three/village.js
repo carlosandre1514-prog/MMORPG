@@ -24,6 +24,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 export const village = {
   ready: false,
   pieces: new Map(), // nome -> [{ key, geo }]
+  centers: new Map(), // casa -> centro no mapa (para o LOD por distância)
   mats: {},
 
   async load(onProgress = () => {}) {
@@ -84,16 +85,19 @@ export const village = {
   // Cada peça leva o número da casa (bid) e se some quando o jogador está dentro (hide: telhado e andares de cima).
   place(spec, base, out, props = null, st = null, meta = null) {
     const local = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
-    let hideNow = false;
+    let hideNow = false, innerNow = false; // innerNow: piso, teto e decoração (só aparecem de perto)
     const bid = st ? st.seed || 0 : 0;
+    if (bid) this.centers.set(bid, [base.elements[12], base.elements[14], st.w / 2, st.h / 2]);
     const add = (name, x, y, z, rot = 0, scale = null, depth = 0, leaf = false) => {
       if (!this.pieces.has(name)) return;
       // depth: recuo em cm ao longo da normal da parede (negativo = para dentro)
       const pos = new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth);
       local.compose(pos, q.setFromAxisAngle(UP, rot), scale || one);
-      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow };
+      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow, inner: innerNow };
       if (leaf) pl.leaf = { base, pos, rot, scale: scale.clone() }; // folha da porta: gira em volta da dobradiça
       out.push(pl);
+      // peças pesadas têm uma irmã simplificada (@lod) para os prédios distantes
+      if (!leaf && bid && this.pieces.has(name + '@lod')) { pl.det = true; out.push({ name: name + '@lod', m: pl.m, bid, hide: hideNow, lod: true }); }
     };
     const rnd = mulberry(spec.seed || 1);
     const W = spec.nx * MOD, D = spec.nz * MOD;
@@ -144,6 +148,7 @@ export const village = {
     hideNow = false;
     // pisos de cada andar, teto e mobília (o térreo é visitável; a câmera também passa por dentro)
     if (props && st) {
+      innerNow = true;
       const inter = interiorFor(spec, st);
       inter.floorPieces.forEach((piece, f) => {
         if (!piece) return;
@@ -159,6 +164,7 @@ export const village = {
         hideNow = d.y > 150;
         add(d.name, d.x, d.y, d.z, d.rot, d.s ? new THREE.Vector3(d.s[0], d.s[1], d.s[2]) : null);
       }
+      innerNow = false;
       for (const p of inter.props) {
         if (!medieval.has(p.m)) continue;
         props.push({ m: p.m, bid, up: p.y > 150, matrix: base.clone().multiply(medieval.placed(p.m, p.k, p.x, p.y, p.z, p.rot, p.lay, p.tilt)) });
@@ -213,8 +219,29 @@ export const village = {
     return best;
   },
 
-  // Junta as peças posicionadas em um BatchedMesh por material.
+  // Junta as peças posicionadas em um BatchedMesh por material, em blocos de 28 × 28 tiles: cada bloco tem a própria esfera de corte,
+  // então o que está fora da tela nem entra na conta de visibilidade por instância.
   batch(placements) {
+    const CH = 28;
+    const chunks = new Map();
+    for (const pl of placements) {
+      const c = this.centers.get(pl.bid);
+      const key = c ? Math.floor(c[0] / CH) + ',' + Math.floor(c[1] / CH) : 'x';
+      const l = chunks.get(key);
+      if (l) l.push(pl); else chunks.set(key, [pl]);
+    }
+    const top = new THREE.Group(), bld = new Map(), leaves = new Map();
+    for (const list of chunks.values()) {
+      const g = this.batchOne(list);
+      top.add(g);
+      for (const [k, v] of g.userData.bld) bld.set(k, v);
+      for (const [k, v] of g.userData.leaves) leaves.set(k, v);
+    }
+    top.userData.bld = bld; top.userData.leaves = leaves;
+    return top;
+  },
+
+  batchOne(placements) {
     const byKey = new Map(); // material -> { geos: Map(geo -> id), list: [[geo, matriz]] }
     for (const pl of placements) {
       const { name, m } = pl;
@@ -227,9 +254,11 @@ export const village = {
       }
     }
     const g = new THREE.Group();
-    const hide = new Map(), leaves = new Map(); // casa -> instâncias que somem por dentro / folhas de porta
+    // por casa: instâncias que somem por dentro (telhado e andares de cima) ou trocam de detalhe com a distância, e folhas de porta
+    const bld = new Map(), leaves = new Map();
     const keep = (map, id, v) => { const l = map.get(id); if (l) l.push(v); else map.set(id, [v]); };
-    g.userData.hide = hide; g.userData.leaves = leaves;
+    const state = (id) => { let b = bld.get(id); if (!b) bld.set(id, (b = { hidden: false, far: false, entries: [] })); return b; };
+    g.userData.bld = bld; g.userData.leaves = leaves;
     for (const [key, e] of byKey) {
       let nv = 0, ni = 0;
       for (const geo of e.geos.keys()) { nv += geo.attributes.position.count; ni += geo.index.count; }
@@ -239,14 +268,36 @@ export const village = {
       for (const [geo, m, pl] of e.list) {
         const id = bm.addInstance(e.geos.get(geo));
         bm.setMatrixAt(id, m);
-        if (pl.bid && pl.hide) keep(hide, pl.bid, { bm, id });
+        if (pl.bid && (pl.hide || pl.det || pl.lod || pl.inner)) state(pl.bid).entries.push({ bm, id, hide: !!pl.hide, kind: pl.lod ? 2 : pl.det ? 1 : pl.inner ? 3 : 0, vis: true });
         if (pl.bid && pl.leaf) keep(leaves, pl.bid, { bm, id, leaf: pl.leaf });
       }
       bm.castShadow = key !== 'Vine' && key !== 'WindowGlass';
       bm.receiveShadow = true;
       g.add(bm);
     }
+    for (const b of bld.values()) this.applyState(b); // começa com o detalhe alto e as versões simples escondidas
     return g;
+  },
+
+  // Visibilidade de cada instância de uma casa: telhado/andares de cima somem por dentro, e o detalhe vira simples de longe
+  applyState(b) {
+    for (const e of b.entries) {
+      const vis = (e.kind === 2 ? b.far : e.kind === 1 || e.kind === 3 ? !b.far : true) && !(e.hide && b.hidden);
+      if (vis !== e.vis) { e.bm.setVisibleAt(e.id, vis); e.vis = vis; }
+    }
+  },
+
+  // Troca o detalhe das casas conforme a distância ao jogador (histerese de 2 tiles para não piscar)
+  updateLod(batchGroup, px, pz, r) {
+    const bld = batchGroup.userData.bld;
+    if (!bld) return;
+    for (const [id, b] of bld) {
+      const c = this.centers.get(id);
+      if (!c) continue;
+      const d = Math.hypot(Math.max(0, Math.abs(c[0] - px) - c[2]), Math.max(0, Math.abs(c[1] - pz) - c[3])); // distância até o retângulo do prédio
+      const far = b.far ? d > r - 2 : d > r + 2;
+      if (far !== b.far) { b.far = far; this.applyState(b); }
+    }
   },
 
   // Móveis em um BatchedMesh por atlas (material). Cada instância some quando está longe do jogador (cull):
@@ -300,7 +351,8 @@ export const village = {
 
   // Esconde (ou mostra) o telhado e os andares de cima da casa `bid` (o jogador está dentro dela)
   setHidden(batchGroup, propGroup, bid, hidden) {
-    for (const { bm, id } of batchGroup.userData.hide.get(bid) || []) bm.setVisibleAt(id, !hidden);
+    const b = batchGroup.userData.bld.get(bid);
+    if (b) { b.hidden = hidden; this.applyState(b); }
     if (propGroup) propGroup.userData.hidden = hidden ? bid : 0;
   },
 

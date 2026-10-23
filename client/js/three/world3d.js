@@ -278,6 +278,7 @@ export class ZoneScene {
     if (!force && (now - (this.lastCull || 0) < 200 || (Math.abs(px - this.cullX) < 0.5 && Math.abs(pz - this.cullZ) < 0.5))) return;
     this.lastCull = now; this.cullX = px; this.cullZ = pz;
     village.cullProps(this.propGroup, px, pz, quality().cullR);
+    if (this.cityGroup) village.updateLod(this.cityGroup, px, pz, quality().lodR);
   }
 
   // O jogador entrou (ou saiu) de uma casa: com a câmera de fora o telhado e os andares de cima somem

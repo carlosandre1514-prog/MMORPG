@@ -17,6 +17,7 @@ import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
 import { MobileControls } from './mobile.js';
+import { chatBox } from './chatbox.js';
 import { MapArt } from '../mapart.js';
 import { quality } from '../device.js';
 
@@ -96,7 +97,7 @@ export class UI {
         this.chatInput.value = this.chatHistory[this.chatHistory.idx];
       }
     });
-    R.appendChild(h('div', { id: 'chat', class: 'frame' }, this.chatLog, this.chatInput));
+    R.appendChild(chatBox(this.chatLog, this.chatInput));
     // barra inferior
     this.xpFill = h('div', { class: 'fill' });
     this.xpText = h('span');

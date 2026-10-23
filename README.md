@@ -53,6 +53,7 @@ Celulares fracos: no modo leve (automático em telas de toque) os materiais são
 | Zoom | roda do mouse |
 | Girar / inclinar câmera | arrastar com o botão direito (ou do meio) |
 | Entrar nas casas | ande até a porta: ela abre sozinha. Por dentro o telhado some (3ª pessoa) ou aparece o teto (1ª pessoa) e a luz da lareira acende |
+| Celular na horizontal | o jogo trava na horizontal no primeiro toque (entra em tela cheia, que é o que os navegadores exigem); se o aparelho não deixar travar (iPhone), uma tela pede para girar. Para ficar fixo de vez: menu do navegador > **Adicionar à tela inicial** (o app instalado abre em tela cheia e na horizontal) |
 | Mapa | o minimapa (canto superior direito, roda do mouse aproxima) e a janela **M** mostram um mapa 2D detalhado com relevo: casas com telhado, chaminé e porta, muralhas, torres, árvores com sombra, ruas de pedra, água com espuma e sombreado de colinas e penhascos; na janela dá para arrastar e aproximar |
 | Câmera | **V** alterna 3ª pessoa longe → 3ª pessoa perto → 1ª pessoa (também em Opções) |
 | Ir até a missão | botão **📍 Ir** no rastreador ou na janela de missões: o personagem anda sozinho (inclusive atravessando portais); setas douradas no chão, raio de luz, seta na borda da tela e linha no minimapa mostram o caminho |

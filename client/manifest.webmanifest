@@ -1,0 +1,18 @@
+{
+  "name": "Aethra: A Chama Partida",
+  "short_name": "Aethra",
+  "description": "MMORPG 3D para navegador",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#0b0f1c",
+  "theme_color": "#0b0f1c",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

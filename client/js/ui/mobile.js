@@ -3,6 +3,7 @@
 // reorganiza o HUD (barra de habilidades vira uma grade de botões no canto direito).
 import { h } from './dom.js';
 import { touchUiEnabled, prefs } from '../device.js';
+import { enterLandscape } from '../orientation.js';
 
 const STICK_R = 58; // raio do direcional em px
 
@@ -41,7 +42,7 @@ export class MobileControls {
       top('📜', 'tr', () => this.toggleClass('show-tracker')),
       top('💬', 'ch', () => this.toggleClass('show-chat')),
       top('☰', 'mn', () => this.toggleClass('show-menu')));
-    R.append(this.zone, this.topBar, h('div', { id: 'rotate-hint', class: 'mob' }, '↻ Gire o celular para jogar na horizontal'));
+    R.append(this.zone, this.topBar);
     // fechar menu ao escolher uma janela
     const mb = R.querySelector('#menubar');
     if (mb) mb.addEventListener('click', () => document.body.classList.remove('show-menu'));
@@ -57,8 +58,7 @@ export class MobileControls {
     const el = document.documentElement;
     try {
       if (document.fullscreenElement) document.exitFullscreen();
-      else (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el);
-      screen.orientation?.lock?.('landscape').catch(() => {});
+      else enterLandscape();
     } catch { /* o navegador pode negar */ }
   }
 

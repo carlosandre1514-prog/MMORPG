@@ -13,7 +13,9 @@ import { charSprites } from './charsprites.js';
 import { characters } from './three/characters.js';
 import { medieval } from './three/medieval.js';
 import { village } from './three/village.js';
+import { setupLandscape } from './orientation.js';
 
+setupLandscape();
 const net = new Net();
 const screens = document.getElementById('screens');
 const canvas = document.getElementById('game');

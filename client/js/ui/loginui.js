@@ -5,6 +5,7 @@ import { audio } from '../audio.js';
 import { themeMusic } from '../music.js';
 import { PRESET_ORDER, PRESET_NAMES, gfxState, setGfxPreset } from '../device.js';
 import { GAME_VERSION } from '/shared/constants.js';
+import { FIREBASE_CONFIG } from '/shared/firebase.js';
 
 // Ícones próprios (24x24, preenchidos com a cor do texto); o "G" do Google segue as cores oficiais da marca
 const ICONS = {
@@ -102,7 +103,8 @@ function settingsPanel() {
     row('Música', audio.musicOn, (v) => { audio.init(); audio.setMusic(v); themeMusic.sync(); }),
     row('Efeitos sonoros', audio.enabled, (v) => { audio.init(); audio.setSfx(v); }),
     h('label', { class: 'lg-pop-row' }, h('span', {}, 'Qualidade gráfica'), sel),
-    h('div', { class: 'lg-pop-note' }, 'Mudar a qualidade recarrega a página. Mais opções ficam dentro do jogo.'));
+    h('div', { class: 'lg-pop-note' }, 'Mudar a qualidade recarrega a página. Mais opções ficam dentro do jogo.'),
+    h('div', { class: 'lg-pop-note' }, `Login: projeto ${FIREBASE_CONFIG.projectId} · ${location.hostname}`)); // ajuda a conferir se o site publicado tem a versão certa
 }
 
 // Tela inteira: selo do servidor (canto esquerdo), engrenagem (direito), logo, o cartão e a versão

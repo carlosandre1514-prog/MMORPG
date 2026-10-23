@@ -41,6 +41,11 @@ const TEXTS = {
 };
 export function errorText(e) {
   const code = e && e.code;
+  if (code === 'auth/unauthorized-domain') { // diz qual é o endereço e o projeto, para o dono saber exatamente o que autorizar
+    const host = location.hostname;
+    if (/^[\d.]+$/.test(host) || host.includes(':')) return `O Firebase não aceita endereço IP (${host}). Abra o jogo por "localhost" ou pelo endereço do site (Render).`;
+    return `O endereço "${host}" não está autorizado no projeto "${FIREBASE_CONFIG.projectId}" do Firebase. Adicione-o em Authentication > Configurações > Domínios autorizados (e confira se o site do Render está com a versão mais nova do jogo).`;
+  }
   if (code && TEXTS[code]) return TEXTS[code];
   if (e && e.message && !code) return e.message;
   return `Não foi possível entrar${code ? ` (${code})` : ''}.`;

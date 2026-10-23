@@ -64,6 +64,9 @@ test('o login pelo Firebase: SDK local, configuração do projeto e telas ligada
   for (const code of ['auth/invalid-credential', 'auth/email-already-in-use', 'auth/weak-password', 'auth/operation-not-allowed', 'auth/unauthorized-domain']) {
     assert.ok(auth.includes(`'${code}'`), code);
   }
+  // domínio não autorizado: o aviso diz qual endereço e qual projeto, e a engrenagem do login mostra os mesmos dados
+  assert.match(auth, /code === 'auth\/unauthorized-domain'[\s\S]*location\.hostname[\s\S]*FIREBASE_CONFIG\.projectId/);
+  assert.match(read('client/js/ui/loginui.js'), /FIREBASE_CONFIG\.projectId[^\n]*location\.hostname/);
 });
 
 test('a tela de login: peças visuais, engrenagem, versão igual ao package.json e cena de acampamento', () => {

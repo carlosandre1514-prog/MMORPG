@@ -124,6 +124,8 @@ const B = {
 
   spider(c, def) { return arachnid(c, def, false); },
   spider_queen(c, def) { return arachnid(c, def, true); },
+  scorpion(c, def) { return scorpion(c, def, false); },
+  scorpion_boss(c, def) { return scorpion(c, def, true); },
 
   ent(c, def) {
     const cr = new Creature(def.size * 0.8);
@@ -255,6 +257,87 @@ function arachnid(c, def, queen) {
   cr.anim = (dt, st, t) => {
     const ph = st.moving ? (st.phase || 0) * 1.5 : t * 1.2;
     for (const p of cr.spiderLegs) p.rotation.x = Math.sin(ph + p.userData.i * 1.3) * (st.moving ? 0.35 : 0.06);
+  };
+  return cr;
+}
+
+// Escorpião do deserto (Reino de Sahaar): carapaça, oito patas, duas pinças e a cauda curva com o ferrão; a rainha é maior, com espinhos dourados
+function scorpion(c, def, boss) {
+  const cr = new Creature(def.size * 0.9);
+  const shell = cr.m(c, { rough: 0.55 }), dark = cr.m(shade(c, 0.6), { rough: 0.7 }), light = cr.m(shade(c, 1.25), { rough: 0.5 });
+  const red = cr.m(boss ? 0xff3b1f : 0xc0392b, { emissive: boss ? 0xff3b1f : 0x7a1f12, ei: boss ? 1.6 : 0.8 });
+  const ell = (rx, ry, rz, mat, x, y, z) => { const m = mesh(new THREE.SphereGeometry(1, 10, 8), mat, x, y, z); m.scale.set(rx, ry, rz); cr.body.add(m); return m; };
+  ell(0.3, 0.16, 0.44, shell, 0, 0.3, 0.02);
+  ell(0.17, 0.12, 0.2, light, 0, 0.36, 0.38);
+  const eye = cr.m(boss ? 0xff3b1f : 0xf4d03f, { emissive: boss ? 0xff3b1f : 0xf4d03f, ei: 1.5 });
+  for (const sx of [-1, 1]) cr.body.add(mesh(new THREE.SphereGeometry(0.035, 5, 4), eye, sx * 0.07, 0.45, 0.5));
+  // abdômen em gomos
+  [[-0.42, 0.14], [-0.62, 0.12], [-0.8, 0.1]].forEach(([z, r], i) => ell(r + 0.04, r, r + 0.06, i % 2 ? dark : shell, 0, 0.27 - i * 0.015, z));
+  // cauda: gomos encadeados que sobem e se curvam para a frente, terminando no ferrão
+  const tail = pivot(cr.body, 0, 0.3, -0.86);
+  tail.rotation.x = -0.32;
+  let parent = tail;
+  const L = 0.27;
+  for (let i = 0; i < 5; i++) {
+    const seg = mesh(new THREE.CylinderGeometry(0.06 - i * 0.006, 0.07 - i * 0.006, L, 7), i % 2 ? dark : shell, 0, L / 2, 0);
+    const knot = mesh(new THREE.SphereGeometry(0.075 - i * 0.007, 7, 5), shell, 0, L, 0);
+    parent.add(seg, knot);
+    const next = pivot(parent, 0, L, 0);
+    next.rotation.x = 0.58;
+    parent = next;
+  }
+  const sting = mesh(new THREE.ConeGeometry(0.06, boss ? 0.34 : 0.22, 6), red, 0, 0.12, 0);
+  parent.add(sting);
+  // pinças
+  const claws = [];
+  for (const s of [-1, 1]) {
+    const arm = pivot(cr.body, s * 0.22, 0.28, 0.34);
+    arm.rotation.y = -s * 0.5;
+    const upper = mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.36, 6), shell, 0, 0, 0.18);
+    upper.rotation.x = Math.PI / 2;
+    const fore = pivot(arm, 0, 0, 0.36);
+    fore.rotation.y = s * 0.7;
+    const lower = mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.3, 6), dark, 0, 0, 0.15);
+    lower.rotation.x = Math.PI / 2;
+    const palm = mesh(new THREE.BoxGeometry(0.2, 0.1, 0.22), light, 0, 0, 0.36);
+    const fingers = [-1, 1].map((f) => {
+      const g = pivot(fore, f * 0.06, 0, 0.42);
+      g.add(mesh(new THREE.BoxGeometry(0.06, 0.07, 0.24), f < 0 ? shell : dark, 0, 0, 0.12));
+      return g;
+    });
+    fore.add(lower, palm);
+    arm.add(upper);
+    claws.push({ arm, fingers, s });
+  }
+  // oito patas
+  const legs = [];
+  for (const s of [-1, 1]) {
+    for (let i = 0; i < 4; i++) {
+      const p = pivot(cr.body, s * 0.2, 0.26, 0.2 - i * 0.15);
+      const up = mesh(new THREE.CylinderGeometry(0.024, 0.02, 0.32, 4), dark, s * 0.14, -0.06, 0);
+      up.rotation.z = -s * 2.0;
+      const lo = mesh(new THREE.CylinderGeometry(0.02, 0.014, 0.26, 4), dark, s * 0.3, -0.16, 0);
+      lo.rotation.z = -s * 0.35;
+      p.add(up, lo);
+      p.userData.i = i + (s > 0 ? 4 : 0);
+      legs.push(p);
+    }
+  }
+  if (boss) {
+    const gold = cr.m(0xf4d03f, { metal: 0.6, rough: 0.3 });
+    for (let i = -2; i <= 2; i++) cr.body.add(mesh(new THREE.ConeGeometry(0.035, 0.18 - Math.abs(i) * 0.03, 5), gold, i * 0.08, 0.5 - Math.abs(i) * 0.03, 0.1 - Math.abs(i) * 0.04));
+  }
+  cr.anim = (dt, st, t) => {
+    const ph = st.moving ? (st.phase || 0) * 1.4 : t * 1.1;
+    for (const p of legs) p.rotation.y = Math.sin(ph + p.userData.i * 1.4) * (st.moving ? 0.38 : 0.05);
+    const atk = st.atkStart ? (st.now - st.atkStart) / 500 : 2;
+    // o golpe: a cauda desce sobre a presa e as pinças se abrem
+    tail.rotation.x = -0.32 + Math.sin(t * 2.2) * 0.04 + (atk < 1 ? Math.sin(atk * Math.PI) * 0.95 : 0);
+    for (const c of claws) {
+      c.arm.rotation.y = -c.s * 0.5 + Math.sin(t * 1.6 + c.s) * 0.06;
+      const open = atk < 1 ? Math.sin(atk * Math.PI) * 0.5 : 0.1 + Math.sin(t * 2.4) * 0.05;
+      c.fingers[0].rotation.y = -open; c.fingers[1].rotation.y = open;
+    }
   };
   return cr;
 }

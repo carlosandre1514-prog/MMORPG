@@ -5,6 +5,7 @@ import { ITEMS, isEquipment } from '/shared/data/items.js';
 import { QUESTS } from '/shared/data/quests.js';
 import { NPCS } from '/shared/data/npcs.js';
 import { ZONES, ZONE_ORDER } from '/shared/data/zones.js';
+import { KINGDOMS, KINGDOM_ORDER } from '/shared/data/kingdoms.js';
 import { MONSTERS } from '/shared/data/monsters.js';
 import { EQUIP_SLOTS, SLOT_NAMES, STAT_NAMES, GUILD_COST, TILE } from '/shared/constants.js';
 import { itemName, sellPrice } from '/shared/itemgen.js';
@@ -220,7 +221,7 @@ export const windowsMixin = {
     const body = clear(this.wins.quests.body);
     const active = Object.keys(me.quests.active).map((id) => QUESTS[id]).filter(Boolean);
     const list = h('div', { class: 'ql-list' });
-    const groups = [['Campanha principal', (q) => q.main], ['Missões secundárias', (q) => !q.main && !q.repeatable], ['Contratos', (q) => q.repeatable]];
+    const groups = [['Campanha principal', (q) => q.main], ['Reino de Sahaar', (q) => q.saga === 'sahaar'], ['Missões secundárias', (q) => !q.main && !q.saga && !q.repeatable], ['Contratos', (q) => q.repeatable]];
     if (!this.selectedQuest || !me.quests.active[this.selectedQuest]) this.selectedQuest = active[0]?.id || null;
     for (const [title, pred] of groups) {
       const qs = active.filter(pred);
@@ -385,11 +386,17 @@ export const windowsMixin = {
     }, { passive: false });
     cv.addEventListener('dblclick', () => { this.mapCam = { zoom: 1, cx: z.w / 2, cy: z.h / 2 }; this.drawWorldMap(); });
     const side = h('div', { class: 'map-side' }, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
-    for (const id of ZONE_ORDER) {
-      const zd = ZONES[id];
-      const known = g.me.visited.includes(id);
-      side.appendChild(h('div', { class: 'map-zone' + (id === z.id ? ' cur' : '') + (known ? '' : ' unknown') },
-        h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
+    // zonas agrupadas por reino; um reino que o personagem nunca pisou aparece como "???"
+    for (const kid of KINGDOM_ORDER) {
+      const K = KINGDOMS[kid];
+      const kKnown = K.zones.some((id) => g.me.visited.includes(id));
+      side.appendChild(h('div', { class: 'map-kingdom' + (kid === z.def.kingdom ? ' cur' : '') }, kKnown ? K.name : '??? (reino desconhecido)'));
+      for (const id of K.zones) {
+        const zd = ZONES[id];
+        const known = g.me.visited.includes(id);
+        side.appendChild(h('div', { class: 'map-zone' + (id === z.id ? ' cur' : '') + (known ? '' : ' unknown') },
+          h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
+      }
     }
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ● azul: portal · ☠ chefe'));
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para mover · roda para aproximar · duplo clique para voltar.'));
@@ -537,7 +544,8 @@ export const windowsMixin = {
             <li>NPCs com <b class="gold">!</b> têm missões; <b class="gold">?</b> amarelo indica missão pronta para entregar.</li>
             <li>A cada nível você ganha 3 pontos de atributo (C). O atributo marcado com ★ aumenta seu Poder.</li>
             <li>Chefes avisam seus golpes com <b style="color:#ff6b6b">círculos vermelhos</b> no chão — saia deles!</li>
-            <li>Toque nas <b style="color:#85c1e9">Pedras do Caminho</b> para viajar rapidamente entre regiões descobertas.</li>
+            <li>Toque nas <b style="color:#85c1e9">Pedras do Caminho</b> para viajar rapidamente entre regiões descobertas do mesmo reino.</li>
+            <li>O mundo é dividido em <b class="gold">reinos</b>: só o reino onde você está é carregado. Ao atravessar a fronteira o jogo carrega o novo reino; suas missões e progresso ficam guardados, e o Pergaminho de Retorno e o renascimento levam à capital do reino atual.</li>
             <li>A Ferreira aprimora equipamentos até +10. Até +4 nunca falha; a partir de +5, uma falha reduz o nível.</li>
             <li>Morrer fora da arena custa um pouco de experiência. Use poções (Q) e recue quando necessário.</li>
             <li>Grupos ganham mais experiência total e dividem os saques.</li>
@@ -547,7 +555,7 @@ export const windowsMixin = {
       </div>
       <div class="ql-sub">A história até aqui</div>
       <div class="ql-story">Há um mês, Morvath, o Sumo-Guardião da Ordem da Chama, extinguiu a Chama Primordial do Santuário de Lúmen e a partiu em três Brasas — Vida, Terra e Espírito — entregando-as a criaturas corrompidas. Desde então, a Névoa Cinzenta avança sobre Aethra. Quando a Chama se partiu, centelhas caíram do céu e despertaram os Portadores. Você é um deles. Recupere as três Brasas e reacenda a luz.</div>
-      <div class="muted small" style="margin-top:8px">Modelos 3D: KayKit Adventurers, Skeletons, Medieval Hexagon, Resource Bits, Dungeon, Weapons Bits e Tools Bits por Kay Lousberg (www.kaylousberg.com); prédios com o Medieval Village MegaKit por Quaternius (quaternius.com); zumbi por Kenney (kenney.nl) e céu por Poly Haven (polyhaven.com), via pacote do Brackeys. Todos CC0.</div>
+      <div class="muted small" style="margin-top:8px">Modelos 3D: KayKit Adventurers, Skeletons, Medieval Hexagon, Resource Bits, Dungeon, Weapons Bits e Tools Bits por Kay Lousberg (www.kaylousberg.com); prédios com o Medieval Village MegaKit por Quaternius (quaternius.com); as torres de Zahrim são voxels (MagicaVoxel) do autor do projeto; zumbi por Kenney (kenney.nl) e céu por Poly Haven (polyhaven.com), via pacote do Brackeys. Todos CC0.</div>
       ${this.game.dev ? '<div class="ql-sub">Modo de teste (DEV)</div><div class="muted">/nivel N · /ouro N · /item id [qtd] [raridade] · /ir zona · /tp x y · /curar · /matar · /ids</div>' : ''}`;
   },
 

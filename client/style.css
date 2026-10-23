@@ -260,6 +260,12 @@ input { font-family: var(--font); user-select: text; }
 .t-info { color: #eee; }
 
 #banner { position: absolute; left: 50%; top: 26%; transform: translate(-50%, -50%) scale(0.9); text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.6s, transform 0.6s; }
+#kingdom-transition { position: fixed; inset: 0; z-index: 25000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center; background: radial-gradient(ellipse at center, #3a2a14 0%, #120c06 80%); color: #f5e9c8; }
+#kingdom-transition .kt-label { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #c9a24a; }
+#kingdom-transition .kt-title { font-family: var(--font-title); font-size: 38px; color: #ffd27a; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8); }
+#kingdom-transition .kt-text { max-width: 460px; font-style: italic; opacity: 0.85; }
+#kingdom-transition .load-bar { width: min(320px, 70vw); margin-top: 10px; }
+#banner.b-kingdom .bn-title { font-size: 40px; letter-spacing: 2px; color: #ffd27a; }
 #banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .bn-title { font-family: var(--font-title); font-size: 42px; font-weight: 900; color: #ffe0a3; text-shadow: 0 0 24px rgba(255, 150, 40, 0.8), 0 3px 0 #000; letter-spacing: 3px; white-space: nowrap; }
 .bn-sub { font-size: 18px; color: #f0e2c4; text-shadow: 0 2px 4px #000; margin-top: 4px; }
@@ -366,6 +372,8 @@ input { font-family: var(--font); user-select: text; }
 .map-wrap { display: flex; gap: 12px; }
 .map-cv { border: 1px solid #444; border-radius: 4px; max-width: 100%; }
 .map-side { flex: 1; }
+.map-kingdom { margin: 10px 0 2px; padding-bottom: 2px; border-bottom: 1px solid rgba(201, 162, 74, 0.35); color: #c9a24a; font-family: var(--font-title); font-size: 15px; letter-spacing: 1px; }
+.map-kingdom.cur { color: #ffd27a; }
 .map-zone { padding: 4px 6px; border-radius: 3px; margin: 2px 0; }
 .map-zone.cur { background: rgba(201, 162, 74, 0.2); }
 .map-zone.unknown { opacity: 0.4; }

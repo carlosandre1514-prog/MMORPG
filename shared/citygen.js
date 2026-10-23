@@ -42,15 +42,6 @@ export function buildCapital(grid, zone) {
     S.push(st);
   };
   const floorsFor = () => { const r = rng(); return r < 0.4 ? 1 : r < 0.85 ? 2 : 3; };
-  // Torres de adobe em voxel (assets/voxel): construções maciças, sem porta nem interior, que ocupam o lugar de algumas casas
-  // de um quarteirão (a escolha vem de um hash da posição, então o resto da cidade continua exatamente igual).
-  // O modelo (st.model) é desenhado pelo cliente (client/js/three/voxel.js) e cabe na área w × h.
-  let voxelRate = 0, voxelCount = 0;
-  const VOXELS = ['SmallBuilding01', 'TallBuilding01', 'TallBuilding02', 'TallBuilding03'];
-  const voxel = (x, y, w, h, face) => {
-    grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.setT(px, py, T.STONE); grid.pathMask[idx(px, py)] = 0; });
-    S.push({ kind: 'house', type: 'voxel', x, y, w, h, face, seed: 9000 + voxelCount++, floors: 4, model: VOXELS[Math.floor(hash2(x, y, 93) * VOXELS.length)] });
-  };
   const lamp = (x, y) => obj(x, y, O.LAMP);
   // jardim ou quintal: grama com arbustos, flores e uma árvore de vez em quando
   const garden = (x, y, w, h) => {
@@ -90,8 +81,7 @@ export function buildCapital(grid, zone) {
       const rest = left - lw;
       if (rest > 0 && rest < 4) lw = rest + lw <= 6 ? left : lw === 4 ? 6 : 4;
       if (lw > left) lw = left >= 6 ? 6 : 4;
-      const floors = floorsFor();
-      if (voxelRate && d >= 4 && hash2(x, y0, 91) < voxelRate) { houseSeed++; voxel(x, y0, lw, d, face); } else house(x, y0, lw, d, face, { floors });
+      house(x, y0, lw, d, face, { floors: floorsFor() });
       x += lw;
     }
   };
@@ -244,13 +234,10 @@ export function buildCapital(grid, zone) {
   row(37, 52, 30, 6, 's');                        // casas nobres junto ao castelo
   row(60, 75, 30, 6, 's');
   row(78, 81, 30, 6, 's'); row(92, 106, 30, 6, 's');
-  voxelRate = 0.05;                               // uma torre de adobe aqui e ali
   district(5, 5, 33, 35);                         // bairro noroeste
   district(78, 5, 106, 26, { face: 's' });        // bairro nordeste
   district(5, 58, 53, 90);                        // bairro sudoeste
-  voxelRate = 0.6;                                // Bairro das Torres: a maior parte do quarteirão é de torres
   district(59, 58, 85, 90);                       // bairro sudeste
-  voxelRate = 0;
 
   // ------------------------------------------------------------ capela e cemitério
   pave(86, 58, 4, 33);

@@ -1,5 +1,5 @@
 // Renderização do terreno (em blocos pré-desenhados) e dos objetos do cenário.
-import { T, O, OBJ_INFO } from '/shared/tiles.js';
+import { T, O, OBJ_INFO, isRock } from '/shared/tiles.js';
 import { TILE } from '/shared/constants.js';
 import { hash2 } from '/shared/rng.js';
 import { shade, rgba, rr, circle, ellipse, shadow } from './sprites.js';
@@ -12,6 +12,7 @@ const BASE = {
   [T.CAVE]: '#4d4540', [T.ASH]: '#5d5652', [T.LAVA]: '#d9541e', [T.BRIDGE]: '#3b7fc4',
   [T.CAVEWALL]: '#2e2925', [T.MUD]: '#594a3a', [T.COBBLE]: '#8f8a83', [T.RUIN]: '#9b9184',
   [T.VOID]: '#000000', [T.ARENA]: '#c7a46a',
+  [T.DUNE]: '#cfa56a', [T.SANDSTONE]: '#caa877', [T.TOMBFLOOR]: '#8a7455', [T.TOMBWALL]: '#4a3b2b',
 };
 
 // Prioridade para bordas orgânicas: tiles de prioridade maior "invadem" os vizinhos.
@@ -19,8 +20,9 @@ const PRIORITY = {
   [T.WATER]: 0, [T.DEEP]: 0, [T.LAVA]: 0, [T.BRIDGE]: 1, [T.SAND]: 2, [T.MUD]: 3, [T.ASH]: 4,
   [T.DIRT]: 5, [T.COBBLE]: 3, [T.RUIN]: 3, [T.ARENA]: 2, [T.GRASS]: 7, [T.DARKGRASS]: 8,
   [T.CAVE]: 2, [T.CAVEWALL]: 9, [T.STONE]: 3, [T.WOOD]: 3, [T.VOID]: 10,
+  [T.DUNE]: 2, [T.SANDSTONE]: 3, [T.TOMBFLOOR]: 3, [T.TOMBWALL]: 9,
 };
-const BLEEDS = new Set([T.GRASS, T.DARKGRASS, T.SAND, T.DIRT, T.ASH, T.MUD]);
+const BLEEDS = new Set([T.GRASS, T.DARKGRASS, T.SAND, T.DIRT, T.ASH, T.MUD, T.DUNE]);
 const LIQUID = new Set([T.WATER, T.DEEP, T.LAVA]);
 
 export class Terrain {
@@ -129,7 +131,7 @@ export class Terrain {
         const X = x0 + tx, Y = y0 + ty;
         const t = this.tile(X, Y);
         if (LIQUID.has(t)) this.shore(ctx, tx * TILE, ty * TILE, t, X, Y);
-        if (t === T.CAVEWALL) this.caveWall(ctx, tx * TILE, ty * TILE, X, Y);
+        if (isRock(t)) this.caveWall(ctx, tx * TILE, ty * TILE, X, Y);
         if (t === T.BRIDGE) this.bridge(ctx, tx * TILE, ty * TILE, X, Y);
       }
     }
@@ -237,6 +239,44 @@ export class Terrain {
         }
         break;
       }
+      case T.DUNE: {
+        // ondulações da areia: cristas claras e sombras suaves
+        ctx.strokeStyle = shade(base, 0.12); ctx.lineWidth = 1.4;
+        for (let i = 0; i < 2; i++) {
+          const wy = py + 6 + hash2(X, Y, 170 + i) * 20, wx = px + hash2(X, Y, 175 + i) * 10;
+          ctx.beginPath(); ctx.moveTo(wx, wy); ctx.quadraticCurveTo(wx + 9, wy - 4, wx + 20, wy); ctx.stroke();
+        }
+        ctx.strokeStyle = shade(base, -0.14);
+        const sy = py + 8 + hash2(X, Y, 180) * 18;
+        ctx.beginPath(); ctx.moveTo(px + 3, sy); ctx.quadraticCurveTo(px + 14, sy + 4, px + 28, sy); ctx.stroke();
+        break;
+      }
+      case T.SANDSTONE: {
+        // lajes de arenito claras, com juntas escuras e desgaste
+        ctx.fillStyle = shade(base, -0.28);
+        ctx.fillRect(px, py, TILE, TILE);
+        for (let r = 0; r < 2; r++) {
+          for (let c = 0; c < 2; c++) {
+            const sx = px + c * 16, sy = py + r * 16;
+            ctx.fillStyle = shade(base, 0.04 + (hash2(X * 2 + c, Y * 2 + r, 4) - 0.5) * 0.16);
+            ctx.fillRect(sx + 1, sy + 1, 14, 14);
+            ctx.fillStyle = shade(base, 0.18);
+            ctx.fillRect(sx + 1, sy + 1, 14, 1); ctx.fillRect(sx + 1, sy + 1, 1, 14);
+          }
+        }
+        if (h < 0.18) { ctx.fillStyle = 'rgba(214,190,140,0.55)'; ellipse(ctx, px + 6 + h * 60, py + 10 + hash2(X, Y, 5) * 14, 6, 3, ctx.fillStyle); } // areia soprada sobre as lajes
+        break;
+      }
+      case T.TOMBFLOOR: {
+        ctx.fillStyle = shade(base, -0.3);
+        ctx.fillRect(px, py, TILE, TILE);
+        ctx.fillStyle = shade(base, (h - 0.5) * 0.22);
+        ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
+        // faixa dourada de hieróglifos em algumas lajes
+        if (h > 0.86) { ctx.fillStyle = 'rgba(214,170,60,0.5)'; ctx.fillRect(px + 6, py + 14, 20, 3); ctx.fillRect(px + 10, py + 9, 4, 3); ctx.fillRect(px + 18, py + 20, 5, 3); }
+        if (h < 0.3) { ctx.strokeStyle = shade(base, -0.45); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 5, py + 8); ctx.lineTo(px + 15, py + 15); ctx.lineTo(px + 11, py + 27); ctx.stroke(); }
+        break;
+      }
       case T.CAVE:
         for (let i = 0; i < 6; i++) {
           ctx.fillStyle = i % 2 ? shade(base, -0.2) : shade(base, 0.1);
@@ -285,19 +325,20 @@ export class Terrain {
 
   caveWall(ctx, px, py, X, Y) {
     const below = this.tile(X, Y + 1);
-    ctx.fillStyle = '#3a342f';
-    for (let i = 0; i < 4; i++) ellipse(ctx, px + hash2(X, Y, 300 + i) * 30, py + hash2(X, Y, 310 + i) * 30, 4, 3, i % 2 ? '#38322d' : '#26211e');
-    if (below !== T.CAVEWALL && below !== T.VOID) {
+    const tomb = this.tile(X, Y) === T.TOMBWALL; // paredes de arenito das tumbas
+    ctx.fillStyle = tomb ? '#5a4836' : '#3a342f';
+    for (let i = 0; i < 4; i++) ellipse(ctx, px + hash2(X, Y, 300 + i) * 30, py + hash2(X, Y, 310 + i) * 30, 4, 3, tomb ? (i % 2 ? '#56432f' : '#3f3225') : (i % 2 ? '#38322d' : '#26211e'));
+    if (!isRock(below) && below !== T.VOID) {
       // face frontal da rocha
       const g = ctx.createLinearGradient(0, py + 14, 0, py + TILE);
-      g.addColorStop(0, '#4a423b'); g.addColorStop(1, '#2a2420');
+      if (tomb) { g.addColorStop(0, '#7a6347'); g.addColorStop(1, '#3d2f22'); } else { g.addColorStop(0, '#4a423b'); g.addColorStop(1, '#2a2420'); }
       ctx.fillStyle = g;
       ctx.fillRect(px, py + 14, TILE, TILE - 14);
       ctx.fillStyle = 'rgba(255,255,255,0.08)';
       ctx.fillRect(px, py + 13, TILE, 2);
     }
     const above = this.tile(X, Y - 1);
-    if (above !== T.CAVEWALL && above !== T.VOID) {
+    if (!isRock(above) && above !== T.VOID) {
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.fillRect(px, py, TILE, 3);
     }
@@ -356,6 +397,14 @@ export class Terrain {
           ctx.beginPath(); ctx.moveTo(px + 16, py + 16); ctx.lineTo(px + 16 + Math.cos(a) * 15, py + 16 + Math.sin(a) * 15); ctx.stroke();
         }
         for (let r = 4; r < 15; r += 4) { ctx.beginPath(); ctx.arc(px + 16, py + 16, r, 0, Math.PI * 2); ctx.stroke(); }
+        break;
+      case O.DRYBUSH:
+        ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 1.2;
+        for (let i = 0; i < 7; i++) {
+          const fx = px + 8 + h(i) * 16, fy = py + 24;
+          ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx + (h(i + 3) - 0.5) * 12, fy - 6 - h(i + 6) * 8); ctx.stroke();
+        }
+        circle(ctx, px + 16, py + 22, 2, '#a8864a');
         break;
       case O.REEDS:
         ctx.strokeStyle = '#5d7d2a'; ctx.lineWidth = 1.5;
@@ -868,6 +917,7 @@ export function minimapColor(t, o) {
   if (o === O.BUILDING) return '#7b5e3b';
   if (o && OBJ_INFO[o].block) {
     if (o === O.TREE || o === O.PINE || o === O.BIGTREE || o === O.BUSH) return '#24502a';
+    if (o === O.PALM || o === O.CACTUS) return '#3f7a2a';
     return '#5a5550';
   }
   const map = {
@@ -875,6 +925,7 @@ export function minimapColor(t, o) {
     [T.DEEP]: '#2a5f9e', [T.CAVE]: '#6d635b', [T.CAVEWALL]: '#221e1b', [T.ASH]: '#6b6460', [T.LAVA]: '#e25822',
     [T.BRIDGE]: '#8b6a42', [T.MUD]: '#594a3a', [T.COBBLE]: '#a39e96', [T.RUIN]: '#a99f92', [T.ARENA]: '#c7a46a',
     [T.STONE]: '#8e8e8e', [T.WOOD]: '#8b6a42', [T.VOID]: '#000',
+    [T.DUNE]: '#cfa56a', [T.SANDSTONE]: '#caa877', [T.TOMBFLOOR]: '#8a7455', [T.TOMBWALL]: '#2b2218',
   };
   return map[t] || '#000';
 }

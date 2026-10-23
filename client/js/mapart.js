@@ -2,7 +2,7 @@
 // colinas e penhascos, água com espuma na margem, ruas de pedra, casas com telhado de duas águas (chaminé, fachada, porta),
 // muralhas com ameias, torres, árvores com copa e sombra, rochas e dezenas de objetos pequenos. A imagem é pintada uma vez por
 // zona (em fatias, para não travar o jogo) e o minimapa e a janela de mapa só recortam e põem os marcadores por cima.
-import { T, O } from '/shared/tiles.js';
+import { T, O, isRock } from '/shared/tiles.js';
 import { hash2, valueNoise } from '/shared/rng.js';
 import { houseGeom } from '/shared/housegeom.js';
 
@@ -16,8 +16,9 @@ const BASE = {
   [T.DEEP]: hex('#2a5d9c'), [T.CAVE]: hex('#6f655c'), [T.CAVEWALL]: hex('#463e37'), [T.ASH]: hex('#6e6761'), [T.LAVA]: hex('#e25822'),
   [T.BRIDGE]: hex('#8b6a42'), [T.MUD]: hex('#5d4d3c'), [T.COBBLE]: hex('#a29d94'), [T.RUIN]: hex('#a99f92'), [T.ARENA]: hex('#c9a56b'),
   [T.STONE]: hex('#8f8d89'), [T.WOOD]: hex('#8b6a42'), [T.VOID]: hex('#000000'),
+  [T.DUNE]: hex('#d3ab6b'), [T.SANDSTONE]: hex('#cdac7a'), [T.TOMBFLOOR]: hex('#8b7556'), [T.TOMBWALL]: hex('#5e4a36'),
 };
-const BUILT = new Set([T.COBBLE, T.STONE, T.WOOD, T.BRIDGE, T.RUIN, T.ARENA]);
+const BUILT = new Set([T.COBBLE, T.STONE, T.WOOD, T.BRIDGE, T.RUIN, T.ARENA, T.SANDSTONE, T.TOMBFLOOR]);
 const LIQUID = new Set([T.WATER, T.DEEP, T.LAVA]);
 const ROOFS = [
   ['#c8603f', '#a04327', '#6e2a17'], ['#bf5a38', '#9a4026', '#682816'], ['#cf6f46', '#a74b2c', '#74301c'],
@@ -78,14 +79,14 @@ export class MapArt {
   // altura sintética: ruído suave nas áreas abertas, rocha das cavernas bem alta, água rebaixada
   elevation() {
     const { W, H } = this;
-    const flat = this.zone.def.gen.type === 'town' || this.zone.def.gen.type === 'arena';
+    const flat = ['town', 'arena', 'desertcity'].includes(this.zone.def.gen.type);
     let E = new Float32Array(W * H);
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const t = this.tiles[y * W + x];
         let e = (valueNoise(x / 11 + 40, y / 11 + 40, this.seed) - 0.5) * 1.6 + (valueNoise(x / 4.5, y / 4.5, this.seed + 1) - 0.5) * 0.7;
         if (flat) e *= 0.22;
-        if (t === T.CAVEWALL) e = 1.7 + e * 0.5 + this.r(x, y, 9) * 0.5;
+        if (isRock(t)) e = 1.7 + e * 0.5 + this.r(x, y, 9) * 0.5;
         else if (t === T.WATER || t === T.DEEP) e = -0.45 + e * 0.1;
         else if (t === T.LAVA) e = -0.35;
         else if (BUILT.has(t)) e *= 0.25;
@@ -185,7 +186,7 @@ export class MapArt {
         if (R(45) < 0.45) { ctx.strokeStyle = t === T.WATER ? 'rgba(220,240,255,0.45)' : 'rgba(150,190,235,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); const wx = px + 1 + R(46) * 4, wy = py + 2 + R(47) * 6; ctx.moveTo(wx, wy); ctx.quadraticCurveTo(wx + 2, wy - 2, wx + 4, wy); ctx.stroke(); }
         break;
       case T.CAVE: speck(8, 'rgba(160,150,140,0.55)', 'rgba(40,35,30,0.5)'); if (R(48) < 0.12) { ctx.fillStyle = 'rgba(95,88,80,0.9)'; ctx.fillRect(px + 2 + Math.floor(R(49) * 5), py + 2 + Math.floor(R(50) * 5), 2, 2); } break;
-      case T.CAVEWALL: {
+      case T.CAVEWALL: case T.TOMBWALL: {
         // rocha: lascas de tons diferentes
         for (let i = 0; i < 3; i++) {
           const sx = px + R(60 + i * 4) * (S - 3), sy = py + R(61 + i * 4) * (S - 3);
@@ -203,12 +204,32 @@ export class MapArt {
       case T.STONE: case T.RUIN: this.slabs(x, y, px, py, t === T.RUIN); break;
       case T.WOOD: case T.BRIDGE: this.planks(x, y, px, py, t === T.BRIDGE); break;
       case T.ARENA: speck(10, 'rgba(240,215,160,0.7)', 'rgba(150,110,60,0.45)'); break;
+      case T.DUNE: {
+        speck(5, 'rgba(255,236,180,0.6)', 'rgba(150,105,50,0.4)');
+        // crista da duna: um arco claro com sombra logo abaixo
+        const cy = py + 3 + R(56) * 4;
+        ctx.strokeStyle = 'rgba(255,238,190,0.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, cy); ctx.quadraticCurveTo(px + S / 2, cy - 2, px + S, cy); ctx.stroke();
+        ctx.strokeStyle = 'rgba(140,95,45,0.4)'; ctx.beginPath(); ctx.moveTo(px, cy + 1.5); ctx.quadraticCurveTo(px + S / 2, cy - 0.5, px + S, cy + 1.5); ctx.stroke();
+        break;
+      }
+      case T.SANDSTONE: case T.TOMBFLOOR: {
+        const tomb = t === T.TOMBFLOOR;
+        ctx.fillStyle = rgb(tomb ? hex('#8e7859') : hex('#d1b184'), 0.9 + R(3) * 0.2);
+        ctx.fillRect(px, py, S, S);
+        ctx.strokeStyle = tomb ? 'rgba(30,22,14,0.45)' : 'rgba(110,80,40,0.38)'; ctx.lineWidth = 1;
+        ctx.strokeRect(px + 0.5, py + 0.5, S - 1, S - 1);
+        ctx.beginPath(); ctx.moveTo(px + S / 2, py); ctx.lineTo(px + S / 2, py + S); ctx.moveTo(px, py + S / 2); ctx.lineTo(px + S, py + S / 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(255,245,215,0.16)'; ctx.fillRect(px + 1, py + 1, S / 2 - 1, 1);
+        if (tomb && R(7) > 0.84) { ctx.fillStyle = 'rgba(220,175,60,0.55)'; ctx.fillRect(px + 1.5, py + S / 2 - 0.5, S - 3, 1); }
+        else if (!tomb && R(7) < 0.14) { ctx.fillStyle = 'rgba(232,205,150,0.6)'; ctx.beginPath(); ctx.ellipse(px + 3 + R(8) * 4, py + 3 + R(9) * 4, 2.6, 1.3, 0, 0, Math.PI * 2); ctx.fill(); }
+        break;
+      }
       default: break;
     }
     // meio-fio nas bordas de pisos construídos que dão para terreno natural
     if (BUILT.has(t) && t !== T.BRIDGE) {
       ctx.fillStyle = 'rgba(40,34,28,0.5)';
-      const nb = (dx, dy) => { const n = this.t(x + dx, y + dy); return n >= 0 && !BUILT.has(n) && !LIQUID.has(n) && !(n === T.CAVEWALL); };
+      const nb = (dx, dy) => { const n = this.t(x + dx, y + dy); return n >= 0 && !BUILT.has(n) && !LIQUID.has(n) && !isRock(n); };
       if (nb(0, -1)) ctx.fillRect(px, py, S, 1);
       if (nb(0, 1)) ctx.fillRect(px, py + S - 1, S, 1);
       if (nb(-1, 0)) ctx.fillRect(px, py, 1, S);
@@ -346,6 +367,7 @@ export class MapArt {
         else if (o === O.BUSH) { r = 0.3; len = 0.18; } else if (o === O.ROCK) { r = 0.42; len = 0.3; } else if (o === O.PILLAR || o === O.STATUE) { r = 0.3; len = 0.8; }
         else if (o === O.LAMP || o === O.TORCH) { r = 0.1; len = 0.7; } else if (o === O.STALL || o === O.TENT) { r = 0.6; len = 0.35; } else if (o === O.WELL || o === O.STALAG || o === O.CRYSTAL) { r = 0.4; len = 0.35; }
         else if (o === O.GRAVE) { r = 0.2; len = 0.3; } else if (o === O.BROKENPILLAR) { r = 0.3; len = 0.3; } else if (o === O.BANNER) { r = 0.12; len = 0.7; }
+        else if (o === O.PALM) { r = 0.5; len = 0.85; } else if (o === O.CACTUS) { r = 0.22; len = 0.45; } else if (o === O.OBELISK) { r = 0.26; len = 1.0; } else if (o === O.SARCOPHAGUS) { r = 0.4; len = 0.2; }
         if (!r) continue;
         ctx.beginPath();
         ctx.ellipse((x + 0.5 + len * 0.55) * S, (y + 0.55 + len * 0.45) * S, r * S * 1.05, r * S * 0.8, Math.PI / 4, 0, Math.PI * 2);
@@ -410,6 +432,9 @@ export class MapArt {
           case O.ORE: { ctx.fillStyle = '#4e4e57'; ctx.beginPath(); ctx.ellipse(cx, cy, 4, 3.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = ['#d9a441', '#b7c4cf', '#8a5a3b', '#9ad0f0'][Math.floor(R(0) * 4)]; ctx.fillRect(cx - 2, cy - 1.5, 2, 2); ctx.fillRect(cx + 0.5, cy, 1.5, 1.5); break; }
           case O.ALTAR: ctx.fillStyle = '#6f6a62'; ctx.fillRect(px + 0.5, py + 2, 9, 6.5); ctx.fillStyle = '#c4beb0'; ctx.fillRect(px + 1, py + 2.5, 8, 5); ctx.fillStyle = '#e8c04a'; ctx.beginPath(); ctx.arc(cx, cy, 1.6, 0, Math.PI * 2); ctx.fill(); break;
           case O.BRAZIER: case O.TORCH: case O.LANTERN: case O.CANDLE: case O.LAMP: this.light(cx, cy, o); break;
+          case O.DRYBUSH: ctx.strokeStyle = '#8a6d3b'; ctx.lineWidth = 1; ctx.beginPath(); for (let i = 0; i < 5; i++) { ctx.moveTo(cx, cy + 2); ctx.lineTo(cx + (R(i) - 0.5) * 6, cy - 1 - R(4 + i) * 3); } ctx.stroke(); ctx.fillStyle = '#a8864a'; ctx.fillRect(cx - 1, cy + 1, 2, 1.5); break;
+          case O.URN: ctx.fillStyle = '#7a3a20'; ctx.beginPath(); ctx.arc(cx, cy, 3.2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#b4623a'; ctx.beginPath(); ctx.arc(cx - 0.5, cy - 0.5, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#e0b020'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(cx, cy, 2.9, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = '#3a1e12'; ctx.beginPath(); ctx.arc(cx, cy, 1.1, 0, Math.PI * 2); ctx.fill(); break;
+          case O.SARCOPHAGUS: ctx.fillStyle = '#6b563a'; ctx.fillRect(cx - 3, cy - 4.4, 6, 9); ctx.fillStyle = '#c9aa72'; ctx.fillRect(cx - 2.5, cy - 4, 5, 8); ctx.fillStyle = '#e0b020'; ctx.fillRect(cx - 0.6, cy - 3.2, 1.2, 6.4); ctx.beginPath(); ctx.arc(cx, cy - 2.6, 1.5, 0, Math.PI * 2); ctx.fill(); break;
           case O.BANNER: ctx.fillStyle = '#4a321b'; ctx.fillRect(cx - 0.5, cy - 3, 1, 6); ctx.fillStyle = (x + y) % 2 ? '#2e5fa3' : '#b83a2e'; ctx.beginPath(); ctx.moveTo(cx + 0.5, cy - 3); ctx.lineTo(cx + 4.5, cy - 1.5); ctx.lineTo(cx + 0.5, cy + 0.2); ctx.closePath(); ctx.fill(); break;
           default: break;
         }
@@ -472,6 +497,8 @@ export class MapArt {
         else if (o === O.PILLAR || o === O.BROKENPILLAR || o === O.STATUE) items.push({ y: y + 0.8, f: () => this.pillar(x, y, o) });
         else if (o === O.STALAG) items.push({ y: y + 0.8, f: () => this.stalag(x, y) });
         else if (o === O.CRYSTAL) items.push({ y: y + 0.8, f: () => this.crystal(x, y) });
+        else if (o === O.PALM || o === O.CACTUS) items.push({ y: y + 1, f: () => this.tree(x, y, o) });
+        else if (o === O.OBELISK) items.push({ y: y + 0.8, f: () => this.obelisk(x, y) });
       }
     }
     // paredes, portões e torres antes das casas e das árvores; o resto na ordem de cima para baixo
@@ -675,6 +702,18 @@ export class MapArt {
     if (o === O.STATUE) { ctx.fillStyle = '#8f8a80'; ctx.fillRect(cx - 1, cy - 3, 2, 6); ctx.fillRect(cx - 2.5, cy - 1, 5, 1.5); }
   }
 
+  // obelisco visto de cima: pirâmide dourada sobre a base de arenito, com glifos
+  obelisk(x, y) {
+    const { S, ctx } = this;
+    const cx = (x + 0.5) * S, cy = (y + 0.5) * S, r = S * 0.34;
+    ctx.fillStyle = '#7e6a46'; ctx.fillRect(cx - r - 1, cy - r - 1, r * 2 + 2, r * 2 + 2);
+    ctx.fillStyle = '#c9a56a'; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    const face = (a, b, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.closePath(); ctx.fill(); };
+    face([cx - r, cy - r], [cx + r, cy - r], '#f7dc6f'); face([cx - r, cy - r], [cx - r, cy + r], '#f4d03f');
+    face([cx + r, cy - r], [cx + r, cy + r], '#d4ac0d'); face([cx - r, cy + r], [cx + r, cy + r], '#b7950b');
+    ctx.fillStyle = '#fff3b0'; ctx.fillRect(cx - 0.6, cy - 0.6, 1.2, 1.2);
+  }
+
   stalag(x, y) {
     const { S, ctx } = this;
     const cx = (x + 0.5) * S, cy = (y + 0.5) * S;
@@ -730,7 +769,7 @@ export class MapArt {
       for (let i = 0; i < 5; i++) { const a = seed * 3 + i * 1.3; c.fillRect(Math.cos(a) * r * 0.55 - 1, Math.sin(a) * r * 0.5 - 1.2, 1.4, 1.4); }
       c.strokeStyle = 'rgba(15,40,15,0.55)'; c.lineWidth = 0.9; c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.stroke();
     };
-    this.sprites = { round: [], pine: [], dead: [], bush: [] };
+    this.sprites = { round: [], pine: [], dead: [], bush: [], palm: [], cactus: [] };
     for (let v = 0; v < 3; v++) {
       this.sprites.round.push(mk(S * 1.5, (c) => blob(c, S * 0.62, ['#2c6a2c', '#3f8a36', '#66b04a', '#a8d77a'], v + 1)));
       this.sprites.bush.push(mk(S, (c) => blob(c, S * 0.34, ['#2f6d2a', '#43903a', '#6cb552', '#c7e59a'], v + 4)));
@@ -741,6 +780,25 @@ export class MapArt {
         star(S * 0.3, S * 0.12, '#3b8a47', 0.1);
         c.fillStyle = '#7ec58a'; c.beginPath(); c.arc(-S * 0.08, -S * 0.08, S * 0.1, 0, Math.PI * 2); c.fill();
         c.strokeStyle = 'rgba(10,30,15,0.5)'; c.lineWidth = 0.7; c.beginPath(); for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, rr = i % 2 ? S * 0.22 : S * 0.58; c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } c.closePath(); c.stroke();
+      }));
+      // palmeira vista de cima: folhas compridas saindo do centro, com o tronco e os cocos no meio
+      this.sprites.palm.push(mk(S * 2.2, (c) => {
+        for (let i = 0; i < 9; i++) {
+          const a = v * 0.3 + (i / 9) * Math.PI * 2, len = S * (0.85 + (i % 2) * 0.12);
+          c.fillStyle = i % 2 ? '#2f7a30' : '#3f9638';
+          c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(Math.cos(a - 0.22) * len * 0.6, Math.sin(a - 0.22) * len * 0.6, Math.cos(a) * len, Math.sin(a) * len); c.quadraticCurveTo(Math.cos(a + 0.22) * len * 0.6, Math.sin(a + 0.22) * len * 0.6, 0, 0); c.fill();
+          c.strokeStyle = 'rgba(15,50,15,0.45)'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a) * len, Math.sin(a) * len); c.stroke();
+        }
+        c.fillStyle = '#7a5a2e'; c.beginPath(); c.arc(0, 0, S * 0.16, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#4a3318'; c.beginPath(); c.arc(S * 0.06, S * 0.04, S * 0.06, 0, Math.PI * 2); c.fill(); c.beginPath(); c.arc(-S * 0.05, S * 0.07, S * 0.05, 0, Math.PI * 2); c.fill();
+      }));
+      // cacto visto de cima: corpo redondo com dois braços
+      this.sprites.cactus.push(mk(S * 1.2, (c) => {
+        c.fillStyle = '#3d7a30'; c.beginPath(); c.arc(0, 0, S * 0.2, 0, Math.PI * 2); c.fill();
+        for (const sx of [-1, 1]) { c.beginPath(); c.arc(sx * S * 0.3, (v - 1) * S * 0.08, S * 0.12, 0, Math.PI * 2); c.fill(); }
+        c.fillStyle = '#5aa044'; c.beginPath(); c.arc(-S * 0.05, -S * 0.05, S * 0.12, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#e84393'; c.fillRect(-1, -1, 2, 2);
+        c.strokeStyle = 'rgba(15,45,15,0.5)'; c.lineWidth = 0.7; c.beginPath(); c.arc(0, 0, S * 0.2, 0, Math.PI * 2); c.stroke();
       }));
       this.sprites.dead.push(mk(S * 1.2, (c) => {
         c.strokeStyle = '#4c3b2b'; c.lineWidth = 1.4; c.lineCap = 'round';
@@ -754,7 +812,7 @@ export class MapArt {
     const { S, ctx } = this;
     const v = Math.floor(this.r(x, y, 90) * 3);
     const jx = (this.r(x, y, 91) - 0.5) * 2, jy = (this.r(x, y, 92) - 0.5) * 2;
-    const set = o === O.PINE ? this.sprites.pine : o === O.DEADTREE ? this.sprites.dead : o === O.BUSH ? this.sprites.bush : this.sprites.round;
+    const set = o === O.PINE ? this.sprites.pine : o === O.DEADTREE ? this.sprites.dead : o === O.BUSH ? this.sprites.bush : o === O.PALM ? this.sprites.palm : o === O.CACTUS ? this.sprites.cactus : this.sprites.round;
     const spr = set[v];
     const k = o === O.BIGTREE ? 1.5 : 1;
     const cx = (x + 0.5) * S + jx, cy = (y + 0.5) * S + jy;

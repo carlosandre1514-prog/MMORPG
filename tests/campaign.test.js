@@ -12,7 +12,7 @@ import { createItem } from '../shared/itemgen.js';
 import { addItem } from '../server/systems/inventory.js';
 import { acceptQuest, turnInQuest, onKill, onTalk } from '../server/systems/quests.js';
 
-test('a campanha "A Chama Partida" pode ser concluída do início ao fim', () => {
+test('a campanha "A Chama Partida" e a saga de Sahaar podem ser concluídas do início ao fim', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aethra-camp-'));
   const world = new World(new Database(dir), {});
   const sent = [];
@@ -24,7 +24,7 @@ test('a campanha "A Chama Partida" pode ser concluída do início ao fim', () =>
     if (p.zone.id !== n.zone) world.transfer(p, n.zone, n.x, n.y + 1);
     p.x = n.x; p.y = n.y + 1;
   };
-  const chain = Object.values(QUESTS).filter((q) => q.main);
+  const run = (chain) => {
   for (const q of chain) {
     while (ch.level < q.lvl) world.giveXp(p, 1e6);
     goTo(q.giver);
@@ -39,9 +39,17 @@ test('a campanha "A Chama Partida" pode ser concluída do início ao fim', () =>
     turnInQuest(world, p, q.id);
     assert.ok(ch.quests.done[q.id], `entregar ${q.id}: ${JSON.stringify(sent.filter((m) => m.k === 'err').slice(-1))}`);
   }
+  };
+  run(Object.values(QUESTS).filter((q) => q.main));
   assert.ok(ch.flags.brasa_vida && ch.flags.brasa_terra && ch.flags.brasa_espirito);
   assert.equal(ch.title, 'Portador da Chama');
   assert.ok(ch.inv.some((it) => it && it.id === 'u_flame_amulet'));
+  // depois da campanha principal, a saga do Reino de Sahaar (Zahrim, Dunas Ardentes e Tumbas dos Reis-Sol)
+  const saga = Object.values(QUESTS).filter((q) => q.saga === 'sahaar');
+  assert.equal(saga.length, 8);
+  run(saga);
+  assert.ok(saga.every((q) => ch.quests.done[q.id]));
+  assert.ok(world.zones.has('zahrim') && world.zones.has('tombs'), 'a saga passa pelas zonas de Sahaar');
   world.stop();
   fs.rmSync(dir, { recursive: true, force: true });
 });

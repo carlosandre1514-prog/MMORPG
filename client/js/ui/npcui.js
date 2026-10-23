@@ -3,6 +3,7 @@ import { QUESTS } from '/shared/data/quests.js';
 import { ITEMS, isEquipment } from '/shared/data/items.js';
 import { RECIPES, recipesFor } from '/shared/data/recipes.js';
 import { ZONES, ZONE_ORDER } from '/shared/data/zones.js';
+import { KINGDOMS } from '/shared/data/kingdoms.js';
 import { EQUIP_SLOTS, SLOT_NAMES, NPC_RANGE, RARITY } from '/shared/constants.js';
 import { itemName, itemStats, rarityColor, sellPrice } from '/shared/itemgen.js';
 import { enhanceChance, enhanceCost, MAX_PLUS } from '/shared/formulas.js';
@@ -81,7 +82,7 @@ export const npcMixin = {
       body.appendChild(h('div', { class: 'npc-text' }, fill(npc.greeting, me)));
       const qs = Object.values(QUESTS);
       for (const q of qs) if (q.turnIn === npc.id && me.quests.active[q.id] && isComplete(me, q)) opt(`✔ ${q.name}`, () => { this.npcView = { mode: 'turnin', q: q.id }; this.renderNpc(); }, 'q-done');
-      for (const q of qs) if (q.giver === npc.id && canAccept(me, q)) opt(`${q.repeatable ? '↻' : '!'} ${q.name}${q.main ? '  ★' : ''}`, () => { this.npcView = { mode: 'offer', q: q.id }; this.renderNpc(); }, q.repeatable ? 'q-rep' : 'q-new');
+      for (const q of qs) if (q.giver === npc.id && canAccept(me, q)) opt(`${q.repeatable ? '↻' : '!'} ${q.name}${q.main || q.saga ? '  ★' : ''}`, () => { this.npcView = { mode: 'offer', q: q.id }; this.renderNpc(); }, q.repeatable ? 'q-rep' : 'q-new');
       for (const q of qs) if (q.turnIn === npc.id && me.quests.active[q.id] && !isComplete(me, q)) opt(`… ${q.name} (em andamento)`, () => { this.npcView = { mode: 'progress', q: q.id }; this.renderNpc(); }, 'q-prog');
       for (const q of qs) if (q.giver === npc.id && almostAvailable(me, q)) opts.appendChild(h('div', { class: 'npc-opt disabled' }, `🔒 ${q.name} (requer nível ${q.lvl})`));
       const S = npc.services;
@@ -281,14 +282,16 @@ export const npcMixin = {
     const npc = this.npcOpen;
     const body = clear(this.wins.teleport.body);
     const me = this.me;
-    body.appendChild(h('div', { class: 'muted small' }, 'Destinos descobertos:'));
+    const here = this.game.zone.def.kingdom;
+    body.appendChild(h('div', { class: 'muted small' }, `Destinos descobertos no ${KINGDOMS[here].name}:`));
     for (const id of ZONE_ORDER) {
       const z = ZONES[id];
+      if (z.kingdom !== here) continue; // as pedras só levam a lugares do mesmo reino: a fronteira se atravessa a pé
       const known = me.visited.includes(id);
-      const here = this.game.zone.id === id;
+      const atZone = this.game.zone.id === id;
       body.appendChild(h('div', { class: 'tp-row' + (known ? '' : ' unknown') },
         h('div', {}, h('b', {}, known ? z.name : '??? (não descoberto)'), h('div', { class: 'small muted' }, z.levels)),
-        known && !here ? h('button', { class: 'btn tiny', onclick: () => { this.send({ t: 'tp', n: npc.id, z: id }); this.closeNpcWindows(); } }, 'Viajar') : here ? h('small', { class: 'muted' }, 'você está aqui') : null));
+        known && !atZone ? h('button', { class: 'btn tiny', onclick: () => { this.send({ t: 'tp', n: npc.id, z: id }); this.closeNpcWindows(); } }, 'Viajar') : atZone ? h('small', { class: 'muted' }, 'você está aqui') : null));
     }
   },
 };

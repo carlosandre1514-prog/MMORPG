@@ -283,6 +283,121 @@ export const NPCS = {
     greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
     talk: [], services: ['teleport'],
   },
+
+  // ======================= Zahrim, Cidade das Torres =======================
+  soraya: {
+    id: 'soraya', name: 'Emira Soraya', title: 'Soberana de Sahaar', zone: 'zahrim', x: 91.5, y: 40.5,
+    look: { type: 'human', skin: '#a8703c', hair: '#1b1b1b', hairStyle: 'long', robe: '#b9770e', trim: '#f4d03f', crown: true, staff: true },
+    greeting: 'Que o sol a abençoe, Portador. Vi a luz da Chama acender ao norte, mesmo daqui. Foi o primeiro bom presságio em um ano.',
+    talk: [
+      'Sahaar é o último reino das areias. Nossas torres de barro resistiram a mil tempestades, mas a Névoa não é uma tempestade.',
+      'Meus ancestrais, os reis-sol, dormem nas tumbas ao norte da cidade. Prometeram vigiar o reino... mesmo depois da morte.',
+      'Desde que a Chama partiu, o sono deles ficou agitado. À noite, ouço passos sob o palácio.',
+    ],
+    services: [],
+  },
+  jamil: {
+    id: 'jamil', name: 'Jamil', title: 'Mercador do Bazar', zone: 'zahrim', x: 40.5, y: 34.5,
+    look: { type: 'human', skin: '#a8703c', hair: '#2b1d0e', hairStyle: 'short', beard: '#2b1d0e', tunic: '#c0392b', trim: '#f4d03f', hat: '#f5eef8' },
+    greeting: 'Água fresca, especiarias, poções do outro lado do mundo! Chegue, chegue, o bazar de Zahrim não fecha nunca!',
+    talk: [
+      'No deserto, uma poção de vida vale mais que ouro. Ouro não mata a sede... nem fecha feridas.',
+      'Já vendi pergaminhos de retorno para metade das caravanas que cruzaram as dunas. A outra metade não voltou para reclamar.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_3', 'pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_speed', 'elixir_def', 'head_5', 'chest_5', 'legs_5', 'feet_5', 'ring_4', 'amulet_4'],
+  },
+  dahmir: {
+    id: 'dahmir', name: 'Dahmir', title: 'Ferreiro do Sol', zone: 'zahrim', x: 72.5, y: 34.5,
+    look: { type: 'human', skin: '#7a4a24', hair: '#1b1b1b', hairStyle: 'bald', beard: '#1b1b1b', tunic: '#7e5109', apron: '#3e2723', hammer: true },
+    greeting: 'O aço do deserto é temperado em areia quente. Traga ouro e materiais, e eu faço uma lâmina que corta até miragem.',
+    talk: [
+      'Quitina de escorpião dourado é mais dura que ferro. Quem me trouxer vinte, ganha um peitoral que nenhum bandido fura.',
+      'Aprimorar acima de +5 é arriscado em qualquer reino. Mas aqui o forno é tão quente que o metal perdoa um pouco mais.',
+    ],
+    services: ['shop', 'enhance', 'craft'],
+    shop: ['w_weapon_6', 'm_weapon_6', 'r_weapon_6', 'c_weapon_6', 'w_weapon_7', 'm_weapon_7', 'r_weapon_7', 'c_weapon_7',
+      'head_5', 'chest_5', 'legs_5', 'feet_5', 'head_6', 'chest_6', 'legs_6', 'feet_6', 'ring_5', 'amulet_5', 'enh_stone'],
+    craft: 'smith',
+  },
+  safiya: {
+    id: 'safiya', name: 'Safiya', title: 'Guardiã do Tesouro', zone: 'zahrim', x: 55.5, y: 47.5,
+    look: { type: 'human', skin: '#8d5524', hair: '#2b1d0e', hairStyle: 'bun', robe: '#117a65', trim: '#f4d03f' },
+    greeting: 'O tesouro do emir está sob sete chaves. O seu baú, sob uma só: a minha palavra.',
+    talk: ['Cada Portador tem seu próprio baú em Zahrim, o mesmo de Alvorada. Os caminhos do ouro nunca foram separados por fronteiras.'],
+    services: ['stash'],
+  },
+  board_sahaar: {
+    id: 'board_sahaar', name: 'Quadro de Contratos de Zahrim', title: 'Caçadas Repetíveis', zone: 'zahrim', x: 62.5, y: 41.5,
+    look: { type: 'board' },
+    greeting: 'Pergaminhos presos com pregos de bronze. O emir paga em ouro e em favores por cada ameaça eliminada.',
+    talk: [],
+    services: ['board'],
+  },
+  way_zahrim: {
+    id: 'way_zahrim', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'zahrim', x: 48.5, y: 41.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar do Reino de Sahaar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  obelisk_zahrim: {
+    id: 'obelisk_zahrim', name: 'Obelisco do Oásis', title: 'Pedra de Memória', zone: 'zahrim', x: 55.5, y: 33.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Glifos dourados correm pelo obelisco como água em um leito seco. Quando você toca, eles se acendem.',
+    talk: [
+      '"Aqui, o primeiro rei-sol cavou o poço que salvou seu povo da sede. Que a água nunca falte a Zahrim, e que Zahrim nunca falte à água."',
+      'Abaixo, em letras mais novas: "O poço está secando. Cavem mais fundo — ou rezem mais alto."',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Dunas Ardentes =======================
+  karim: {
+    id: 'karim', name: 'Karim', title: 'Chefe dos Beduínos', zone: 'dunes', x: 22.5, y: 66.5,
+    look: { type: 'human', skin: '#8d5524', hair: '#1b1b1b', hairStyle: 'short', beard: '#7b7d7d', robe: '#a04000', trim: '#f4d03f', hat: '#f5eef8' },
+    greeting: 'Água e sombra para quem chega em paz, Portador. Sente-se. O deserto não perdoa quem tem pressa.',
+    talk: [
+      'Minha gente atravessa estas dunas há trezentos anos. Conhecemos cada poço, cada ninho, cada ladrão pelo nome.',
+      'Os escorpiões sempre existiram. Mas nunca foram tão grandes, nem tão famintos. A Névoa chegou a eles primeiro.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_3', 'pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_speed'],
+  },
+  way_dunes: {
+    id: 'way_dunes', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'dunes', x: 26.5, y: 70.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar do Reino de Sahaar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  stone_dunes: {
+    id: 'stone_dunes', name: 'Marco da Estrada do Sol', title: 'Pedra de Memória', zone: 'dunes', x: 12.5, y: 70.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Uma coluna de arenito meio soterrada. A areia deixou só os glifos de cima à mostra.',
+    talk: [
+      '"Aqui começa a Estrada do Sol, que liga Zahrim ao reino do norte. Viajante, leve água; o deserto é generoso apenas com quem o respeita."',
+      'Alguém riscou por cima, com a ponta de uma faca: "Os escorpiões cavam sob a estrada. Não pare para descansar."',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Tumbas dos Reis-Sol =======================
+  nefer: {
+    id: 'nefer', name: 'Sacerdotisa Nefer', title: 'Guardiã do Sono Real', zone: 'tombs', x: 55.5, y: 88.5,
+    look: { type: 'human', skin: '#a8703c', hair: '#1b1b1b', hairStyle: 'long', robe: '#117a65', trim: '#f4d03f', hood: true },
+    greeting: 'Fale baixo, Portador. Eles ouvem tudo, mesmo adormecidos. E agora, mal dormem.',
+    talk: [
+      'Sou a última sacerdotisa do Culto do Sol. Há quarenta anos não vejo um rosto vivo além do meu.',
+      'Os reis-sol juraram guardar Sahaar para sempre. Quando a Névoa chegou, Amun-Kheb ouviu a promessa torcida: "guarde para sempre" virou "nunca deixe ninguém sair".',
+      'As Tábuas Solares são os selos que os mantêm dormindo. Estão se partindo, uma por uma.',
+    ],
+    services: [],
+  },
+  way_tombs: {
+    id: 'way_tombs', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'tombs', x: 51.5, y: 88.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar do Reino de Sahaar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
 };
 
 export function npcsInZone(zoneId) {

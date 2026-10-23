@@ -20,7 +20,7 @@ export async function startServer(opts = {}) {
   const remote = remoteConfig(opts.remote);
   if (remote && (await restoreRemote(dataDir, remote)) && !opts.quiet) console.log('  Estado restaurado do Supabase');
   const db = new Database(dataDir, remote);
-  const world = new World(db, { dev, xpRate });
+  const world = new World(db, { dev, xpRate, quiet: opts.quiet, kingdomGraceMs: opts.kingdomGraceMs });
   const serveStatic = createStaticHandler([
     { prefix: '/shared/', dir: path.join(ROOT, 'shared') },
     { prefix: '/kaykit/', dir: path.join(ROOT, 'assets', 'kaykit') },
@@ -32,7 +32,7 @@ export async function startServer(opts = {}) {
   const server = http.createServer((req, res) => {
     if (req.url === '/status') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ online: world.players.size, uptime: Math.round((Date.now() - world.started) / 1000) }));
+      res.end(JSON.stringify({ online: world.players.size, uptime: Math.round((Date.now() - world.started) / 1000), zones: [...world.zones.keys()] }));
       return;
     }
     if (!serveStatic(req, res)) { res.writeHead(404); res.end(); }

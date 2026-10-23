@@ -27,6 +27,10 @@ const ATMOS = {
   mines: { day: 0x1a1410, night: 0x0d0a08, fog: [14, 38] },
   ruins: { day: 0xa88676, night: 0x1a0d0c, fog: [20, 55] },
   arena: { day: 0x9db3cc, night: 0x111426, fog: [30, 75] },
+  // Reino de Sahaar: céu poeirento de areia, névoa quente; as tumbas são fechadas como as minas
+  zahrim: { day: 0xdcc59b, night: 0x14101c, fog: [42, 100] },
+  dunes: { day: 0xe2c690, night: 0x15111a, fog: [38, 95] },
+  tombs: { day: 0x2a2018, night: 0x120d08, fog: [14, 38] },
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;

@@ -1,6 +1,7 @@
 // Zonas do mundo. Coordenadas em tiles. Os mapas externos são gerados
 // proceduralmente (shared/mapgen.js) garantindo áreas livres nos pontos de interesse.
 import { T, O } from '../tiles.js';
+import { KINGDOMS, KINGDOM_ORDER } from './kingdoms.js';
 
 export const ZONES = {
   town: {
@@ -153,6 +154,7 @@ export const ZONES = {
     night: 0.7, tint: 'rgba(80,30,20,0.12)', music: 'ruins', ash: true,
     portals: [
       { x: 108, y: 48, w: 2, h: 5, to: 'mines', tx: 5.5, ty: 12.5, label: 'Minas de Ferro Negro' },
+      { x: 50, y: 0, w: 5, h: 2, to: 'dunes', tx: 4.5, ty: 70.5, label: 'Estrada do Sol (Reino de Sahaar)' },
     ],
     gen: {
       type: 'outdoor', seed: 666, base: T.ASH, alt: T.MUD, path: T.RUIN,
@@ -170,9 +172,10 @@ export const ZONES = {
         { id: 'mural', x: 60, y: 52, r: 4 },
         { id: 'approach', x: 47, y: 50, r: 6 },
         { id: 'sanct', x: 22, y: 50, r: 11 },
+        { id: 'north', x: 52, y: 5, r: 4 },
       ],
       links: [['e', 'camp'], ['camp', 'cult'], ['camp', 'mural'], ['mural', 'approach'], ['approach', 'wraith'],
-        ['approach', 'sanct'], ['cult', 'knight'], ['knight', 'sanct'], ['wraith', 'sanct']],
+        ['approach', 'sanct'], ['cult', 'knight'], ['knight', 'sanct'], ['wraith', 'sanct'], ['north', 'cult']],
       features: [
         { type: 'camp', x: 88, y: 50, tents: true, banners: true },
         { type: 'sanctuary', x: 22, y: 50, r: 10 },
@@ -189,6 +192,108 @@ export const ZONES = {
     ],
   },
 
+  // ======================= Reino de Sahaar =======================
+  zahrim: {
+    id: 'zahrim', name: 'Zahrim, Cidade das Torres', levels: 'Zona Segura', safe: true, w: 110, h: 80,
+    gen: { type: 'desertcity', seed: 5150 },
+    spawn: { x: 52.5, y: 46.5 },
+    night: 0.5, music: 'desert', ambient: '#000000',
+    portals: [
+      { x: 0, y: 36, w: 2, h: 9, to: 'dunes', tx: 126.5, ty: 44.5, label: 'Dunas Ardentes' },
+      { x: 52, y: 0, w: 7, h: 2, to: 'tombs', tx: 55.5, ty: 94.5, label: 'Tumbas dos Reis-Sol' },
+    ],
+    desc: 'A capital de Sahaar: torres de barro e voxel em volta de um oásis, onde o sol nunca se põe sem pedir licença.',
+  },
+
+  dunes: {
+    id: 'dunes', name: 'Dunas Ardentes', levels: 'Níveis 24–28', w: 130, h: 100,
+    spawn: { x: 6.5, y: 70.5 },
+    night: 0.45, tint: 'rgba(255,170,60,0.08)', music: 'desert',
+    portals: [
+      { x: 0, y: 68, w: 2, h: 5, to: 'ruins', tx: 52.5, ty: 4.5, label: 'Ruínas de Cinza' },
+      { x: 128, y: 42, w: 2, h: 5, to: 'zahrim', tx: 4.5, ty: 40.5, label: 'Zahrim' },
+    ],
+    gen: {
+      type: 'outdoor', seed: 8128, base: T.SAND, alt: T.DUNE, path: T.DIRT,
+      border: [O.CACTUS, O.ROCK, O.DEADTREE, O.ROCK],
+      water: { scale: 0.055, thr: 0.81, sand: true },
+      forest: { scale: 0.09, thr: 0.6, objs: [O.CACTUS, O.ROCK, O.DEADTREE, O.CACTUS, O.ROCK] },
+      scatter: [{ o: O.ROCK, p: 0.005 }, { o: O.CACTUS, p: 0.012 }, { o: O.PALM, p: 0.0008 }],
+      decor: [{ o: O.DRYBUSH, p: 0.05 }, { o: O.BONES, p: 0.006 }, { o: O.RUBBLE, p: 0.008 }, { o: O.REEDS, p: 0, nearWater: 0.4 }],
+      pois: [
+        { id: 'w', x: 5, y: 70, r: 5 },
+        { id: 'camp', x: 24, y: 68, r: 9 },
+        { id: 'bandit', x: 60, y: 24, r: 9 },
+        { id: 'scorp', x: 52, y: 54, r: 11 },
+        { id: 'sorc', x: 96, y: 22, r: 9 },
+        { id: 'golem', x: 88, y: 60, r: 9 },
+        { id: 'shrine', x: 70, y: 76, r: 6 },
+        { id: 'boss', x: 108, y: 82, r: 9 },
+        { id: 'e', x: 125, y: 44, r: 5 },
+      ],
+      links: [['w', 'camp'], ['camp', 'bandit'], ['camp', 'scorp'], ['scorp', 'golem'], ['bandit', 'sorc'], ['sorc', 'e'],
+        ['golem', 'e'], ['scorp', 'shrine'], ['shrine', 'boss'], ['golem', 'boss']],
+      features: [
+        { type: 'camp', x: 24, y: 68, tents: true },
+        { type: 'oasis', x: 30, y: 62, r: 4 },
+        { type: 'gobcamp', x: 60, y: 24 },
+        { type: 'shrine', x: 70, y: 76, r: 4 },
+        { type: 'ring', x: 108, y: 82, r: 8, obj: O.ROCK, gap: 'w' },
+        { type: 'treasure', x: 108, y: 82, r: 6, n: 10 },
+      ],
+    },
+    spawns: [
+      { m: 'sand_bandit', n: 14, x: 60, y: 24, r: 10 },
+      { m: 'scorpion', n: 16, x: 52, y: 54, r: 12 },
+      { m: 'dune_sorcerer', n: 8, x: 96, y: 22, r: 9 },
+      { m: 'sand_golem', n: 8, x: 88, y: 60, r: 10 },
+      { m: 'scorpion', n: 6, x: 70, y: 76, r: 8 },
+      { m: 'scorpion_queen', n: 1, x: 108, y: 82, r: 1 },
+    ],
+  },
+
+  tombs: {
+    id: 'tombs', name: 'Tumbas dos Reis-Sol', levels: 'Níveis 28–30', w: 110, h: 100, dark: true,
+    spawn: { x: 55.5, y: 92.5 },
+    night: 0.9, alwaysDark: 0.5, music: 'ruins',
+    portals: [
+      { x: 52, y: 97, w: 7, h: 3, to: 'zahrim', tx: 55.5, ty: 4.5, label: 'Zahrim' },
+    ],
+    gen: {
+      type: 'cave', seed: 3003, base: T.TOMBFLOOR, wall: T.TOMBWALL, path: T.TOMBFLOOR,
+      fill: 0.5,
+      scatter: [{ o: O.PILLAR, p: 0.004 }, { o: O.BROKENPILLAR, p: 0.004 }, { o: O.URN, p: 0.003 }],
+      decor: [{ o: O.RUBBLE, p: 0.02 }, { o: O.BONES, p: 0.01 }],
+      pois: [
+        { id: 's', x: 55, y: 92, r: 5 },
+        { id: 'hall', x: 55, y: 74, r: 9 },
+        { id: 'cryptw', x: 22, y: 60, r: 9 },
+        { id: 'crypte', x: 88, y: 60, r: 9 },
+        { id: 'guards', x: 55, y: 48, r: 9 },
+        { id: 'vault', x: 25, y: 28, r: 8 },
+        { id: 'boss', x: 55, y: 14, r: 11 },
+      ],
+      links: [['s', 'hall'], ['hall', 'cryptw'], ['hall', 'crypte'], ['hall', 'guards'], ['cryptw', 'vault'],
+        ['crypte', 'guards'], ['guards', 'boss'], ['vault', 'boss'], ['cryptw', 'guards']],
+      features: [
+        { type: 'tombgate', x: 55, y: 88 },
+        { type: 'torches', every: 8 },
+        { type: 'sarcophagi', x: 55, y: 14, r: 9, n: 8 },
+        { type: 'sarcophagi', x: 22, y: 60, r: 6, n: 4 },
+        { type: 'sarcophagi', x: 88, y: 60, r: 6, n: 4 },
+        { type: 'treasure', x: 55, y: 14, r: 7, n: 12 },
+      ],
+    },
+    spawns: [
+      { m: 'mummy', n: 10, x: 55, y: 74, r: 9 },
+      { m: 'mummy', n: 8, x: 22, y: 60, r: 8 },
+      { m: 'tomb_guard', n: 7, x: 88, y: 60, r: 8 },
+      { m: 'tomb_guard', n: 6, x: 55, y: 48, r: 8 },
+      { m: 'mummy', n: 6, x: 25, y: 28, r: 7 },
+      { m: 'sun_king', n: 1, x: 55, y: 14, r: 1 },
+    ],
+  },
+
   arena: {
     id: 'arena', name: 'Arena de Sangue', levels: 'JxJ — Todos contra todos', w: 40, h: 40, pvp: true,
     gen: { type: 'arena', seed: 3 },
@@ -202,7 +307,18 @@ export const ZONES = {
   },
 };
 
-export const ZONE_ORDER = ['town', 'fields', 'forest', 'mines', 'ruins', 'arena'];
+// zona -> reino (as listas de zonas de cada reino ficam em kingdoms.js)
+for (const k of Object.values(KINGDOMS)) for (const id of k.zones) if (ZONES[id]) ZONES[id].kingdom = k.id;
+
+export const ZONE_ORDER = KINGDOM_ORDER.flatMap((k) => KINGDOMS[k].zones).filter((id) => ZONES[id]);
+
+export const kingdomOf = (zoneId) => ZONES[zoneId]?.kingdom || 'alvorada';
+
+// capital do reino da zona: onde o jogador reaparece e para onde o pergaminho de retorno leva
+export function hubOf(zoneId) {
+  const hub = ZONES[KINGDOMS[kingdomOf(zoneId)].hub];
+  return { zone: hub.id, x: hub.spawn.x, y: hub.spawn.y };
+}
 
 export function isSafeAt(zone, x, y) {
   if (zone.safe) return true;

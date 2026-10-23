@@ -4,6 +4,7 @@ export const T = {
   GRASS: 0, DIRT: 1, SAND: 2, WATER: 3, DEEP: 4, STONE: 5, WOOD: 6,
   CAVE: 7, ASH: 8, LAVA: 9, BRIDGE: 10, DARKGRASS: 11, CAVEWALL: 12,
   MUD: 13, COBBLE: 14, RUIN: 15, VOID: 16, ARENA: 17,
+  DUNE: 18, SANDSTONE: 19, TOMBFLOOR: 20, TOMBWALL: 21, // Reino de Sahaar
 };
 
 export const TILE_INFO = [];
@@ -25,6 +26,13 @@ TILE_INFO[T.COBBLE] = { name: 'calçamento', walk: true };
 TILE_INFO[T.RUIN] = { name: 'piso antigo', walk: true };
 TILE_INFO[T.VOID] = { name: 'vazio', walk: false };
 TILE_INFO[T.ARENA] = { name: 'areia da arena', walk: true };
+TILE_INFO[T.DUNE] = { name: 'duna', walk: true };
+TILE_INFO[T.SANDSTONE] = { name: 'arenito', walk: true };
+TILE_INFO[T.TOMBFLOOR] = { name: 'piso de tumba', walk: true };
+TILE_INFO[T.TOMBWALL] = { name: 'parede de tumba', walk: false };
+
+// paredes de rocha das cavernas e das tumbas (desenhadas como paredes altas)
+export const isRock = (t) => t === T.CAVEWALL || t === T.TOMBWALL;
 
 export const O = {
   NONE: 0, TREE: 1, PINE: 2, DEADTREE: 3, ROCK: 4, BUSH: 5, FLOWERS: 6,
@@ -37,6 +45,7 @@ export const O = {
   BARS: 41, CLOTH: 42, PLANKS: 43, BRICKS: 44, GOLD: 45,
   CHEST: 46, TABLE: 47, KEG: 48, CANDLE: 49,
   ANVIL: 50, TOOLS: 51, LANTERN: 52,
+  CACTUS: 53, PALM: 54, OBELISK: 55, SARCOPHAGUS: 56, URN: 57, DRYBUSH: 58, // Reino de Sahaar
 };
 
 // block: impede passagem; tall: desenhado ordenado por profundidade junto às entidades;
@@ -95,6 +104,13 @@ OBJ_INFO[O.CANDLE] = { block: false, tall: true, light: 3 };
 OBJ_INFO[O.ANVIL] = { block: true, tall: true };
 OBJ_INFO[O.TOOLS] = { block: false, tall: true };
 OBJ_INFO[O.LANTERN] = { block: true, tall: true, light: 4 };
+// deserto: cactos, palmeiras, obeliscos com glifos que brilham, sarcófagos, urnas e arbustos secos
+OBJ_INFO[O.CACTUS] = { block: true, tall: true };
+OBJ_INFO[O.PALM] = { block: true, tall: true };
+OBJ_INFO[O.OBELISK] = { block: true, tall: true, light: 4 };
+OBJ_INFO[O.SARCOPHAGUS] = { block: true, tall: true };
+OBJ_INFO[O.URN] = { block: true, tall: true };
+OBJ_INFO[O.DRYBUSH] = { block: false };
 
 export function encodeLayer(arr) {
   // Cada valor (0-90) vira um caractere imprimível.

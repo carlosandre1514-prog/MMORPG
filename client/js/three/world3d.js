@@ -1,7 +1,7 @@
 // Construção da cena 3D de uma zona: chão, líquidos, paredes, objetos, construções e portais.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { T, O } from '/shared/tiles.js';
+import { T, O, isRock } from '/shared/tiles.js';
 import { TILE } from '/shared/constants.js';
 import { addBlocker } from '/shared/collision.js';
 import { hash2 } from '/shared/rng.js';
@@ -158,6 +158,47 @@ function objectGeometry(o) {
       break;
     case O.FOUNTAIN:
       geo = merge([P(G.cyl(1.35, 1.45, 0.4, 16), 0x9e9e9e, [0, 0.2, 0]), P(G.cyl(1.15, 1.15, 0.41, 16), 0x3b7fc4, [0, 0.21, 0]), P(G.cyl(0.15, 0.2, 1.1, 8), 0xb0b0b0, [0, 0.75, 0]), P(G.cyl(0.45, 0.2, 0.18, 10), 0xbdbdbd, [0, 1.3, 0]), P(G.cyl(0.36, 0.36, 0.19, 10), 0x5dade2, [0, 1.31, 0])]);
+      break;
+    case O.CACTUS:
+      geo = merge([
+        P(G.cyl(0.13, 0.16, 1.2, 8), 0x4f8f3d, [0, 0.6, 0]), P(G.sphere(0.13, 8, 6), 0x5aa044, [0, 1.2, 0]),
+        P(G.cyl(0.07, 0.07, 0.34, 6), 0x4f8f3d, [0.22, 0.62, 0], [0, 0, Math.PI / 2]), P(G.cyl(0.07, 0.08, 0.42, 6), 0x4f8f3d, [0.38, 0.82, 0]), P(G.sphere(0.075, 6, 5), 0x5aa044, [0.38, 1.04, 0]),
+        P(G.cyl(0.06, 0.06, 0.28, 6), 0x4f8f3d, [-0.19, 0.8, 0.02], [0, 0, Math.PI / 2]), P(G.cyl(0.06, 0.07, 0.34, 6), 0x4f8f3d, [-0.32, 0.97, 0.02]), P(G.sphere(0.065, 6, 5), 0x5aa044, [-0.32, 1.15, 0.02]),
+        P(G.sphere(0.05, 5, 4), 0xe84393, [0.02, 1.32, 0.03]),
+      ]);
+      break;
+    case O.PALM: {
+      const parts = [];
+      for (let i = 0; i < 4; i++) parts.push(P(G.cyl(0.1 - i * 0.012, 0.115 - i * 0.012, 0.55, 7), 0x8a6a3a, [i * 0.06, 0.27 + i * 0.52, 0], [0, 0, -i * 0.05]));
+      const cx = 0.24, cy = 2.2;
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2, droop = 0.35 + (k % 2) * 0.25;
+        parts.push(P(G.box(1.0, 0.035, 0.26), k % 2 ? 0x3f8f3a : 0x4aa043, [cx + Math.cos(a) * 0.42, cy - droop * 0.2, Math.sin(a) * 0.42], [0, -a, -droop]));
+      }
+      parts.push(P(G.sphere(0.07, 5, 4), 0x5a3d1e, [cx + 0.07, cy - 0.12, 0.06]), P(G.sphere(0.07, 5, 4), 0x5a3d1e, [cx - 0.05, cy - 0.14, -0.06]));
+      geo = merge(parts);
+      break;
+    }
+    case O.OBELISK:
+      geo = merge([
+        P(G.box(0.8, 0.18, 0.8), 0x9c8456, [0, 0.09, 0]),
+        P(G.box(0.58, 0.9, 0.58), 0xc9a56a, [0, 0.63, 0]), P(G.box(0.46, 0.9, 0.46), 0xcfae72, [0, 1.53, 0]), P(G.box(0.36, 0.6, 0.36), 0xc9a56a, [0, 2.28, 0]),
+        P(G.cone(0.27, 0.42, 4), 0xf4d03f, [0, 2.79, 0], [0, Math.PI / 4, 0]),
+        ...[0, 1, 2, 3].flatMap((i) => [P(G.box(0.07, 0.2, 0.02), 0xffd54f, [(i % 2 - 0.5) * 0.18, 0.5 + i * 0.4, 0.3]), P(G.box(0.2, 0.05, 0.02), 0xffd54f, [0, 0.74 + i * 0.38, 0.3])]),
+      ]);
+      break;
+    case O.SARCOPHAGUS:
+      geo = merge([
+        P(G.box(0.6, 0.38, 1.0), 0xb89b6a, [0, 0.19, 0]), P(G.box(0.68, 0.16, 1.08), 0xc9aa72, [0, 0.46, 0]),
+        P(G.box(0.14, 0.03, 0.9), 0xf4d03f, [0, 0.56, 0]), P(G.cyl(0.2, 0.22, 0.1, 10), 0xf4d03f, [0, 0.56, 0.4], [Math.PI / 2, 0, 0]),
+        P(G.box(0.62, 0.04, 0.06), 0x6e5a3c, [0, 0.3, 0.2]), P(G.box(0.62, 0.04, 0.06), 0x6e5a3c, [0, 0.3, -0.2]),
+      ]);
+      break;
+    case O.URN:
+      geo = merge([
+        P(G.cyl(0.13, 0.17, 0.12, 8), 0x9c4a2a, [0, 0.06, 0]), P(G.sphere(0.27, 9, 7), 0xa9532e, [0, 0.36, 0], [0, 0, 0], [1, 1.1, 1]),
+        P(G.cyl(0.29, 0.29, 0.05, 9), 0xf4d03f, [0, 0.4, 0]), P(G.cyl(0.1, 0.15, 0.2, 8), 0xa9532e, [0, 0.74, 0]), P(G.cyl(0.15, 0.11, 0.06, 8), 0x8c3f22, [0, 0.87, 0]),
+      ]);
       break;
     default: break;
   }
@@ -367,7 +408,7 @@ export class ZoneScene {
   buildWalls() {
     const m = this.zone.map;
     const list = [];
-    for (let ty = 0; ty < m.h; ty++) for (let tx = 0; tx < m.w; tx++) if (m.tiles[ty * m.w + tx] === T.CAVEWALL) list.push([tx, ty]);
+    for (let ty = 0; ty < m.h; ty++) for (let tx = 0; tx < m.w; tx++) if (isRock(m.tiles[ty * m.w + tx])) list.push([tx, ty]);
     if (!list.length) return;
     const geo = new THREE.BoxGeometry(1, 1, 1);
     geo.translate(0, 0.5, 0);
@@ -382,10 +423,13 @@ export class ZoneScene {
     const mat = lite(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, flatShading: true }));
     const inst = new THREE.InstancedMesh(geo, mat, list.length);
     const mtx = new THREE.Matrix4();
+    const tint = new THREE.Color();
     list.forEach(([x, y], i) => {
       const h = 1.05 + hash2(x, y, 9) * 0.6;
       mtx.compose(_v.set(x + 0.5, 0, y + 0.5), _q.identity(), _s.set(1.001, h, 1.001));
       inst.setMatrixAt(i, mtx);
+      // as paredes de arenito das tumbas são mais quentes e claras que a rocha das cavernas
+      inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? tint.setRGB(1.6, 1.32, 0.95) : tint.setRGB(1, 1, 1));
     });
     inst.castShadow = true;
     inst.receiveShadow = true;
@@ -396,7 +440,7 @@ export class ZoneScene {
   // Formações de pedra do pack na borda das paredes da caverna (as caixas continuam por baixo)
   caveRocks(list) {
     const m = this.zone.map;
-    const floor = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && m.tiles[y * m.w + x] !== T.CAVEWALL;
+    const floor = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && !isRock(m.tiles[y * m.w + x]);
     const names = ['mountain_A', 'mountain_B', 'mountain_C'].filter((n) => medieval.has(n));
     if (!names.length) return;
     const groups = new Map(names.map((n) => [n, []]));
@@ -418,7 +462,7 @@ export class ZoneScene {
         mtx.compose(_v.set(x + 0.5, 0, y + 0.5), _q.setFromAxisAngle(up, r * 12), _s.set(s, s * (0.9 + r * 0.5), s));
         inst.setMatrixAt(i, mtx);
         const k = 0.5 + hash2(x, y, 44) * 0.2;
-        inst.setColorAt(i, col.setRGB(k * 1.05, k, k * 0.92));
+        inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? col.setRGB(k * 1.55, k * 1.3, k * 0.95) : col.setRGB(k * 1.05, k, k * 0.92));
       });
       inst.castShadow = true;
       inst.receiveShadow = true;
@@ -448,7 +492,8 @@ export class ZoneScene {
           rot = (mask & 3) || !(mask & 12) ? 0 : Math.PI / 2;
           s = 1;
         }
-        if ([O.TENT, O.STALL, O.SIGN, O.BANNER, O.CART, O.STATUE, O.GRAVE, O.LAMP, O.TORCH, O.BRAZIER, O.WELL].includes(o)) { rot = o === O.TENT || o === O.CART ? (ob.v - 0.5) * 0.6 : 0; s = 1; }
+        if ([O.TENT, O.STALL, O.SIGN, O.BANNER, O.CART, O.STATUE, O.GRAVE, O.LAMP, O.TORCH, O.BRAZIER, O.WELL, O.OBELISK].includes(o)) { rot = o === O.TENT || o === O.CART ? (ob.v - 0.5) * 0.6 : 0; s = 1; }
+        if (o === O.SARCOPHAGUS) { rot = ob.v > 0.5 ? Math.PI / 2 : 0; s = 1; }
         mtx.compose(_v.set(x, 0, y), _q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rot), _s.set(s, s, s));
         inst.setMatrixAt(i, mtx);
         inst.setColorAt(i, instanceTint(o, ob.v));

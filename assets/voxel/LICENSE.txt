@@ -1,4 +1,4 @@
-Prédios em voxel (Tall Building 01, 02, 03 e Small Building 01)
+Prédios em voxel do Reino de Sahaar (Tiny Building 01, Small Building 01, 03 e 04, Tall Building 01, 02 e 03, Large Building 01)
 Modelos MagicaVoxel (.vox/.obj + paleta .png) fornecidos pelo autor do projeto.
 Os arquivos deste diretório foram gerados por tools/voxel/convert.mjs: cores da paleta aplicadas aos vértices,
 base no chão, malha triangulada, e uma versão @lod bem simplificada de cada prédio.

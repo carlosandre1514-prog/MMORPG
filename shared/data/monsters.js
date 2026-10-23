@@ -206,6 +206,93 @@ export const MONSTERS = {
     ],
     lore: 'O Sumo-Guardião que traiu a Ordem. Acreditava que a Chama estava morrendo e que só fundindo-se ao Vazio poderia salvar Aethra. Estava errado.',
   },
+
+  // ---------- Reino de Sahaar: Dunas Ardentes ----------
+  scorpion: {
+    id: 'scorpion', name: 'Escorpião Dourado', lvl: [24, 26], hp: 1.4, dmg: 1.25, def: 1.3,
+    speed: 3.3, aggro: 6, atkRange: 1.5, atkInterval: 1.5, sprite: 'scorpion', color: '#c98b3a', size: 1.1,
+    gold: [18, 36], equipChance: 0.13,
+    drops: [{ id: 'mat_venom', chance: 0.4 }, { id: 'mat_chitin', chance: 0.35 }],
+    questDrops: [{ id: 'q_nest_egg', chance: 0.3, quest: 'sa3' }],
+    abilities: [{ type: 'poisonHit', chance: 0.35, dps: 0.3, dur: 5 }],
+    lore: 'Escorpiões do tamanho de lobos que cavam ninhos sob as dunas. A carapaça brilha como ouro velho.',
+  },
+  sand_bandit: {
+    id: 'sand_bandit', name: 'Bandido das Dunas', lvl: [25, 27], hp: 1.5, dmg: 1.3, def: 1.2,
+    speed: 3.4, aggro: 7, atkRange: 1.4, atkInterval: 1.4, sprite: 'goblin', color: '#c27c3a', size: 1,
+    gold: [22, 44], equipChance: 0.15,
+    drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'pot_hp_3', chance: 0.1 }, { id: 'enh_stone', chance: 0.03 }],
+    questDrops: [{ id: 'q_water_flask', chance: 0.5, quest: 'sa2' }],
+    lore: 'Saqueadores que atacam as caravanas entre as Ruínas e Zahrim. Conhecem cada poço do deserto.',
+  },
+  dune_sorcerer: {
+    id: 'dune_sorcerer', name: 'Feiticeiro das Dunas', lvl: [26, 28], hp: 1.1, dmg: 1.35, def: 1.0,
+    speed: 3.0, aggro: 8, atkRange: 7, atkInterval: 2.0, proj: 'fire', sprite: 'goblin_shaman', color: '#e67e22', size: 1,
+    gold: [26, 50], equipChance: 0.15,
+    drops: [{ id: 'mat_essence', chance: 0.3 }, { id: 'pot_mp_3', chance: 0.12 }, { id: 'mat_ash', chance: 0.2 }],
+    abilities: [{ type: 'pools', cd: 11, radius: 1.8, delay: 1.4, mult: 1.2, burn: 0.12, burnDur: 3, style: 'fire', name: 'Chamas do Deserto' }],
+  },
+  sand_golem: {
+    id: 'sand_golem', name: 'Golem de Arenito', lvl: [27, 28], hp: 2.6, dmg: 1.4, def: 2.0,
+    speed: 2.1, aggro: 4, atkRange: 1.9, atkInterval: 2.2, sprite: 'golem', color: '#c9a56a', size: 1.7,
+    gold: [28, 56], equipChance: 0.16,
+    drops: [{ id: 'mat_crystal', chance: 0.3 }, { id: 'mat_ore', chance: 0.4, qty: [1, 2] }, { id: 'enh_stone', chance: 0.04 }],
+    abilities: [{ type: 'stomp', cd: 11, radius: 2.8, delay: 1.2, mult: 1.4, stun: 0.8, name: 'Pisada de Arenito' }],
+  },
+  scorpion_queen: {
+    id: 'scorpion_queen', name: 'Skorvax', title: 'A Rainha das Areias', lvl: [28, 28], hp: 16, dmg: 1.4, def: 1.7,
+    speed: 3.4, aggro: 9, atkRange: 2.2, atkInterval: 1.8, sprite: 'scorpion_boss', color: '#a04000', size: 2.7,
+    boss: true, respawn: 300, leash: 22, xpMult: 14,
+    gold: [500, 800], equipDrops: 3, uniqueDrop: { id: 'u_scorpion_sting', chance: 0.3 },
+    drops: [{ id: 'mat_venom', chance: 1, qty: [3, 5] }, { id: 'mat_chitin', chance: 1, qty: [2, 4] }, { id: 'enh_stone', chance: 0.7 }, { id: 'pot_hp_4', chance: 0.5, qty: [1, 3] }],
+    questDrops: [{ id: 'q_stinger_seal', chance: 1, quest: 'sa5' }],
+    abilities: [
+      { type: 'poisonHit', chance: 0.5, dps: 0.35, dur: 6 },
+      { type: 'charge', cd: 8, range: 9, mult: 1.7, delay: 0.9, radius: 1.8, stun: 0.8 },
+      { type: 'stomp', cd: 12, radius: 4.5, delay: 1.6, mult: 1.8, stun: 1.0, name: 'Garras da Areia' },
+      { type: 'summon', at: [0.7, 0.4], m: 'scorpion', n: 3, yell: 'Skorvax chama as filhas do deserto!' },
+      { type: 'enrage', at: 0.3, haste: 0.5, yell: 'Skorvax ergue o ferrão e as dunas tremem!' },
+    ],
+    lore: 'Uma escorpiã colossal, mãe de todos os ninhos de Sahaar. Ficou maior e mais faminta quando a Névoa chegou às areias.',
+  },
+
+  // ---------- Reino de Sahaar: Tumbas dos Reis-Sol ----------
+  mummy: {
+    id: 'mummy', name: 'Múmia Real', lvl: [28, 29], hp: 2.0, dmg: 1.4, def: 1.5,
+    speed: 2.3, aggro: 5, atkRange: 1.5, atkInterval: 1.9, sprite: 'skeleton', color: '#d9c9a0', size: 1.2, undead: true,
+    gold: [30, 58], equipChance: 0.16,
+    drops: [{ id: 'mat_linen', chance: 0.45 }, { id: 'mat_essence', chance: 0.2 }, { id: 'mat_scarab', chance: 0.06 }],
+    questDrops: [{ id: 'q_sun_tablet', chance: 0.3, quest: 'sa7' }],
+    abilities: [{ type: 'poisonHit', chance: 0.25, dps: 0.3, dur: 4 }],
+    lore: 'Servos embalsamados dos reis-sol. A resina que os preserva também os faz queimar devagar por dentro.',
+  },
+  tomb_guard: {
+    id: 'tomb_guard', name: 'Guardião Dourado', lvl: [29, 30], hp: 2.4, dmg: 1.5, def: 2.0,
+    speed: 2.7, aggro: 6, atkRange: 1.6, atkInterval: 1.8, sprite: 'skeleton', color: '#f4d03f', size: 1.2, undead: true,
+    gold: [34, 64], equipChance: 0.18,
+    drops: [{ id: 'mat_bone', chance: 0.5 }, { id: 'mat_scarab', chance: 0.1 }, { id: 'enh_stone', chance: 0.05 }],
+    questDrops: [{ id: 'q_sun_tablet', chance: 0.3, quest: 'sa7' }],
+    abilities: [{ type: 'harden', at: 0.5, cd: 18, dr: 0.5, dur: 5, statusName: 'Escudo Solar' }],
+    lore: 'Soldados de elite sepultados em ouro. Juraram guardar o sono do rei enquanto houvesse sol.',
+  },
+  sun_king: {
+    id: 'sun_king', name: 'Amun-Kheb', title: 'O Rei-Sol', lvl: [30, 30], hp: 26, dmg: 1.5, def: 1.8,
+    speed: 3.0, aggro: 10, atkRange: 7, atkInterval: 2.0, proj: 'fire', sprite: 'morvath', color: '#f4d03f', size: 2.3,
+    boss: true, respawn: 360, leash: 24, xpMult: 18, flying: true, undead: true,
+    gold: [900, 1400], equipDrops: 4, uniqueDrop: { id: 'u_sun_crown', chance: 0.3 }, legendWeapon: 0.3,
+    drops: [{ id: 'mat_scarab', chance: 1, qty: [2, 4] }, { id: 'enh_stone', chance: 1, qty: [1, 2] }, { id: 'mat_essence', chance: 1, qty: [3, 5] }, { id: 'u_pharaoh_scarab', chance: 0.15 }],
+    questDrops: [{ id: 'q_sun_tablet', chance: 1, quest: 'sa8' }],
+    abilities: [
+      { type: 'pools', cd: 8, radius: 2.2, delay: 1.4, mult: 1.6, burn: 0.15, burnDur: 3, name: 'Círculos Solares', style: 'fire' },
+      { type: 'summon', at: [0.7], m: 'mummy', n: 3, yell: 'Despertem, servos do sol!' },
+      { type: 'summon', at: [0.4], m: 'tomb_guard', n: 2, yell: 'Guardiões, ao meu lado!' },
+      { type: 'blink', at: [0.6, 0.3], yell: 'O sol não se põe para os reis!' },
+      { type: 'stomp', cd: 15, radius: 6, delay: 2.2, mult: 2.3, name: 'Nova Solar', style: 'fire' },
+      { type: 'meteors', cd: 7, phase: 0.3, count: 7, spread: 9, radius: 2, delay: 1.5, mult: 1.6, name: 'Chuva de Fogo Solar' },
+      { type: 'enrage', at: 0.25, haste: 0.5, yell: 'EU SOU O SOL! ARDAM, TODOS VOCÊS!' },
+    ],
+    lore: 'O último rei de Sahaar, que se enterrou vivo para vigiar a Névoa. A Chama partida o acordou, e a Névoa o enlouqueceu.',
+  },
 };
 
 export function monsterLevelRange(id) {

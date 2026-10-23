@@ -90,7 +90,7 @@ export function questDestination(game, q) {
 // Primeira missão ativa (campanha primeiro) que tem destino
 export function defaultQuest(me) {
   const act = Object.keys(me.quests?.active || {}).map((id) => QUESTS[id]).filter(Boolean);
-  act.sort((a, b) => (b.main ? 1 : 0) - (a.main ? 1 : 0));
+  act.sort((a, b) => ((b.main || b.saga) ? 1 : 0) - ((a.main || a.saga) ? 1 : 0));
   return act[0] || null;
 }
 

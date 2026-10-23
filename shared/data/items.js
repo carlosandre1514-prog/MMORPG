@@ -9,16 +9,16 @@ function add(item) {
 }
 
 // ---------------- Armas ----------------
-const WEAPON_TIERS = [1, 5, 10, 15, 20, 25];
+const WEAPON_TIERS = [1, 5, 10, 15, 20, 25, 30];
 const WEAPON_NAMES = {
-  warrior: ['Espada Curta', 'Espada Longa', 'Lâmina de Ferro Negro', 'Montante do Guardião', 'Lâmina Rúnica', 'Executora das Cinzas'],
-  mage: ['Cajado de Aprendiz', 'Cajado de Carvalho', 'Cajado Arcano', 'Cetro de Cristal', 'Cajado Estelar', 'Cajado do Abismo'],
-  ranger: ['Arco Curto', 'Arco de Caça', 'Arco Longo', 'Arco Composto', 'Arco Élfico', 'Arco da Tempestade'],
-  cleric: ['Maça de Madeira', 'Maça de Ferro', 'Martelo Sagrado', 'Cetro da Aurora', 'Martelo Celestial', 'Relíquia da Chama'],
+  warrior: ['Espada Curta', 'Espada Longa', 'Lâmina de Ferro Negro', 'Montante do Guardião', 'Lâmina Rúnica', 'Executora das Cinzas', 'Cimitarra do Sol'],
+  mage: ['Cajado de Aprendiz', 'Cajado de Carvalho', 'Cajado Arcano', 'Cetro de Cristal', 'Cajado Estelar', 'Cajado do Abismo', 'Cajado de Ankh'],
+  ranger: ['Arco Curto', 'Arco de Caça', 'Arco Longo', 'Arco Composto', 'Arco Élfico', 'Arco da Tempestade', 'Arco das Dunas'],
+  cleric: ['Maça de Madeira', 'Maça de Ferro', 'Martelo Sagrado', 'Cetro da Aurora', 'Martelo Celestial', 'Relíquia da Chama', 'Cetro do Oásis'],
 };
 const WEAPON_ICON = { warrior: 'sword', mage: 'staff', ranger: 'bow', cleric: 'mace' };
 const PREFIX = { warrior: 'w', mage: 'm', ranger: 'r', cleric: 'c' };
-const TIER_COLORS = ['#a0a0a0', '#b87333', '#5d6d7e', '#aab7b8', '#76d7c4', '#e74c3c'];
+const TIER_COLORS = ['#a0a0a0', '#b87333', '#5d6d7e', '#aab7b8', '#76d7c4', '#e74c3c', '#f4d03f'];
 
 for (const cls of Object.keys(WEAPON_NAMES)) {
   WEAPON_TIERS.forEach((lvl, i) => {
@@ -34,19 +34,20 @@ for (const cls of Object.keys(WEAPON_NAMES)) {
 }
 
 // ---------------- Armaduras ----------------
-const ARMOR_TIERS = [1, 6, 12, 18, 24];
-const ARMOR_MATS = ['Couro', 'Bronze', 'Ferro', 'Mithril', 'Dracônico'];
-const ARMOR_MAT_COLORS = ['#8b5a2b', '#cd7f32', '#7f8c8d', '#a9cce3', '#922b21'];
+const ARMOR_TIERS = [1, 6, 12, 18, 24, 30];
+const ARMOR_MATS = ['Couro', 'Bronze', 'Ferro', 'Mithril', 'Dracônico', 'Solar'];
+const ARMOR_MAT_COLORS = ['#8b5a2b', '#cd7f32', '#7f8c8d', '#a9cce3', '#922b21', '#f1c40f'];
 const ARMOR_SLOTS = {
-  head: { names: ['Capuz', 'Elmo', 'Elmo', 'Elmo', 'Elmo'], mult: 0.6, icon: 'helm', hp: 1 },
-  chest: { names: ['Gibão', 'Peitoral', 'Peitoral', 'Peitoral', 'Peitoral'], mult: 1.0, icon: 'chest', hp: 3 },
-  legs: { names: ['Calças', 'Grevas', 'Grevas', 'Grevas', 'Grevas'], mult: 0.8, icon: 'legs', hp: 2 },
-  feet: { names: ['Botas', 'Botas', 'Botas', 'Botas', 'Botas'], mult: 0.5, icon: 'boots', hp: 1 },
+  head: { names: ['Capuz', 'Elmo', 'Elmo', 'Elmo', 'Elmo', 'Elmo'], mult: 0.6, icon: 'helm', hp: 1 },
+  chest: { names: ['Gibão', 'Peitoral', 'Peitoral', 'Peitoral', 'Peitoral', 'Peitoral'], mult: 1.0, icon: 'chest', hp: 3 },
+  legs: { names: ['Calças', 'Grevas', 'Grevas', 'Grevas', 'Grevas', 'Grevas'], mult: 0.8, icon: 'legs', hp: 2 },
+  feet: { names: ['Botas', 'Botas', 'Botas', 'Botas', 'Botas', 'Botas'], mult: 0.5, icon: 'boots', hp: 1 },
 };
 function matSuffix(i, slotName) {
   const m = ARMOR_MATS[i];
   // "Dracônico" concorda com o substantivo
   if (m === 'Dracônico') return ['Grevas', 'Botas', 'Calças'].includes(slotName) ? 'Dracônicas' : 'Dracônico';
+  if (m === 'Solar') return ['Grevas', 'Botas', 'Calças'].includes(slotName) ? 'Solares' : 'Solar';
   return `de ${m}`;
 }
 for (const [slot, info] of Object.entries(ARMOR_SLOTS)) {
@@ -65,10 +66,10 @@ for (const [slot, info] of Object.entries(ARMOR_SLOTS)) {
 }
 
 // ---------------- Acessórios ----------------
-const ACC_TIERS = [1, 8, 16, 24];
-const RING_NAMES = ['Anel de Cobre', 'Anel de Prata', 'Anel de Ouro', 'Anel Rúnico'];
-const AMULET_NAMES = ['Amuleto de Osso', 'Amuleto de Prata', 'Amuleto de Jade', 'Amuleto Rúnico'];
-const ACC_COLORS = ['#b87333', '#d5dbdb', '#f4d03f', '#5dade2'];
+const ACC_TIERS = [1, 8, 16, 24, 30];
+const RING_NAMES = ['Anel de Cobre', 'Anel de Prata', 'Anel de Ouro', 'Anel Rúnico', 'Anel do Sol'];
+const AMULET_NAMES = ['Amuleto de Osso', 'Amuleto de Prata', 'Amuleto de Jade', 'Amuleto Rúnico', 'Escaravelho Sagrado'];
+const ACC_COLORS = ['#b87333', '#d5dbdb', '#f4d03f', '#5dade2', '#f5b041'];
 ACC_TIERS.forEach((lvl, i) => {
   add({
     id: `ring_${i + 1}`, name: RING_NAMES[i], type: 'accessory', slot: 'ring', lvl, tier: i + 1,
@@ -115,6 +116,24 @@ add({
   desc: 'Uma centelha da Chama Primordial reacendida. Concedida apenas aos Portadores.',
   icon: { shape: 'brasa', c1: '#ffd54f', c2: '#ff6f00' },
 });
+add({
+  id: 'u_scorpion_sting', name: 'Ferrão da Rainha', type: 'accessory', slot: 'ring', lvl: 28, unique: true,
+  base: { power: 30 }, fixed: { dex: 14, crit: 8, haste: 6, speed: 4 }, price: 9000,
+  desc: 'O ferrão de Skorvax, ainda pingando veneno dourado. Cada golpe encontra o ponto fraco.',
+  icon: { shape: 'tusk', c1: '#e59866', c2: '#6e2c00' },
+});
+add({
+  id: 'u_sun_crown', name: 'Coroa do Rei-Sol', type: 'armor', slot: 'head', lvl: 30, unique: true,
+  def: 38, base: { hp: 160 }, fixed: { str: 14, dex: 14, int: 14, vit: 14, power: 18, crit: 6, mp: 100 }, price: 15000,
+  desc: 'O ouro de Amun-Kheb nunca esfriou. Quem a usa sente o sol nascer dentro do peito.',
+  icon: { shape: 'crown', c1: '#f4d03f', c2: '#e67e22' },
+});
+add({
+  id: 'u_pharaoh_scarab', name: 'Escaravelho de Amun-Kheb', type: 'accessory', slot: 'amulet', lvl: 30, unique: true,
+  base: { hp: 320 }, fixed: { vit: 14, def: 20, int: 12, lifesteal: 4, speed: 6 }, price: 14000,
+  desc: 'Um escaravelho de ouro que guardava o coração do rei. Ainda bate, devagar, no ritmo das dunas.',
+  icon: { shape: 'brasa', c1: '#f5b041', c2: '#1e8449' },
+});
 const LEGEND_WEAPONS = {
   warrior: ['Lâmina da Aurora', { str: 18, vit: 10, crit: 6, lifesteal: 4 }],
   mage: ['Cajado da Chama Eterna', { int: 20, mp: 120, crit: 7, haste: 8 }],
@@ -142,7 +161,7 @@ pot('pot_mp_2', 'Poção de Mana', 8, { mp: 130 }, 45, '#2471a3', 'Restaura 130 
 pot('pot_mp_3', 'Poção de Mana Maior', 15, { mp: 300 }, 110, '#1a5276', 'Restaura 300 de mana.');
 add({
   id: 'scroll_return', name: 'Pergaminho de Retorno', type: 'consumable', lvl: 1, stack: true,
-  use: { recall: true }, price: 30, desc: 'Após 3s de concentração, transporta você para a Cidade de Alvorada. Interrompido por dano ou movimento.',
+  use: { recall: true }, price: 30, desc: 'Após 3s de concentração, transporta você para a capital do reino onde está (Alvorada ou Zahrim). Interrompido por dano ou movimento.',
   icon: { shape: 'scroll', c1: '#f5e6c8', c2: '#2e86c1' },
 });
 const elixir = (id, name, buff, price, c1, desc) =>
@@ -168,6 +187,10 @@ mat('mat_ore', 'Minério de Ferro Negro', 15, 'ore', '#34495e', 'Metal escuro da
 mat('mat_crystal', 'Cristal Sombrio', 20, 'crystal', '#8e44ad', 'Vibra com uma energia fria.');
 mat('mat_essence', 'Essência do Vazio', 25, 'essence', '#5b2c6f', 'Fumaça que não se dissipa.');
 mat('mat_ash', 'Cinza Ardente', 25, 'ash', '#e74c3c', 'Brasa que se recusa a esfriar.');
+mat('mat_venom', 'Veneno de Escorpião', 28, 'essence', '#e59866', 'Gota dourada e viscosa. Alquimistas pagam bem por ela.');
+mat('mat_chitin', 'Quitina Dourada', 30, 'bark', '#d4a017', 'Carapaça de escorpião gigante, dura como metal.');
+mat('mat_linen', 'Linho Embalsamado', 30, 'cloth', '#e8dcc0', 'Faixas de múmia ainda impregnadas de resinas antigas.');
+mat('mat_scarab', 'Escaravelho de Ouro', 40, 'gem', '#f5b041', 'Amuleto de ouro maciço que os reis-sol levavam para o além.');
 mat('mat_ember', 'Fagulha da Chama', 120, 'ember', '#f7dc6f', 'Um fragmento minúsculo da Chama Primordial. Raríssimo.');
 add({
   id: 'enh_stone', name: 'Pedra de Aprimoramento', type: 'material', lvl: 1, stack: true, price: 250,
@@ -184,6 +207,10 @@ qi('q_sigil', 'Sigilo Velado', 'sigil', '#7d3c98', 'O símbolo dos Velados: um o
 qi('q_brasa_vida', 'Brasa da Vida', 'brasa', '#58d68d', 'Um fragmento verde e quente da Chama Primordial.');
 qi('q_brasa_terra', 'Brasa da Terra', 'brasa', '#e67e22', 'Um fragmento âmbar e pesado da Chama Primordial.');
 qi('q_brasa_espirito', 'Brasa do Espírito', 'brasa', '#85c1e9', 'Um fragmento azul e etéreo da Chama Primordial.');
+qi('q_nest_egg', 'Ovo Dourado', 'gem', '#f5b041', 'Um ovo de escorpião, quente ao toque e brilhante como uma brasa.');
+qi('q_water_flask', 'Odre do Oásis', 'sack', '#5dade2', 'Um odre de couro, cheio da água fria e doce do Oásis de Karim.');
+qi('q_sun_tablet', 'Tábua Solar', 'sigil', '#f4d03f', 'Uma tábua de ouro com glifos do sol: o selo que mantém os reis dormindo.');
+qi('q_stinger_seal', 'Selo do Ninho', 'tag', '#c0392b', 'Um selo de cera vermelha arrancado de um escorpião carregador de mensagens.');
 qi('q_letter', 'Carta Selada de Osric', 'scroll', '#f5e6c8', 'Uma carta selada com cera verde, endereçada à druida Sylvara.');
 
 export function getItem(id) {

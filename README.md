@@ -1,6 +1,6 @@
 # Aethra: A Chama Partida
 
-Um **MMORPG 3D multiplayer para navegador**, feito do zero: servidor autoritativo em Node.js (sem nenhuma dependência), mundo persistente, combate em tempo real, 4 classes, 6 regiões, 20 missões de campanha com história completa, chefes com mecânicas, itens com raridade e afixos aleatórios, aprimoramento, criação, grupos, clãs, comércio entre jogadores, arena JxJ e ranking.
+Um **MMORPG 3D multiplayer para navegador**, feito do zero: servidor autoritativo em Node.js (sem nenhuma dependência), mundo persistente, combate em tempo real, 4 classes, 9 regiões em 2 reinos conectados, 20 missões de campanha com história completa e uma saga de 8 missões no deserto, chefes com mecânicas, itens com raridade e afixos aleatórios, aprimoramento, criação, grupos, clãs, comércio entre jogadores, arena JxJ e ranking.
 
 O mundo é renderizado em **3D com Three.js** (câmera orbital, sombras, ciclo dia/noite, luzes dinâmicas, partículas). Personagens, NPCs e inimigos humanoides são os modelos animados **KayKit Adventurers 2.0**; os mortos-vivos (esqueletos mineiros, arqueiros, guardas e espectros) usam o **KayKit Skeletons**; a capital murada é montada peça por peça (paredes de pedra e enxaimel, portas, janelas que acendem à noite, telhados de telha, chaminés, trepadeiras) com o **Medieval Village MegaKit** da Quaternius, mais muralhas, torres e portões gerados por código; árvores, pedras, montanhas e objetos vêm do **KayKit Medieval Hexagon Pack**; minérios, barras, tecidos e madeira do **KayKit Resource Bits**; pilares, tochas, baús, velas, mesas, camas, estantes e estandartes do **KayKit Dungeon**; espadas, machados, martelos e lanças do **KayKit Fantasy Weapons Bits**; bigorna, pedra de amolar, picaretas e lanternas do **KayKit RPG Tools Bits** (todos CC0). Todas as construções com porta podem ser visitadas: a porta abre quando você chega perto e o interior é mobiliado como uma casa de verdade (cama, lareira acesa, estante de livros, mesa posta, tapetes; e por tipo: forja e bigorna na ferraria, balcão e barris na taverna, cofres no banco, bancos e altar na capela, passadeira real no salão do castelo...). Criaturas, efeitos, ícones e todo o áudio são gerados por código.
 
@@ -27,11 +27,11 @@ No modo DEV, use no chat:
 | `/nivel 20` | sobe para o nível 20 |
 | `/ouro 5000` | ganha ouro |
 | `/item id [qtd] [raridade 0-4]` | cria um item (`/ids` lista todos) |
-| `/ir forest` | viaja para uma zona (`town fields forest mines ruins arena`) |
+| `/ir forest` | viaja para uma zona (`town fields forest mines ruins arena zahrim dunes tombs`) |
 | `/tp x y` | teleporta dentro da zona |
 | `/curar`, `/matar` | cura total / mata o alvo |
 
-Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase).
+Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `KINGDOM_GRACE_MS` (quanto tempo um reino vazio fica na memória, padrão 90000), `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase).
 
 **Celular:** ao abrir em uma tela de toque aparecem os controles virtuais: direcional flutuante (toque e arraste na metade esquerda), botões de ataque, interagir, alvo e câmera, habilidades em grade à direita, atalhos de menu/chat/missões/tela cheia no topo; arraste na tela para girar a câmera e use a pinça para o zoom. Gire o celular para a horizontal. Dá para forçar ou desligar os controles de toque em Opções.
 
@@ -41,7 +41,11 @@ Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DE
 
 Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa e sem mapa de normais, há 2 luzes de ponto no máximo (uma delas serve de luz da casa), telhados, molduras e janelas já usam as versões simplificadas, o interior só aparece a poucos tiles de distância e a resolução segue um orçamento de pixels. Desempenho: os prédios distantes trocam telhado, moldura de porta, janela e chaminé por versões simplificadas (LOD, gerado por `tools/village/lod.mjs`), o interior só é desenhado de perto e as muralhas são cortadas por blocos; isso tirou quase metade dos triângulos nas ruas da capital. O jogo precisa de WebGL.
 
-**Bairro das Torres e zumbis:** na capital, o quarteirão sudeste (a leste da Avenida Sul, entre a praça e o Portão Sul) tem torres de adobe em voxel no lugar de parte das casas, e uma ou outra aparece nos demais bairros. São construções maciças (sem porta nem interior) que o servidor trata como paredes; de longe o jogo troca cada torre por uma versão com 12% dos triângulos e as esconde além do alcance da névoa. Nas Ruínas de Cinza, ao sul do acampamento, aparecem o **Zumbi das Cinzas** (nv 19–21) e o **Brutamontes Putrefato** (nv 22–24, com pancada em área), e o Quadro de Contratos ganhou o contrato repetível **Mortos Famintos**. Com materiais realistas (perfis Alto e Ultra) o céu HDR do Poly Haven ilumina o cenário do lado da sombra; de noite e nas cavernas ele se apaga.
+**Reinos (mundo grande, só o seu reino na memória):** o mundo é dividido em **reinos** (`shared/data/kingdoms.js`) ligados por portais de fronteira. O jogador só carrega o reino onde está: o servidor cria as zonas (mapa, monstros, chefes) do reino na hora em que alguém entra e as descarrega alguns segundos depois que o último jogador sai (`KINGDOM_GRACE_MS`, padrão 90 s); o navegador baixa só o pacote de arte daquele reino (as peças do Medieval Village em Alvorada, as torres em voxel em Sahaar) e mostra uma tela de travessia com barra de progresso. Nada se perde ao trocar de reino: missões, progresso, mapa descoberto, inventário e baú ficam no personagem, não na zona, e o reino antigo só volta à memória quando o jogador retorna. O Pergaminho de Retorno e o renascimento levam à capital do reino atual (Alvorada ou Zahrim), as Pedras do Caminho só viajam dentro do reino, e o mapa-múndi agrupa as zonas por reino.
+
+- **Reino de Alvorada** (temperado): Cidade de Alvorada, Campos, Floresta, Minas, Ruínas de Cinza e Arena. Nas Ruínas, ao sul do acampamento, aparecem o **Zumbi das Cinzas** (nv 19–21) e o **Brutamontes Putrefato** (nv 22–24, com pancada em área), e o Quadro de Contratos tem o contrato repetível **Mortos Famintos**.
+- **Reino de Sahaar** (deserto, ao norte das Ruínas de Cinza, pelo portal da Estrada do Sol): **Zahrim, Cidade das Torres** (zona segura; oásis no centro, Avenida do Sol com barracas e braseiros, Palácio do Emir), **Dunas Ardentes** (nv 24–28: acampamento beduíno, oásis, escorpiões, bandidos, feiticeiros, golens de arenito e a chefe **Skorvax, a Rainha das Areias**) e **Tumbas dos Reis-Sol** (nv 28–30: múmias, guardiões dourados, sarcófagos e o chefe **Amun-Kheb, o Rei-Sol**). Dá para andar de Alvorada a Sahaar pelas Ruínas, e a **saga de Sahaar** (8 missões, do Ancião Thalric à Emira Soraya, depois da campanha principal; ver o diário) leva o jogador até o Rei-Sol. O quadro de contratos de Zahrim tem 4 contratos repetíveis, e há itens novos (set Solar, únicos como o Ferrão de Escorpião e a Coroa do Rei-Sol).
+- **As torres de Zahrim** são os prédios em voxel (MagicaVoxel): 8 modelos, de torres pequenas a um casarão, mais o palácio. São construções maciças (sem porta nem interior) que o servidor trata como paredes; os serviços de Zahrim funcionam ao ar livre, em barracas e sob toldos. De longe cada torre troca para uma versão com 12% dos triângulos e some além do alcance da névoa. Com materiais realistas (perfis Alto e Ultra) o céu HDR do Poly Haven ilumina o cenário do lado da sombra; de noite e nas cavernas ele se apaga.
 
 ## Controles
 
@@ -95,11 +99,11 @@ Cobre fórmulas, itens, inventário, consistência dos dados, geração e conect
 
 ```
 server/   servidor (WebSocket próprio, mundo, zonas, IA, combate, missões, social)
-shared/   dados e regras usados pelos dois lados (classes, itens, monstros, missões, mapas)
+shared/   dados e regras usados pelos dois lados (classes, itens, monstros, missões, reinos, mapas)
 client/   jogo no navegador (Three.js em client/vendor, cena 3D em client/js/three, interface, áudio procedural)
 assets/kaykit/   modelos 3D KayKit (CC0): personagens (aventureiros e esqueletos), armas e animações; medieval/, resources/, dungeon/, weaponbits/ e tools/ com os GLB do cenário
 assets/village/  peças modulares e texturas do Medieval Village MegaKit (CC0) para os prédios
-assets/voxel/    torres de adobe em voxel (MagicaVoxel) da capital, em um GLB com cores por vértice e versão @lod
+assets/voxel/    as 8 torres de barro em voxel (MagicaVoxel) de Zahrim, em um GLB com cores por vértice e versão @lod (carregado só ao entrar em Sahaar)
 assets/brackeys/ pacote do Brackeys (CC0): o zumbi do Kenney com animações e o céu HDR reduzido
 tools/bake/      gera os retratos 2D dos personagens a partir dos modelos 3D (Three.js + Chromium)
 tools/voxel/     converte os prédios em voxel (.obj + paleta) para assets/voxel/voxel.glb
@@ -122,7 +126,7 @@ node tools/village/convert.mjs <pasta-com-fbx-e-texturas>          # peças dos 
 - Personagens 3D: **KayKit Adventurers 2.0** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Cenário 3D: **KayKit Medieval Hexagon Pack**, **Resource Bits**, **Dungeon**, **Skeletons**, **Fantasy Weapons Bits** e **RPG Tools Bits** por Kay Lousberg — www.kaylousberg.com (licença CC0).
 - Prédios: **Medieval Village MegaKit** por Quaternius — quaternius.com (licença CC0).
-- Torres em voxel do Bairro das Torres: *Tall Building 01–03* e *Small Building 01* (MagicaVoxel), fornecidos pelo autor do projeto.
+- Torres em voxel de Zahrim: *Tall Building 01–03*, *Small Building 01, 03 e 04*, *Tiny Building* e *Large Building 01* (MagicaVoxel), fornecidos pelo autor do projeto.
 - Zumbi: **Animated Characters** por Kenney — kenney.nl (CC0), reempacotado no pacote 3D do Brackeys; céu: **autumn_field_puresky** por Poly Haven — polyhaven.com (CC0). O esqueleto mago e as peças de masmorra do mesmo pacote já estavam no jogo (KayKit).
 - Motor 3D: **Three.js** (licença MIT).
 - Fontes: Cinzel e Alegreya Sans (Google Fonts).

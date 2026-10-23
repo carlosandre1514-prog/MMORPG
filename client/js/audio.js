@@ -115,6 +115,7 @@ class AudioEngine {
       mines: { root: 146.83, scale: [0, 1, 3, 7, 8], prog: [0, 1, 0, 5], tempo: 3.4, wave: 'sine' },
       ruins: { root: 174.61, scale: [0, 1, 3, 6, 7], prog: [0, 6, 5, 1], tempo: 3.2, wave: 'sawtooth' },
       arena: { root: 196, scale: [0, 3, 5, 7, 10], prog: [0, 3, 5, 3], tempo: 1.8, wave: 'square' },
+      desert: { root: 207.65, scale: [0, 1, 4, 5, 7, 8], prog: [0, 5, 3, 0], tempo: 3.1, wave: 'triangle' },
     };
     const th = THEMES[theme] || THEMES.town;
     let bar = 0;

@@ -1,4 +1,4 @@
-// Prédios em voxel (MagicaVoxel): torres de adobe que ocupam o lugar de algumas casas da capital (Bairro das Torres).
+// Prédios em voxel (MagicaVoxel): as torres de barro de Zahrim, a capital do Reino de Sahaar (carregados só ao entrar no reino).
 // O GLB (assets/voxel/voxel.glb, gerado por tools/voxel/convert.mjs) traz cada prédio completo e uma versão @lod bem
 // simplificada para quando está longe. São construções maciças: o servidor as trata como paredes (sem porta nem interior).
 import * as THREE from 'three';
@@ -6,7 +6,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { lite } from './lite.js';
 import { quality } from '../device.js';
 
-const MAX_H = 12; // altura máxima de uma torre, em tiles
+const MAX_H = 12; // altura máxima de uma torre, em tiles (a estrutura pode pedir outra em st.maxH)
+const MAX_SCALE = 1.6; // nenhum modelo cresce mais que isso, mesmo cabendo na área
 const FACE_ROT = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 };
 
 export const voxel = {
@@ -50,7 +51,7 @@ export const voxel = {
       const side = st.face === 'e' || st.face === 'w';
       const W = side ? st.h : st.w, D = side ? st.w : st.h;
       // cabe na área da construção (sem encostar nos vizinhos) e não passa da altura máxima
-      const s = Math.min((W - 0.6) / mod.size.x, (D - 0.3) / mod.size.z, MAX_H / mod.size.y);
+      const s = Math.min((W - 0.6) / mod.size.x, (D - 0.3) / mod.size.z, (st.maxH || MAX_H) / mod.size.y, st.maxScale || MAX_SCALE);
       const x = st.x + st.w / 2, z = st.y + st.h / 2;
       const make = (geo) => {
         const m = new THREE.Mesh(geo, this.mat);

@@ -6,7 +6,8 @@ import { ITEMS } from '/shared/data/items.js';
 import { MONSTERS } from '/shared/data/monsters.js';
 import { NPCS } from '/shared/data/npcs.js';
 import { QUESTS } from '/shared/data/quests.js';
-import { ZONES } from '/shared/data/zones.js';
+import { ZONES, hubOf } from '/shared/data/zones.js';
+import { KINGDOMS } from '/shared/data/kingdoms.js';
 import { h, clear, esc, Win, fmt } from './dom.js';
 import { Tooltip, slotEl } from './itemview.js';
 import { skillIcon, itemIcon, drawHumanoid, playerLook } from '../sprites.js';
@@ -154,7 +155,13 @@ export class UI {
     this.drawPortrait();
     this.onMe(); this.onInventory(); this.onEquip(); this.onQuests(); this.onStatuses();
     this.closeNpcWindows();
-    if (zoneChanged) this.showBanner(def.name, def.levels);
+    if (zoneChanged) {
+      // ao cruzar a fronteira de um reino o aviso traz o nome do reino
+      const king = KINGDOMS[def.kingdom];
+      if (this.lastKingdom && this.lastKingdom !== def.kingdom && king) this.showBanner(king.name, `${def.name} · ${def.levels}`, 'kingdom');
+      else this.showBanner(def.name, def.levels);
+    }
+    this.lastKingdom = def.kingdom;
     if (first) {
       this.chatMsg({ c: 'sistema', m: `Bem-vindo a Aethra, ${me.name}! Pressione H para ver os controles.` });
       if (me.level === 1 && !Object.keys(me.quests.done).length && !Object.keys(me.quests.active).length) this.showIntro();
@@ -487,7 +494,7 @@ export class UI {
   // ------------------------------------------------------------------ rastreador
   renderTracker() {
     const box = clear(this.tracker);
-    const qs = activeQuests(this.me).sort((a, b) => (b.main ? 1 : 0) - (a.main ? 1 : 0)).slice(0, 5);
+    const qs = activeQuests(this.me).sort((a, b) => ((b.main || b.saga) ? 1 : 0) - ((a.main || a.saga) ? 1 : 0)).slice(0, 5);
     if (!qs.length) {
       box.appendChild(h('div', { class: 'tr-empty' }, 'Procure NPCs com ', h('b', { class: 'gold' }, '!'), ' para receber missões.'));
       return;
@@ -500,7 +507,7 @@ export class UI {
         onclick: (ev) => { ev.stopPropagation(); this.goToQuest(q.id); },
       }, '📍 Ir');
       const el = h('div', { class: 'tr-quest' + (done ? ' done' : '') + (tracked ? ' tracked' : '') },
-        h('div', { class: 'tr-head' }, h('div', { class: 'tr-name' }, (q.main ? '★ ' : q.repeatable ? '↻ ' : '• ') + q.name), go));
+        h('div', { class: 'tr-head' }, h('div', { class: 'tr-name' }, ((q.main || q.saga) ? '★ ' : q.repeatable ? '↻ ' : '• ') + q.name), go));
       if (done) el.appendChild(h('div', { class: 'tr-obj ok' }, `Volte para ${NPCS[q.turnIn].name}`));
       else {
         q.objectives.forEach((o, i) => {
@@ -578,6 +585,23 @@ export class UI {
     setTimeout(() => el.remove(), kind === 'err' ? 2700 : 4000);
   }
 
+  // Tela de travessia entre reinos (enquanto os recursos do reino novo são baixados)
+  showTransition(title, text) {
+    this.hideTransition();
+    this.transEl = h('div', { id: 'kingdom-transition' },
+      h('div', { class: 'kt-label' }, 'Atravessando a fronteira'),
+      h('div', { class: 'kt-title' }, title),
+      h('div', { class: 'kt-text' }, text || ''),
+      h('div', { class: 'load-bar' }, this.transFill = h('div')));
+    document.body.appendChild(this.transEl);
+  }
+
+  transitionProgress(p) { if (this.transFill) this.transFill.style.width = Math.round(p * 100) + '%'; }
+
+  hideTransition() {
+    if (this.transEl) { this.transEl.remove(); this.transEl = null; this.transFill = null; }
+  }
+
   showBanner(title, sub, kind = 'zone') {
     const b = this.banner;
     b.className = 'show b-' + kind;
@@ -624,7 +648,7 @@ export class UI {
   showDeath(m) {
     const pvp = this.game.zone.def.pvp;
     this.deathAt = performance.now();
-    this.deathBtnText = pvp ? 'Voltar à luta' : 'Renascer na Cidade de Alvorada';
+    this.deathBtnText = pvp ? 'Voltar à luta' : 'Renascer em ' + ZONES[hubOf(this.game.zone.id).zone].name;
     clear(this.deathEl).append(
       h('div', { class: 'death-title' }, 'Você caiu'),
       h('div', { class: 'death-sub' }, m.by ? `Derrotado por ${m.by}` : 'A Névoa reclama mais uma alma...'),

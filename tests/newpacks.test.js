@@ -23,22 +23,23 @@ function glbJson(file) {
   return JSON.parse(b.toString('utf8', 20, 20 + len));
 }
 
-const town = generateMap(ZONES.town);
+const town = generateMap(ZONES.zahrim);
 const map = buildMap(town.w, town.h, town.tiles, town.objs, town.structures);
 const voxels = town.structures.filter((s) => s.type === 'voxel');
 
-test('o GLB dos prédios em voxel tem todos os modelos usados pela cidade, cada um com sua versão @lod', () => {
+test('o GLB dos prédios em voxel tem todos os modelos usados por Zahrim, cada um com sua versão @lod', () => {
   const names = new Set(glbJson('assets/voxel/voxel.glb').nodes.map((n) => n.name));
-  assert.ok(voxels.length >= 8);
+  assert.ok(voxels.length >= 60);
   for (const st of voxels) {
     assert.ok(names.has(st.model), `modelo ${st.model}`);
     assert.ok(names.has(st.model + '@lod'), `lod de ${st.model}`);
   }
-  assert.ok(new Set(voxels.map((s) => s.model)).size >= 3, 'mais de um modelo em uso');
+  assert.equal(new Set(voxels.map((s) => s.model)).size, 8, 'os oito modelos em uso');
+  assert.ok(voxels.some((s) => s.label === 'Palácio do Emir'));
 });
 
 test('as torres em voxel são construções maciças: sem porta, sem interior e bloqueando a área toda', () => {
-  assert.equal(map.rooms.filter((r) => r.st.type === 'voxel').length, 0);
+  assert.equal((map.rooms || []).length, 0);
   for (const st of voxels) {
     assert.equal(st.kind, 'house');
     assert.equal(doorIndex(st), -1);
@@ -46,15 +47,15 @@ test('as torres em voxel são construções maciças: sem porta, sem interior e 
   }
 });
 
-test('as torres não se sobrepõem a outras construções e a cidade segue com o mesmo número de quarteirões', () => {
-  const all = town.structures.filter((s) => s.kind === 'house');
-  for (const a of voxels) for (const b of all) {
+test('as torres de Zahrim não se sobrepõem e a capital de Alvorada não tem nenhuma', () => {
+  for (const a of voxels) for (const b of voxels) {
     if (a === b) continue;
     const overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    assert.ok(!overlap, `${a.model}@${a.x},${a.y} sobrepõe ${b.type}@${b.x},${b.y}`);
+    assert.ok(!overlap, `${a.model}@${a.x},${a.y} sobrepõe ${b.model}@${b.x},${b.y}`);
   }
-  // antes das torres eram 116 casas comuns; cada torre ocupa o lugar de uma delas
-  assert.equal(all.filter((s) => s.type === 'house').length + voxels.length, 116);
+  const alvorada = generateMap(ZONES.town);
+  assert.equal(alvorada.structures.filter((s) => s.type === 'voxel').length, 0);
+  assert.equal(alvorada.structures.filter((s) => s.kind === 'house' && s.type === 'house').length, 116);
 });
 
 test('zumbis: monstros, spawns nas Ruínas e contrato no quadro', () => {

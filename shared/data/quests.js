@@ -1,8 +1,113 @@
 // Missões: a campanha principal "A Chama Partida", missões secundárias e contratos repetíveis.
 // Objetivos: kill (target: id ou lista de ids), collect (item), talk (npc), pvp (abates na arena)
+// main: campanha principal "A Chama Partida" · saga: campanha de um reino (ex.: 'sahaar') · repeatable: contrato do quadro
 // {name} é substituído pelo nome do personagem no cliente.
 
 export const QUESTS = {
+  // ===================== REINO DE SAHAAR — AS AREIAS ARDENTES =====================
+  sa1: {
+    id: 'sa1', saga: 'sahaar', act: 'Sahaar', name: 'O Chamado das Areias', giver: 'thalric', turnIn: 'soraya', lvl: 24, prereq: ['ms20'],
+    desc: 'Atravesse a Estrada do Sol (norte das Ruínas de Cinza) até Zahrim e fale com a Emira Soraya, no Palácio do Emir.',
+    offer: 'Portador, a Chama voltou a arder, mas a luz que ela acendeu chegou mais longe do que eu esperava.\n\n' +
+      'Hoje de manhã um mensageiro de Sahaar, o reino das areias ao norte das Ruínas de Cinza, chegou sem fôlego às nossas portas. ' +
+      'A Emira Soraya pede ajuda. A Névoa chegou ao deserto, e lá não há Guardiões para enfrentá-la.\n\n' +
+      'Siga para as Ruínas de Cinza e procure o portal ao norte: é a Estrada do Sol. Zahrim fica depois das dunas. ' +
+      'Leve poções e água, {name}. E boas botas.',
+    progress: 'A Estrada do Sol começa ao norte das Ruínas de Cinza. Zahrim e o Palácio do Emir ficam do outro lado das dunas.',
+    complete: 'Então a luz da Chama é verdade. Meus batedores falaram, mas eu precisava ver com meus próprios olhos.\n\n' +
+      'Seja bem-vindo a Zahrim, Portador. Aqui, as torres são de barro, mas a promessa é de pedra: ninguém neste reino vai se curvar à Névoa.',
+    objectives: [{ type: 'talk', npc: 'soraya' }],
+    rewards: { xp: 8000, gold: 800, items: [['pot_hp_4', 3]] },
+  },
+  sa2: {
+    id: 'sa2', saga: 'sahaar', act: 'Sahaar', name: 'Odres Roubados', giver: 'soraya', turnIn: 'karim', lvl: 24, prereq: ['sa1'],
+    desc: 'Recupere os odres de água roubados dos Bandidos das Dunas e leve-os a Karim, no acampamento beduíno, a oeste das dunas.',
+    offer: 'A água de Zahrim vem do Oásis de Karim, no meio das dunas, e as caravanas que a levavam foram saqueadas. ' +
+      'Bandidos das Dunas roubam os odres e vendem aos poços secos por dez vezes o preço.\n\n' +
+      'Karim, o chefe dos beduínos, sabe onde eles se escondem. Ajude-o: elimine oito bandidos e recupere quatro odres. ' +
+      'Sem água, o reino não dura uma semana.',
+    progress: 'Os bandidos se escondem a nordeste do acampamento de Karim. Quatro odres e oito bandidos.',
+    complete: 'Água! Água fria e doce do oásis! (Karim bebe um gole e fecha os olhos.)\n\n' +
+      'Você tem a bênção das areias, Portador. Mas os bandidos são o menor dos nossos problemas.',
+    objectives: [{ type: 'kill', target: 'sand_bandit', count: 8 }, { type: 'collect', item: 'q_water_flask', count: 4 }],
+    rewards: { xp: 18000, gold: 1500, items: [['pot_hp_4', 3], ['elixir_speed', 1]] },
+  },
+  sa3: {
+    id: 'sa3', saga: 'sahaar', act: 'Sahaar', name: 'Ninhos Dourados', giver: 'karim', turnIn: 'karim', lvl: 25, prereq: ['sa2'],
+    desc: 'Destrua os Escorpiões Dourados no centro das dunas e traga cinco ovos do ninho.',
+    offer: 'Os escorpiões sempre existiram, mas nunca vi tantos. Cada ninho rende dez ninhadas por estação, e a Névoa os faz crescer em semanas.\n\n' +
+      'Preciso que você mate dez escorpiões e traga cinco dos ovos dourados que eles carregam. ' +
+      'Com eles, a minha curandeira prepara um antídoto contra o veneno. Mantenha distância da cauda: uma picada e você sente o sol dentro das veias.',
+    progress: 'Os escorpiões patrulham o centro das dunas, entre o acampamento e a estrada para Zahrim.',
+    complete: 'Estes ovos... brilham como brasas. (Karim os guarda com cuidado.)\n\n' +
+      'Com isso nossa curandeira salva duas dúzias de vidas por semana. Você ganhou um lugar em minha tenda para sempre.',
+    objectives: [{ type: 'kill', target: 'scorpion', count: 10 }, { type: 'collect', item: 'q_nest_egg', count: 5 }],
+    rewards: { xp: 22000, gold: 1800, items: [['enh_stone', 1], ['pot_mp_3', 4]] },
+  },
+  sa4: {
+    id: 'sa4', saga: 'sahaar', act: 'Sahaar', name: 'A Sede dos Poços', giver: 'karim', turnIn: 'soraya', lvl: 26, prereq: ['sa3'],
+    desc: 'Derrote os Feiticeiros das Dunas e os Golens de Arenito, depois fale com a Emira Soraya, em Zahrim.',
+    offer: 'Os poços não estão secando por acaso, Portador. Há feiticeiros nas dunas que queimam a água do subsolo para alimentar rituais, ' +
+      'e golens de arenito que guardam as fendas por onde eles descem.\n\n' +
+      'Mate seis feiticeiros e quatro golens. Depois leve a notícia à Emira. Ela vai querer saber que não é só o sol que está matando o reino.',
+    progress: 'Os feiticeiros rondam as ruínas ao leste das dunas. Os golens guardam as fendas.',
+    complete: 'Então são mesmo feiticeiros... Agora entendo por que o poço do obelisco secou tão rápido.\n\n' +
+      'Obrigada, {name}. Mas ainda falta o pior: a mãe de todos os ninhos. Ela está no coração das dunas.',
+    objectives: [{ type: 'kill', target: 'dune_sorcerer', count: 6 }, { type: 'kill', target: 'sand_golem', count: 4 }],
+    rewards: { xp: 26000, gold: 2200, items: [['pot_hp_4', 4], ['enh_stone', 1]] },
+  },
+  sa5: {
+    id: 'sa5', saga: 'sahaar', act: 'Sahaar', name: 'A Rainha das Areias', giver: 'soraya', turnIn: 'soraya', lvl: 27, prereq: ['sa4'],
+    desc: 'Derrote Skorvax, a Rainha das Areias, no covil a sudeste das dunas, e traga o Ferrão-Selo.',
+    offer: 'Todos os ninhos respondem a uma única escorpiã: Skorvax, a Rainha das Areias. Meus avós já a chamavam de lenda; hoje ela é do tamanho de um palácio.\n\n' +
+      'Enquanto ela viver, as caravanas não passam e Zahrim não come. Vá ao covil dela, a sudeste das dunas, e derrote-a. ' +
+      'Traga o Ferrão-Selo, o selo de cera que ela carrega na cauda: é a prova.\n\n' +
+      'Ela chama as filhas quando está ferida e carrega com a força de uma avalanche. Leve aliados.',
+    progress: 'O covil de Skorvax é um círculo de rochas a sudeste das dunas. Traga o Ferrão-Selo.',
+    complete: '(A Emira segura o selo à luz do sol.)\n\n' +
+      'Está feito. Pela primeira vez em um ano, as caravanas vão cruzar as dunas sem medo. Zahrim lhe deve a vida de muita gente, Portador.\n\n' +
+      'Mas o sono dos reis-sol... isso é outro assunto. Procure a sacerdotisa Nefer, nas tumbas ao norte.',
+    objectives: [{ type: 'kill', target: 'scorpion_queen', count: 1 }, { type: 'collect', item: 'q_stinger_seal', count: 1 }],
+    rewards: { xp: 40000, gold: 3500, items: [['enh_stone', 2], ['pot_hp_4', 5]] },
+  },
+  sa6: {
+    id: 'sa6', saga: 'sahaar', act: 'Sahaar', name: 'O Sono dos Reis', giver: 'soraya', turnIn: 'nefer', lvl: 28, prereq: ['sa5'],
+    desc: 'Cruze o portão norte de Zahrim até as Tumbas dos Reis-Sol e fale com a Sacerdotisa Nefer.',
+    offer: 'Meus ancestrais dormem sob a cidade, mas as tumbas ficam ao norte, no deserto fundo. A última sacerdotisa do Culto do Sol, Nefer, ainda vigia a entrada.\n\n' +
+      'À noite, os passos sob o palácio ficaram mais altos. Não ouso entrar lá sozinha. Vá até ela e descubra o que está acontecendo, {name}.',
+    progress: 'O portão norte de Zahrim leva às Tumbas dos Reis-Sol. Nefer espera na entrada.',
+    complete: 'Soraya me falou de você. Você é quem acendeu a Chama?\n\n' +
+      'Então sabe o que é manter uma promessa depois que o mundo esqueceu por que a fez. Entre. Os reis precisam ser lembrados do que juraram.',
+    objectives: [{ type: 'talk', npc: 'nefer' }],
+    rewards: { xp: 14000, gold: 1500, items: [['pot_mp_3', 5]] },
+  },
+  sa7: {
+    id: 'sa7', saga: 'sahaar', act: 'Sahaar', name: 'As Tábuas Solares', giver: 'nefer', turnIn: 'nefer', lvl: 28, prereq: ['sa6'],
+    desc: 'Destrua as Múmias Reais e os Guardiões Dourados e recupere quatro Tábuas Solares.',
+    offer: 'Os selos que mantêm os reis dormindo foram arrancados dos sarcófagos pelos próprios servos, enlouquecidos pela Névoa. ' +
+      'Nas mãos das múmias e dos guardiões, as Tábuas Solares são armas. Nas minhas, são a cura.\n\n' +
+      'Destrua oito múmias e seis guardiões, e traga-me quatro tábuas. Eles foram homens bons. Peça perdão enquanto os liberta.',
+    progress: 'As múmias vagam pelas salas centrais e os guardiões, pelas criptas laterais.',
+    complete: '(Nefer encaixa as tábuas em um nicho de ouro e todas se acendem.)\n\n' +
+      'Dá para ouvir. O sono dos reis voltou, mais fundo. Só falta o último: Amun-Kheb, o mais antigo, o mais orgulhoso. O sono dele não volta sozinho.',
+    objectives: [{ type: 'kill', target: 'mummy', count: 8 }, { type: 'kill', target: 'tomb_guard', count: 6 }, { type: 'collect', item: 'q_sun_tablet', count: 4 }],
+    rewards: { xp: 35000, gold: 3000, items: [['enh_stone', 2], ['pot_hp_4', 5]] },
+  },
+  sa8: {
+    id: 'sa8', saga: 'sahaar', act: 'Sahaar', name: 'O Rei-Sol', giver: 'nefer', turnIn: 'soraya', lvl: 29, prereq: ['sa7'],
+    desc: 'Derrote Amun-Kheb, o Rei-Sol, na câmara real ao norte das Tumbas, e leve a notícia à Emira Soraya.',
+    offer: 'Amun-Kheb foi o rei que fundou Zahrim. Quando a Névoa chegou, ele jurou "guardar o reino para sempre" e se enterrou vivo para cumprir a promessa. ' +
+      'A Névoa torceu as palavras: agora ele acredita que guardar é impedir que qualquer um entre ou saia.\n\n' +
+      'A câmara real fica ao norte, depois das criptas. Ele vai invocar os servos, chamar fogo do céu e, perto do fim, vai arder com a fúria do próprio sol.\n\n' +
+      'Não o odeie, Portador. Liberte-o. E leve a última tábua à Emira: ela precisa saber que o sono dele terminou.',
+    progress: 'A câmara real fica no norte das Tumbas. Reúna aliados e leve poções de sobra.',
+    complete: '(Soraya segura a tábua dourada contra o peito.)\n\n' +
+      'Ele descansou. Depois de tantos anos, ele descansou. (Ela fecha os olhos.)\n\n' +
+      'Sahaar lhe deve tudo, {name}. O Reino das Areias nunca vai esquecer o Portador que acendeu o sol de novo.',
+    objectives: [{ type: 'kill', target: 'sun_king', count: 1 }, { type: 'collect', item: 'q_sun_tablet', count: 1 }],
+    rewards: { xp: 60000, gold: 8000, items: [['enh_stone', 3], ['pot_hp_4', 5], ['mat_scarab', 3]] },
+  },
+
   // ===================== ATO I — O DESPERTAR =====================
   ms1: {
     id: 'ms1', main: true, act: 'Ato I', name: 'O Despertar', giver: 'thalric', turnIn: 'bran', lvl: 1,
@@ -417,6 +522,38 @@ export const QUESTS = {
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Última Vigília.',
     objectives: [{ type: 'kill', target: ['zombie', 'zombie_brute'], count: 14 }],
     rewards: { xp: 15000, gold: 800 },
+  },
+  rb_scorpion: {
+    id: 'rb_scorpion', repeatable: true, name: 'Contrato: Ninhos de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 24,
+    desc: 'Elimine 14 Escorpiões Dourados nas Dunas Ardentes.',
+    offer: 'CARTAZ: "O emir paga por cada ferrão trazido a Zahrim. Os ninhos crescem mais rápido que a guarda consegue limpá-los."',
+    progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelo tesouro do emir.',
+    objectives: [{ type: 'kill', target: 'scorpion', count: 14 }],
+    rewards: { xp: 16000, gold: 900, items: [['mat_chitin', 2]] },
+  },
+  rb_sahaar_bandits: {
+    id: 'rb_sahaar_bandits', repeatable: true, name: 'Contrato: Saqueadores', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 25,
+    desc: 'Derrote 12 Bandidos das Dunas e 6 Feiticeiros das Dunas.',
+    offer: 'CARTAZ: "Caravanas atacadas na Estrada do Sol. A Guarda do Emir paga bem a quem a mantiver aberta."',
+    progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda do Emir.',
+    objectives: [{ type: 'kill', target: 'sand_bandit', count: 12 }, { type: 'kill', target: 'dune_sorcerer', count: 6 }],
+    rewards: { xp: 24000, gold: 1400, items: [['pot_hp_4', 2]] },
+  },
+  rb_mummy: {
+    id: 'rb_mummy', repeatable: true, name: 'Contrato: Sono Inquieto', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 28,
+    desc: 'Destrua 14 Múmias Reais e 8 Guardiões Dourados nas Tumbas dos Reis-Sol.',
+    offer: 'CARTAZ: "A sacerdotisa Nefer pede reforços para as tumbas. O emir dobra a recompensa por cada servo libertado."',
+    progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelo emir e pelo Culto do Sol.',
+    objectives: [{ type: 'kill', target: 'mummy', count: 14 }, { type: 'kill', target: 'tomb_guard', count: 8 }],
+    rewards: { xp: 34000, gold: 2200, items: [['enh_stone', 1]] },
+  },
+  rb_sahaar_bosses: {
+    id: 'rb_sahaar_bosses', repeatable: true, name: 'Contrato: Lendas de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 30,
+    desc: 'Derrote Skorvax e Amun-Kheb novamente.',
+    offer: 'CARTAZ: "A Névoa insiste em reerguer os guardiões e as rainhas do deserto. Recompensa máxima para quem derrotar os dois."',
+    progress: 'O contrato ainda está em aberto.', complete: 'Recompensa máxima paga pelo emir.',
+    objectives: [{ type: 'kill', target: 'scorpion_queen', count: 1 }, { type: 'kill', target: 'sun_king', count: 1 }],
+    rewards: { xp: 60000, gold: 5000, items: [['enh_stone', 3], ['mat_scarab', 2]] },
   },
   rb_knight: {
     id: 'rb_knight', repeatable: true, name: 'Contrato: Cavaleiros Caídos', giver: 'board', turnIn: 'board', lvl: 21,

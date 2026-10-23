@@ -49,13 +49,26 @@ export const LOOKS = {
   wraith: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', eyes: [0.4, 1.0, 0.95], ghost: true, float: 0.4, emissive: [0.05, 0.16, 0.2], spawnClip: 'Spawn_Air' },
   goblin: { model: 'Rogue', right: 'dagger', scale: 0.72, hue: 70, sat: 1.2 },
   goblin_shaman: { model: 'Mage', right: 'staff', scale: 0.72, hue: 95, sat: 1.1 },
+  // Reino de Sahaar: NPCs
+  soraya: { model: 'Mage', right: 'staff', hue: 45, sat: 1.25, bright: 1.25 },
+  jamil: { model: 'Rogue', hue: 15, sat: 1.3, bright: 1.1 },
+  dahmir: { model: 'Barbarian', hue: 28, sat: 0.9, bright: 0.85, scale: 1.05 },
+  safiya: { model: 'Mage', left: 'spellbook_open', hue: 165, sat: 0.9 },
+  karim: { model: 'Ranger', left: 'bow_withString', hue: 25, sat: 0.9, bright: 1.15 },
+  nefer: { model: 'Rogue_Hooded', hue: 160, sat: 1.0, bright: 1.15 },
+  // Reino de Sahaar: inimigos (escorpiões são criaturas procedurais em creatures.js; mumia e guardião são mortos-vivos)
+  sand_bandit: { model: 'Rogue', right: 'dagger', left: 'dagger', hue: 35, sat: 1.35, bright: 0.95 },
+  dune_sorcerer: { model: 'Mage', right: 'staff', hue: 18, sat: 1.5, bright: 1.05, emissive: [0.08, 0.03, 0] },
+  mummy: { kind: 'zombie', rise: true, hue: 38, sat: 0.4, bright: 1.5 },
+  tomb_guard: { model: 'Skeleton_Warrior', right: 'Skeleton_Blade', left: 'Skeleton_Shield_Large_A', scale: 1.12, tint: [1.7, 1.3, 0.45], eyes: [1.0, 0.8, 0.2], emissive: [0.12, 0.08, 0], rise: true },
+  sun_king: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', tint: [1.9, 1.45, 0.35], eyes: [1.0, 0.85, 0.25], emissive: [0.4, 0.26, 0.02], float: 0.35, spawnClip: 'Spawn_Air' },
   // zumbis (Ruínas de Cinza): sobem do chão ao aparecer; kind 'zombie' usa o modelo do Kenney em vez do KayKit
   zombie: { kind: 'zombie', rise: true },
   zombie_brute: { kind: 'zombie', rise: true, hue: -40, sat: 1.15, bright: 0.72 },
   morvath: { model: 'Knight', right: 'staff', sat: 0.15, bright: 0.6, emissive: [0.4, 0.08, 0.02], float: 0.35 },
 };
 
-const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith']);
+const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith', 'soraya', 'safiya', 'dune_sorcerer', 'sun_king']);
 
 const CLIPS = {
   idle: 'Idle_A', walk: 'Walking_A', run: 'Running_A', attack: 'Throw', cast: 'Use_Item',
@@ -123,13 +136,15 @@ class CharacterLibrary {
   applyTint(m, look) {
     const hue = ((look.hue || 0) * Math.PI) / 180;
     const sat = look.sat ?? 1, bright = look.bright ?? 1;
+    const tint = look.tint || [1, 1, 1]; // multiplica a cor (dourado, por exemplo)
     if (look.emissive && m.emissive) m.emissive = new THREE.Color(...look.emissive);
-    if (!hue && sat === 1 && bright === 1) return m;
+    if (!hue && sat === 1 && bright === 1 && !look.tint) return m;
     m.onBeforeCompile = (shader) => {
       shader.uniforms.uHue = { value: hue };
       shader.uniforms.uSat = { value: sat };
       shader.uniforms.uBright = { value: bright };
-      shader.fragmentShader = 'uniform float uHue; uniform float uSat; uniform float uBright;\n' + shader.fragmentShader.replace(
+      shader.uniforms.uTint = { value: new THREE.Vector3(...tint) };
+      shader.fragmentShader = 'uniform float uHue; uniform float uSat; uniform float uBright; uniform vec3 uTint;\n' + shader.fragmentShader.replace(
         '#include <map_fragment>',
         `#include <map_fragment>
         {
@@ -140,10 +155,10 @@ class CharacterLibrary {
             dot(c, vec3(0.213 - 0.213 * a + 0.143 * b, 0.715 + 0.285 * a + 0.140 * b, 0.072 - 0.072 * a - 0.283 * b)),
             dot(c, vec3(0.213 - 0.213 * a - 0.787 * b, 0.715 - 0.715 * a + 0.715 * b, 0.072 + 0.928 * a + 0.072 * b)));
           float l = dot(r, vec3(0.2126, 0.7152, 0.0722));
-          diffuseColor.rgb = max(mix(vec3(l), r, uSat) * uBright, 0.0);
+          diffuseColor.rgb = max(mix(vec3(l), r, uSat) * uBright * uTint, 0.0);
         }`);
     };
-    m.customProgramCacheKey = () => `tint:${hue.toFixed(3)}:${sat}:${bright}`;
+    m.customProgramCacheKey = () => `tint:${hue.toFixed(3)}:${sat}:${bright}:${tint.join(',')}`;
     return m;
   }
 

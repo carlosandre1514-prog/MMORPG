@@ -1,8 +1,9 @@
 // Geração procedural dos mapas das zonas (executada no servidor; o cliente recebe as camadas).
-import { T, O, TILE_INFO, OBJ_INFO } from './tiles.js';
+import { T, O, TILE_INFO, OBJ_INFO, isRock } from './tiles.js';
 import { mulberry32, fbm, hash2 } from './rng.js';
 import { NPCS } from './data/npcs.js';
 import { buildCapital } from './citygen.js';
+import { buildDesertCity } from './desertgen.js';
 
 class Grid {
   constructor(w, h, base) {
@@ -50,6 +51,7 @@ export function generateMap(zone) {
   if (g.type === 'town') grid = genTown(zone);
   else if (g.type === 'cave') grid = genCave(zone);
   else if (g.type === 'arena') grid = genArena(zone);
+  else if (g.type === 'desertcity') grid = genDesertCity(zone);
   else grid = genOutdoor(zone);
   clearNpcSpots(grid, zone);
   ensureConnectivity(grid, zone);
@@ -279,7 +281,7 @@ function stampPath(grid, path, tile, rTile, rClear) {
     grid.disc(x, y, rClear, (px, py) => {
       const t = grid.t(px, py);
       if (OBJ_INFO[grid.o(px, py)].block) grid.setO(px, py, 0);
-      if (t === T.CAVEWALL) grid.setT(px, py, tile);
+      if (isRock(t)) grid.setT(px, py, tile);
     });
     grid.disc(x, y, rTile, (px, py) => {
       const t = grid.t(px, py);
@@ -415,6 +417,35 @@ function applyFeatures(grid, zone, rng) {
         }
         break;
       }
+      case 'oasis': {
+        // lagoa com palmeiras e juncos em volta (Reino de Sahaar)
+        grid.disc(f.x, f.y, f.r + 2.5, (x, y, d) => {
+          if (grid.pathMask[grid.i(x, y)]) return;
+          grid.setO(x, y, 0);
+          if (d <= f.r) grid.setT(x, y, d < f.r - 1.3 ? T.DEEP : T.WATER);
+          else { grid.setT(x, y, T.SAND); if (hash2(x, y, 6) < 0.35) grid.setO(x, y, O.REEDS); }
+        });
+        for (let a = 0; a < 8; a++) {
+          const ang = (a / 8) * Math.PI * 2 + 0.4;
+          placeForce(Math.round(f.x + Math.cos(ang) * (f.r + 1.8)), Math.round(f.y + Math.sin(ang) * (f.r + 1.8)), O.PALM);
+        }
+        break;
+      }
+      case 'sarcophagi': {
+        // sarcófagos e urnas nas câmaras das tumbas
+        for (let i = 0; i < f.n; i++) {
+          const ang = rng() * Math.PI * 2, d = f.r * (0.5 + rng() * 0.5);
+          placeForce(Math.round(f.x + Math.cos(ang) * d), Math.round(f.y + Math.sin(ang) * d), i % 3 === 2 ? O.URN : O.SARCOPHAGUS);
+        }
+        break;
+      }
+      case 'tombgate': {
+        // vestíbulo das tumbas: braseiros, urnas e colunas em volta da sacerdotisa
+        placeForce(f.x - 3, f.y - 3, O.BRAZIER); placeForce(f.x + 3, f.y - 3, O.BRAZIER);
+        placeForce(f.x - 6, f.y, O.URN); placeForce(f.x + 6, f.y, O.URN);
+        placeForce(f.x - 5, f.y + 3, O.PILLAR); placeForce(f.x + 5, f.y + 3, O.PILLAR);
+        break;
+      }
       case 'gobcamp': {
         placeForce(f.x, f.y, O.BRAZIER);
         for (let a = 0; a < 5; a++) {
@@ -441,7 +472,7 @@ function applyFeatures(grid, zone, rng) {
             for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) {
               const tx = x + dx, ty = y + dy;
               if (grid.free(tx, ty)) {
-                const nearWall = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => grid.t(tx + a, ty + b) === T.CAVEWALL);
+                const nearWall = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => isRock(grid.t(tx + a, ty + b)));
                 if (nearWall) { grid.setO(tx, ty, O.TORCH); break; }
               }
             }
@@ -550,5 +581,13 @@ function genArena(zone) {
 function genTown(zone) {
   const grid = new Grid(zone.w, zone.h, T.GRASS);
   buildCapital(grid, zone);
+  return grid;
+}
+
+// ---------------------------------------------------------------- cidade do deserto
+
+function genDesertCity(zone) {
+  const grid = new Grid(zone.w, zone.h, T.SAND);
+  buildDesertCity(grid, zone);
   return grid;
 }

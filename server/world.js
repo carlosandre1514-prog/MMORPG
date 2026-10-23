@@ -1,5 +1,6 @@
 // O mundo: zonas, jogadores online, laço principal e progressão.
-import { ZONES } from '../shared/data/zones.js';
+import { ZONES, hubOf, kingdomOf } from '../shared/data/zones.js';
+import { KINGDOMS } from '../shared/data/kingdoms.js';
 import { CLASSES } from '../shared/data/classes.js';
 import { ITEMS } from '../shared/data/items.js';
 import { TICK_RATE, MAX_LEVEL, POINTS_PER_LEVEL, DAY_LENGTH, INV_SIZE, STASH_SIZE } from '../shared/constants.js';
@@ -17,10 +18,14 @@ export class World {
   constructor(db, opts = {}) {
     this.db = db;
     this.dev = !!opts.dev;
+    this.quiet = !!opts.quiet;
     this.xpRate = opts.xpRate || 1;
     this.idCounter = 1;
+    // Zonas carregadas: só as que alguém visitou e cujo reino ainda não ficou vazio por tempo demais (ver zone() e sweepKingdoms()).
+    // O progresso dos personagens (missões, itens, pedras descobertas) fica no personagem, então nada se perde ao descarregar.
     this.zones = new Map();
-    for (const def of Object.values(ZONES)) this.zones.set(def.id, new Zone(this, def));
+    this.emptySince = new Map(); // reino -> instante em que ficou sem jogadores
+    this.kingdomGraceMs = opts.kingdomGraceMs ?? (Number(process.env.KINGDOM_GRACE_MS) || 90000);
     this.players = new Map();
     this.byName = new Map();
     this.sessionsByAccount = new Map();
@@ -33,6 +38,47 @@ export class World {
   }
 
   nextId() { return this.idCounter++; }
+
+  // A zona carregada com esse id; se ainda não está na memória, gera o mapa e povoa os monstros agora.
+  zone(id) {
+    let z = this.zones.get(id);
+    if (z) return z;
+    const def = ZONES[id];
+    if (!def) return null;
+    const t0 = Date.now();
+    z = new Zone(this, def);
+    this.zones.set(id, z);
+    this.emptySince.delete(def.kingdom);
+    if (!this.quiet) console.log(`[world] zona carregada: ${def.name} (${Date.now() - t0} ms)`);
+    return z;
+  }
+
+  // Reinos com alguma zona na memória e quantos jogadores há em cada um
+  loadedKingdoms() {
+    const out = new Map();
+    for (const z of this.zones.values()) {
+      const k = z.def.kingdom;
+      const e = out.get(k) || { zones: [], players: 0 };
+      e.zones.push(z.id);
+      e.players += z.players.size;
+      out.set(k, e);
+    }
+    return out;
+  }
+
+  // Descarrega os reinos que ficaram sem jogadores por mais que o tempo de espera (monstros, itens no chão e eventos da zona
+  // somem; na próxima visita o mapa é gerado de novo, igual, e os monstros renascem).
+  sweepKingdoms(now) {
+    for (const [k, e] of this.loadedKingdoms()) {
+      if (e.players > 0) { this.emptySince.delete(k); continue; }
+      const since = this.emptySince.get(k);
+      if (since == null) { this.emptySince.set(k, now); continue; }
+      if (now - since < this.kingdomGraceMs) continue;
+      for (const id of e.zones) this.zones.delete(id);
+      this.emptySince.delete(k);
+      if (!this.quiet) console.log(`[world] ${KINGDOMS[k]?.name || k} descarregado (sem jogadores)`);
+    }
+  }
 
   start() {
     this.timer = setInterval(() => this.tick(), 1000 / TICK_RATE);
@@ -69,7 +115,7 @@ export class World {
       if (z.players.size) z.sendSnapshots(now);
     }
     for (const p of this.players.values()) this.flush(p, now);
-    if (this.tickCount % TICK_RATE === 0) this.social.tickSecond(now);
+    if (this.tickCount % TICK_RATE === 0) { this.social.tickSecond(now); this.sweepKingdoms(now); }
     if (this.tickCount % (TICK_RATE * 30) === 0) {
       const t = this.worldTime();
       for (const p of this.players.values()) p.send({ t: 'time', w: t, len: DAY_LENGTH });
@@ -141,7 +187,7 @@ export class World {
     ch.flags ||= {};
     ch.record ||= { kills: 0, bossKills: 0, pvpKills: 0, deaths: 0 };
     ch.buffs ||= [];
-    if (!this.zones.has(ch.zone)) { ch.zone = 'town'; ch.x = ZONES.town.spawn.x; ch.y = ZONES.town.spawn.y; }
+    if (!ZONES[ch.zone]) { ch.zone = 'town'; ch.x = ZONES.town.spawn.x; ch.y = ZONES.town.spawn.y; }
     if (ch.guild && !this.db.guilds[ch.guild.toLowerCase()]) ch.guild = null;
   }
 
@@ -150,17 +196,18 @@ export class World {
     const p = new Player(this, session, ch);
     this.players.set(p.id, p);
     this.byName.set(ch.name.toLowerCase(), p);
-    let zone = this.zones.get(ch.zone);
+    let zone = this.zone(ch.zone);
     let x = ch.x, y = ch.y;
-    // personagens mortos voltam vivos na cidade
+    // personagens mortos voltam vivos na capital do reino onde estavam
     if (p.dead) {
       p.dead = false;
       p.hp = Math.round(p.stats.maxHp * 0.5);
-      zone = this.zones.get('town');
-      x = ZONES.town.spawn.x; y = ZONES.town.spawn.y;
+      const hub = hubOf(zone.id);
+      zone = this.zone(hub.zone);
+      x = hub.x; y = hub.y;
     }
     // a arena não guarda posição
-    if (zone.def.pvp) { zone = this.zones.get('town'); x = ZONES.town.spawn.x; y = ZONES.town.spawn.y; }
+    if (zone.def.pvp) { zone = this.zone('town'); x = ZONES.town.spawn.x; y = ZONES.town.spawn.y; }
     // os mapas podem mudar entre versões: posição que virou parede ou casa volta para a entrada da zona
     if (!canStand(zone.map, x, y)) { x = zone.def.spawn.x; y = zone.def.spawn.y; }
     zone.addPlayer(p, x, y);
@@ -205,7 +252,7 @@ export class World {
   }
 
   transfer(p, zoneId, x, y) {
-    const to = this.zones.get(zoneId);
+    const to = this.zone(zoneId);
     if (!to || !p.zone) return;
     this.social.onZoneChange(p);
     p.zone.removePlayer(p);

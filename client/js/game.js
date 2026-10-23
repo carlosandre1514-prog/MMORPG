@@ -3,7 +3,9 @@ import { TILE, F, PLAYER_RADIUS, NPC_RANGE, PICKUP_RANGE } from '/shared/constan
 import { SKILLS } from '/shared/data/skills.js';
 import { CLASSES } from '/shared/data/classes.js';
 import { QUESTS } from '/shared/data/quests.js';
-import { ZONES, isSafeAt } from '/shared/data/zones.js';
+import { ZONES, isSafeAt, kingdomOf } from '/shared/data/zones.js';
+import { KINGDOMS } from '/shared/data/kingdoms.js';
+import { kingdomReady, loadKingdom } from './kingdoms.js';
 import { MONSTERS } from '/shared/data/monsters.js';
 import { ITEMS } from '/shared/data/items.js';
 import { NPCS } from '/shared/data/npcs.js';
@@ -107,9 +109,11 @@ export class Game {
 
   // ------------------------------------------------------------------ rede
   onMessage(m) {
+    // enquanto os recursos do reino novo chegam, o resto das mensagens espera na fila (e roda depois, na ordem)
+    if (this.held && m.t !== 'kick') { this.held.push(m); return; }
     const me = this.me;
     switch (m.t) {
-      case 'world': this.setupWorld(m); break;
+      case 'world': this.enterZone(m); break;
       case 's': this.onSnapshot(m); break;
       case 'fx': for (const ev of m.l) this.onFx(ev); break;
       case 'me': {
@@ -161,6 +165,21 @@ export class Game {
       case 'kick': this.ui.fatal(m.m); break;
       default: break;
     }
+  }
+
+  // Entrada numa zona: se ela é de um reino cujos recursos ainda não foram baixados, mostra a travessia e espera por eles
+  enterZone(m) {
+    const k = kingdomOf(m.zone.id);
+    if (kingdomReady(k)) { this.setupWorld(m); return; }
+    this.held = [];
+    this.ui.showTransition(KINGDOMS[k].name, KINGDOMS[k].desc);
+    loadKingdom(k, (p) => this.ui.transitionProgress(p)).then(() => {
+      const queue = this.held;
+      this.held = null;
+      this.setupWorld(m);
+      this.ui.hideTransition();
+      for (const x of queue) this.onMessage(x);
+    });
   }
 
   setupWorld(m) {

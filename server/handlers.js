@@ -2,7 +2,7 @@
 import { ITEMS, isEquipment } from '../shared/data/items.js';
 import { NPCS } from '../shared/data/npcs.js';
 import { RECIPES } from '../shared/data/recipes.js';
-import { ZONES, portalAt } from '../shared/data/zones.js';
+import { ZONES, portalAt, hubOf, kingdomOf } from '../shared/data/zones.js';
 import { QUESTS } from '../shared/data/quests.js';
 import { MAX_STACK, NPC_RANGE, PICKUP_RANGE, PLAYER_RADIUS, EQUIP_SLOTS } from '../shared/constants.js';
 import { canStand, lineClear } from '../shared/collision.js';
@@ -111,8 +111,8 @@ const HANDLERS = {
     p.mp = Math.round(p.stats.maxMp * 0.5);
     p.dirty.me = true;
     p.send({ t: 'alive' });
-    const s = ZONES.town.spawn;
-    world.transfer(p, 'town', s.x, s.y);
+    const hub = hubOf(zone.id); // renasce na capital do reino onde morreu
+    world.transfer(p, hub.zone, hub.x, hub.y);
   },
 
   // ---------------------------------------------------------------- NPCs e missões
@@ -151,15 +151,15 @@ const HANDLERS = {
       p.zone.fx({ k: 'mp', id: p.id, v: u.mp }, p.x, p.y);
       p.send({ t: 'pcd', k: 'mp', d: 8000 });
     } else if (u.recall) {
-      if (p.zone.id === 'town') return p.err('Você já está na cidade.');
+      const hub = hubOf(p.zone.id);
+      if (p.zone.id === hub.zone) return p.err('Você já está na capital do reino.');
       if (p.casting) return;
       p.casting = {
         until: now + 3000, interruptible: true, name: base.name,
         done: () => {
           if (!removeItem(p.char.inv, it.id, 1)) return;
           p.dirty.inv = true;
-          const s = ZONES.town.spawn;
-          world.transfer(p, 'town', s.x, s.y);
+          world.transfer(p, hub.zone, hub.x, hub.y);
         },
       };
       p.send({ t: 'cast', d: 3000, n: base.name });
@@ -382,6 +382,7 @@ const HANDLERS = {
     const z = ZONES[msg.z];
     if (!z || !p.char.visited.includes(z.id)) return p.err('Você ainda não descobriu este lugar.');
     if (z.id === p.zone.id) return;
+    if (kingdomOf(z.id) !== p.zone.def.kingdom) return p.err('As Pedras do Caminho só levam a lugares do mesmo reino. Atravesse a fronteira a pé.');
     if (p.inCombat()) return p.err('Não é possível viajar em combate.');
     // chega ao lado do mago do portal da zona (na capital, Ilyas, na Praça da Chama)
     const ws = Object.values(NPCS).find((x) => x.zone === z.id && x.services.includes('teleport'));

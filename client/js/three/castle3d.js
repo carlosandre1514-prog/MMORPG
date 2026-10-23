@@ -6,7 +6,7 @@ export const WALL_H = 4.6;
 const TEX = 2; // metros por repetição de textura
 
 // Acumula triângulos com normais e UVs para uma malha
-class Builder {
+export class Builder {
   constructor() { this.pos = []; this.nor = []; this.uv = []; }
   quad(a, b, c, d, n, uvs) {
     for (const [p, t] of [[a, uvs[0]], [b, uvs[1]], [c, uvs[2]], [a, uvs[0]], [c, uvs[2]], [d, uvs[3]]]) {

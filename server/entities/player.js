@@ -43,6 +43,8 @@ export class Player {
     this.posSeq = 1;
     this.lastMoveAt = now;
     this.portalLock = 0;
+    this.altarCheck = 0; // última vez que procurou altares por perto
+    this.altarCd = 0; // até quando não pode viajar de novo
     this.ver = 1;
     this.lastChat = 0;
     this.chatBurst = 0;

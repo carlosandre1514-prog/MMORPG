@@ -3,6 +3,8 @@ import { ZONES, hubOf, kingdomOf } from '../shared/data/zones.js';
 import { KINGDOMS } from '../shared/data/kingdoms.js';
 import { CLASSES } from '../shared/data/classes.js';
 import { ITEMS } from '../shared/data/items.js';
+import { discoverAltars } from './systems/altars.js';
+import { backfillAltars } from '../shared/altars.js';
 import { TICK_RATE, MAX_LEVEL, POINTS_PER_LEVEL, DAY_LENGTH, INV_SIZE, STASH_SIZE } from '../shared/constants.js';
 import { xpToNext, computeStats } from '../shared/formulas.js';
 import { createItem } from '../shared/itemgen.js';
@@ -155,7 +157,7 @@ export class World {
       alloc: { str: 0, dex: 0, int: 0, vit: 0 }, points: 0,
       hp: 1, mp: 1, zone: 'town', x: town.spawn.x, y: town.spawn.y,
       inv: newInventory(INV_SIZE), equip: {}, stash: newInventory(STASH_SIZE),
-      quests: { active: {}, done: {} }, visited: ['town'], flags: {}, title: null, guild: null,
+      quests: { active: {}, done: {} }, visited: ['town'], altars: [], flags: {}, title: null, guild: null,
       record: { kills: 0, bossKills: 0, pvpKills: 0, deaths: 0 }, buffs: [],
       created: Date.now(), lastSeen: Date.now(), playTime: 0,
     };
@@ -184,6 +186,7 @@ export class World {
     ch.equip ||= {};
     ch.quests ||= { active: {}, done: {} };
     ch.visited ||= ['town'];
+    ch.altars ||= backfillAltars(ch.visited);
     ch.flags ||= {};
     ch.record ||= { kills: 0, bossKills: 0, pvpKills: 0, deaths: 0 };
     ch.buffs ||= [];
@@ -240,12 +243,14 @@ export class World {
       you: {
         id: p.id, name: p.name, cls: p.cls, x: p.x, y: p.y, s: p.posSeq, char: {
           level: ch.level, xp: ch.xp, gold: ch.gold, points: ch.points, alloc: ch.alloc, inv: ch.inv, equip: ch.equip,
-          stash: ch.stash, quests: ch.quests, visited: ch.visited, flags: ch.flags, title: ch.title, guild: ch.guild,
+          stash: ch.stash, quests: ch.quests, visited: ch.visited, altars: ch.altars, flags: ch.flags, title: ch.title, guild: ch.guild,
           skin: ch.skin, hair: ch.hair, record: ch.record,
         },
         hp: Math.round(p.hp), mp: Math.round(p.mp), dead: p.dead,
       },
     });
+    p.altarCheck = 0;
+    discoverAltars(p); // quem chega a uma zona já conhece o altar ao lado
     p.dirty.me = p.dirty.stats = p.dirty.statuses = true;
     p.lastMe = '';
     p.lastMoveAt = Date.now();

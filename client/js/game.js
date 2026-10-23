@@ -12,6 +12,7 @@ import { NPCS } from '/shared/data/npcs.js';
 import { buildMap, decodeLayer } from '/shared/tiles.js';
 import { moveWithCollision, canStand } from '/shared/collision.js';
 import { findPath } from '/shared/pathfinding.js';
+import { altarById } from '/shared/altars.js';
 import { itemName } from '/shared/itemgen.js';
 import { Terrain } from './terrain.js';
 import { Renderer3D } from './three/engine.js';
@@ -155,6 +156,7 @@ export class Game {
       case 'qprog': this.ui.toast(m.m, 'progress'); audio.play('click'); break;
       case 'qdone': audio.play('quest'); this.ui.questCompleted(m.q); this.markerVer++; break;
       case 'loot': audio.play('pickup'); this.ui.lootNotice(m); break;
+      case 'altar': this.onAltar(m.id); break;
       case 'lvl': audio.play('levelup'); this.ui.levelUp(m.lv); this.markerVer++; break;
       case 'cast': me.casting = { start: performance.now(), dur: m.d, name: m.n }; this.ui.onCast(); break;
       case 'castEnd': me.casting = null; this.ui.onCast(); break;
@@ -199,11 +201,12 @@ export class Game {
     const c = y.char;
     Object.assign(me, {
       level: c.level, xp: c.xp, gold: c.gold, points: c.points, alloc: c.alloc, inv: c.inv, equip: c.equip, stash: c.stash,
-      quests: c.quests, visited: c.visited, flags: c.flags, title: c.title, guild: c.guild, skin: c.skin, hair: c.hair, record: c.record,
+      quests: c.quests, visited: c.visited, altars: c.altars || [], flags: c.flags, title: c.title, guild: c.guild, skin: c.skin, hair: c.hair, record: c.record,
     });
     this.sent = { x: me.x, y: me.y, d: 0 };
     me.facing = 0;
     this.renderer.setZone(this.zone, this.terrain);
+    this.renderer.zoneScene.setAltars(me.altars, true);
     this.timeBase = { w: m.time, len: m.len, at: performance.now() };
     this.dev = m.dev;
     this.markerVer++;
@@ -588,6 +591,16 @@ export class Game {
   }
 
   // ------------------------------------------------------------------ marcadores de missão
+  // um altar novo foi descoberto: acende as runas e avisa
+  onAltar(id) {
+    const me = this.me;
+    if (me.altars.includes(id)) return;
+    me.altars.push(id);
+    if (this.renderer.zoneScene) this.renderer.zoneScene.setAltars(me.altars, false);
+    audio.play('levelup');
+    this.ui.altarFound(altarById(id));
+  }
+
   questMarker(npcId) {
     const key = npcId + ':' + this.markerVer;
     if (this.markerCache.has(key)) return this.markerCache.get(key);

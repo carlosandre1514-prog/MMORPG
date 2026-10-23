@@ -31,7 +31,7 @@ export class UI {
     this.game = null;
     this.tooltip = new Tooltip();
     this.wins = {};
-    this.lastMini = 0;
+    this.lastMini = 0; this.lastMiniMap = 0;
     this.chatHistory = [];
     this.build();
   }
@@ -66,7 +66,18 @@ export class UI {
     this.mmDpr = Math.min(2, window.devicePixelRatio || 1);
     this.mmCanvas = h('canvas', { width: Math.round(180 * this.mmDpr), height: Math.round(180 * this.mmDpr) });
     this.mmInfo = h('div', { class: 'mm-info' });
-    R.appendChild(h('div', { id: 'minimap', class: 'frame' }, this.mmZone, this.mmCanvas, this.mmInfo));
+    this.mmNorth = false;
+    try { this.mmNorth = localStorage.getItem('aethra_mm_north') === '1'; } catch { /* sem armazenamento */ }
+    this.mmLock = h('button', { class: 'mm-lock', type: 'button' });
+    const lockLabel = () => { this.mmLock.textContent = this.mmNorth ? 'N' : '⟳'; this.mmLock.title = this.mmNorth ? 'Norte fixo em cima (clique para girar com a câmera)' : 'Girando com a câmera (clique para travar o norte em cima)'; };
+    lockLabel();
+    this.mmLock.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.mmNorth = !this.mmNorth; lockLabel();
+      try { localStorage.setItem('aethra_mm_north', this.mmNorth ? '1' : '0'); } catch { /* sem armazenamento */ }
+      this.drawMinimap();
+    });
+    R.appendChild(h('div', { id: 'minimap' }, this.mmZone, h('div', { class: 'mm-disc' }, this.mmCanvas, this.mmLock), this.mmInfo));
     this.mmCanvas.addEventListener('click', () => this.toggle('map'));
     this.mmSpan = 34; // tiles na largura do minimapa
     this.mmCanvas.addEventListener('wheel', (e) => { e.preventDefault(); this.mmSpan = Math.max(18, Math.min(90, this.mmSpan * (e.deltaY < 0 ? 0.87 : 1.15))); this.drawMinimap(); }, { passive: false });
@@ -354,9 +365,11 @@ export class UI {
     // conjuração
     const c = this.me.casting;
     if (c) this.castEl.firstChild.style.width = Math.min(100, ((now - c.start) / c.dur) * 100) + '%';
+    // o minimapa é redesenhado a cada ~30 quadros por segundo para a seta e o giro acompanharem o personagem sem atraso
+    if (now - this.lastMiniMap > (quality().low ? 66 : 33)) { this.lastMiniMap = now; this.drawMinimap(); }
     if (now - this.lastMini > (quality().low ? 200 : 100)) {
       this.lastMini = now;
-      this.drawMinimap(); this.updateGuideBar();
+      this.updateGuideBar();
       if (this.wins.map?.isOpen && this.mapCv) this.drawWorldMap();
     }
     if (this.deathEl.style.display !== 'none' && this.deathAt) {
@@ -410,36 +423,57 @@ export class UI {
     if (this.wins.map?.isOpen) this.renderMap();
   }
 
+  // Minimapa redondo com o jogador no centro. Por padrão gira com a câmera (o que está à frente no jogo fica no alto do círculo),
+  // então a seta e o caminho andado sempre batem com o que se vê; o botão N trava o norte em cima.
   drawMinimap() {
     const g = this.game;
     const z = g.zone;
     if (!this.mmImage) return;
     const ctx = this.mmCanvas.getContext('2d');
-    const S = 180, me = g.me;
+    const S = 180, R = S / 2, me = g.me;
     const dark = g.renderer.darkness();
-    // recorte do mapa detalhado em volta do jogador (a roda do mouse aproxima e afasta)
     const art = this.mapArt && this.mapArt.ready ? this.mapArt : null;
-    const span = Math.min(this.mmSpan, Math.max(z.w, z.h));
+    const span = Math.min(this.mmSpan, Math.max(z.w, z.h) * 1.1);
     const scale = S / span, half = span / 2;
-    const cx = z.w <= span ? z.w / 2 : Math.max(half, Math.min(z.w - half, me.x));
-    const cy = z.h <= span ? z.h / 2 : Math.max(half, Math.min(z.h - half, me.y));
-    const ox = cx - half, oy = cy - half;
+    const rot = this.mmNorth ? 0 : g.renderer.yaw || 0; // giro da tela: a frente da câmera fica para cima
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    // mundo -> círculo (tiles em volta do jogador, girados)
+    const P = (x, y) => { const dx = x - me.x, dy = y - me.y; return [R + (dx * cos - dy * sin) * scale, R + (dx * sin + dy * cos) * scale]; };
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#0b1018'; ctx.fillRect(0, 0, this.mmCanvas.width, this.mmCanvas.height);
+    ctx.clearRect(0, 0, this.mmCanvas.width, this.mmCanvas.height);
     ctx.setTransform(this.mmDpr, 0, 0, this.mmDpr, 0, 0);
-    ctx.imageSmoothingEnabled = !!art;
-    if (art) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(art.canvas, ox * art.S, oy * art.S, span * art.S, span * art.S, 0, 0, S, S); }
-    else ctx.drawImage(this.mmImage, ox * 2, oy * 2, span * 2, span * 2, 0, 0, S, S);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(R, R, R, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#0b1018'; ctx.fillRect(0, 0, S, S);
+    // só a parte do mapa que cabe no círculo (o resto da zona nem é copiado)
+    const x0 = Math.max(0, me.x - half), x1 = Math.min(z.w, me.x + half), y0 = Math.max(0, me.y - half), y1 = Math.min(z.h, me.y + half);
+    if (x1 > x0 && y1 > y0) {
+      ctx.save();
+      ctx.translate(R, R); ctx.rotate(rot); ctx.scale(scale, scale); ctx.translate(-me.x, -me.y);
+      ctx.imageSmoothingEnabled = !!art;
+      if (art) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(art.canvas, x0 * art.S, y0 * art.S, (x1 - x0) * art.S, (y1 - y0) * art.S, x0, y0, x1 - x0, y1 - y0); }
+      else ctx.drawImage(this.mmImage, x0 * 2, y0 * 2, (x1 - x0) * 2, (y1 - y0) * 2, x0, y0, x1 - x0, y1 - y0);
+      ctx.restore();
+    }
     if (dark > 0.1) { ctx.fillStyle = `rgba(5,8,25,${dark * 0.5})`; ctx.fillRect(0, 0, S, S); }
-    const P = (x, y) => [(x - ox) * scale, (y - oy) * scale];
-    const arrow = [Math.PI, Math.PI / 2, -Math.PI / 2, 0][me.dir || 0];
+    // cone de visão da câmera
+    const cone = ctx.createRadialGradient(R, R, 4, R, R, R * 0.8);
+    cone.addColorStop(0, 'rgba(255,255,255,0.28)'); cone.addColorStop(1, 'rgba(255,255,255,0)');
+    const yaw = g.renderer.yaw || 0, fx = -Math.sin(yaw), fy = -Math.cos(yaw); // para onde a câmera olha no mundo
+    const camA = Math.atan2(fx * sin + fy * cos, fx * cos - fy * sin); // e na tela do minimapa (para cima quando o mapa gira com ela)
+    ctx.fillStyle = cone;
+    ctx.beginPath(); ctx.moveTo(R, R); ctx.arc(R, R, R * 0.8, camA - 0.62, camA + 0.62); ctx.closePath(); ctx.fill();
+    const inside = (px, py, m = 3) => (px - R) * (px - R) + (py - R) * (py - R) < (R - m) * (R - m);
+    // portais: um losango azul no lugar do altar
     for (const p of z.def.portals) {
       const [px, py] = P(p.x + p.w / 2, p.y + p.h / 2);
-      ctx.fillStyle = '#5dade2'; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
+      if (!inside(px, py, 4)) continue;
+      ctx.fillStyle = '#5dade2'; ctx.strokeStyle = '#0b1018'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(px, py - 5); ctx.lineTo(px + 4, py); ctx.lineTo(px, py + 5); ctx.lineTo(px - 4, py); ctx.closePath(); ctx.fill(); ctx.stroke();
     }
     for (const e of g.entities.values()) {
       const [px, py] = P(e.rx, e.ry);
-      if (px < -4 || py < -4 || px > S + 4 || py > S + 4) continue;
+      if (!inside(px, py)) continue;
       if (e.k === 'm' && !(e.f & F.DEAD)) {
         const boss = MONSTERS[e.m].boss;
         ctx.fillStyle = boss ? '#ff9a1f' : '#e74c3c';
@@ -462,33 +496,38 @@ export class UI {
       if (gd.path.length) {
         ctx.save();
         ctx.strokeStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        const [sx0, sy0] = P(me.x, me.y);
-        ctx.moveTo(sx0, sy0);
+        ctx.beginPath(); ctx.moveTo(R, R);
         for (const p of gd.path) { const [qx, qy] = P(p.x, p.y); ctx.lineTo(qx, qy); }
         ctx.stroke();
         ctx.restore();
       }
-      // destino: se estiver fora do quadro, o marcador gruda na borda
+      // destino: se estiver fora do círculo, o marcador gruda na borda
       let [dx2, dy2] = P(gd.wp.x, gd.wp.y);
-      const cl = (v) => Math.max(8, Math.min(S - 8, v));
-      const out = dx2 < 6 || dy2 < 6 || dx2 > S - 6 || dy2 > S - 6;
-      dx2 = cl(dx2); dy2 = cl(dy2);
+      const out = !inside(dx2, dy2, 8);
+      if (out) { const a = Math.atan2(dy2 - R, dx2 - R); dx2 = R + Math.cos(a) * (R - 8); dy2 = R + Math.sin(a) * (R - 8); }
       const pulse = 4.5 + Math.sin(performance.now() / 220) * 1.5;
       ctx.fillStyle = gd.wp.portal ? '#5dade2' : '#ffd34d'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(dx2, dy2, out ? 5 : pulse, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
-    const [mx, my] = P(me.x, me.y);
-    ctx.save();
-    ctx.translate(mx, my);
-    ctx.rotate(arrow);
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(4, 4); ctx.lineTo(0, 2); ctx.lineTo(-4, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // jogador: a seta aponta para onde o personagem anda/olha de verdade (ângulo contínuo, não os 4 lados)
+    ctx.translate(R, R);
+    ctx.rotate(Math.PI - (me.facing || 0) + rot);
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(5, 5); ctx.lineTo(0, 2.5); ctx.lineTo(-5, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
+    // bússola na borda: N (vermelho), L, S, O, girando junto com o mapa
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const [ch, wx, wy, col] of [['N', 0, -1, '#ff6b5a'], ['L', 1, 0, '#e8d9b0'], ['S', 0, 1, '#e8d9b0'], ['O', -1, 0, '#e8d9b0']]) {
+      const px = R + (wx * cos - wy * sin) * (R - 9), py = R + (wx * sin + wy * cos) * (R - 9);
+      ctx.fillStyle = 'rgba(8,10,18,0.7)'; ctx.beginPath(); ctx.arc(px, py, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = col; ctx.fillText(ch, px, py + 0.5);
+    }
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
     const tday = g.dayTime();
     const hours = Math.floor(tday * 24), mins = Math.floor((tday * 24 - hours) * 60);
     const icon = tday > 0.25 && tday < 0.8 ? '☀' : '☾';
-    this.mmInfo.textContent = `${Math.floor(me.x)}, ${Math.floor(me.y)} · ${icon} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} · ${this.net.latency}ms`;
+    const info = `${Math.floor(me.x)}, ${Math.floor(me.y)} · ${icon} ${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} · ${this.net.latency}ms`;
+    if (info !== this.mmInfoText) this.mmInfo.textContent = this.mmInfoText = info;
   }
 
   // ------------------------------------------------------------------ rastreador
@@ -600,6 +639,14 @@ export class UI {
 
   hideTransition() {
     if (this.transEl) { this.transEl.remove(); this.transEl = null; this.transFill = null; }
+  }
+
+  // aviso de altar descoberto (e atualiza o mapa se estiver aberto, para mostrar o botão de viagem)
+  altarFound(a) {
+    if (!a) return;
+    this.showBanner('Altar descoberto', a.name, 'altar');
+    this.toast('Abra o Mapa (M) para viajar entre os altares descobertos.', 'good');
+    if (this.wins.map?.isOpen) this.renderMap();
   }
 
   showBanner(title, sub, kind = 'zone') {

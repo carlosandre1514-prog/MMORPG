@@ -18,6 +18,7 @@ import { touchUiMode } from '../device.js';
 import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
 import { progress, need, isComplete } from '../questlogic.js';
+import { altarList, altarsIn, altarNear, travelFee } from '/shared/altars.js';
 
 const SLOT_ICONS = { weapon: '⚔', head: '⛑', chest: '👕', legs: '👖', feet: '👢', ring: '💍', amulet: '📿' };
 
@@ -286,16 +287,19 @@ export const windowsMixin = {
       ctx.font = 'bold 10px sans-serif';
     }
     ctx.strokeStyle = '#000';
-    for (const p of z.def.portals) {
+    z.def.portals.forEach((p, pi) => {
       const [x, y] = P(p.x + p.w / 2, p.y + p.h / 2);
-      ctx.fillStyle = '#5dade2'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+      const lit = (g.me.altars || []).includes(`${z.id}:${pi}`);
+      // altar: losango azul aceso se já foi descoberto, cinza se não
+      ctx.fillStyle = lit ? '#5dade2' : '#8a93a0'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x + 6, y); ctx.lineTo(x, y + 8); ctx.lineTo(x - 6, y); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#d6eaf8'; ctx.lineWidth = 3;
       const ty = y < 20 ? y + 16 : y - 8;
       ctx.textAlign = x > W - 70 ? 'right' : x < 70 ? 'left' : 'center';
       const tx = x > W - 70 ? x - 6 : x < 70 ? x + 6 : x;
       ctx.strokeText(p.label, tx, ty); ctx.fillText(p.label, tx, ty);
       ctx.textAlign = 'center';
-    }
+    });
     for (const n of Object.values(NPCS)) {
       if (n.zone !== z.id) continue;
       const [x, y] = P(n.x, n.y);
@@ -326,8 +330,12 @@ export const windowsMixin = {
       ctx.fillStyle = '#2ecc71'; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
     }
     const [mx, my] = P(g.me.x, g.me.y);
-    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(mx, my, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // jogador: seta apontando para onde o personagem anda (o mapa fica com o norte em cima)
+    ctx.save();
+    ctx.translate(mx, my); ctx.rotate(Math.PI - (g.me.facing || 0));
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(7, 7); ctx.lineTo(0, 3.5); ctx.lineTo(-7, 7); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
     // rota da missão
     const gd = g.guide;
     if (gd.active && gd.wp) {
@@ -387,6 +395,11 @@ export const windowsMixin = {
     }, { passive: false });
     cv.addEventListener('dblclick', () => { this.mapCam = { zoom: 1, cx: z.w / 2, cy: z.h / 2 }; this.drawWorldMap(); });
     const side = h('div', { class: 'map-side' }, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
+    const near = altarNear(z.id, g.me.x, g.me.y), free = !!near, fee = travelFee(g.me.level);
+    const found = altarList().filter((a) => !a.pvp && a.kingdom === z.def.kingdom && (g.me.altars || []).includes(a.id)).length;
+    side.appendChild(h('div', { class: 'map-travel' + (free ? ' free' : '') },
+      h('b', {}, '✦ Viagem rápida'),
+      h('div', { class: 'small' }, found ? (free ? 'Você está ao lado de um altar: viajar é de graça.' : `Longe de um altar a viagem custa ${fee} de ouro.`) : 'Aproxime-se de um altar de pedra para descobri-lo; depois dá para viajar até ele daqui.')));
     // zonas agrupadas por reino; um reino que o personagem nunca pisou aparece como "???"
     for (const kid of KINGDOM_ORDER) {
       const K = KINGDOMS[kid];
@@ -397,9 +410,18 @@ export const windowsMixin = {
         const known = g.me.visited.includes(id);
         side.appendChild(h('div', { class: 'map-zone' + (id === z.id ? ' cur' : '') + (known ? '' : ' unknown') },
           h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
+        // viagem rápida: os altares já descobertos deste reino
+        if (kid === z.def.kingdom) for (const a of altarsIn(id)) {
+          if (a.pvp || !(g.me.altars || []).includes(a.id)) continue;
+          const here = near && near.id === a.id;
+          side.appendChild(h('div', { class: 'map-altar' },
+            h('span', {}, '✦ rumo a ', h('b', {}, a.label)),
+            here ? h('small', { class: 'muted' }, 'você está aqui')
+              : h('button', { class: 'btn tiny', title: free ? 'Grátis: você está ao lado de um altar' : `Custa ${fee} de ouro`, onclick: () => { this.send({ t: 'atp', id: a.id }); this.wins.map.close(); } }, free ? 'Viajar' : `Viajar · ${fee} ouro`)));
+        }
       }
     }
-    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ● azul: portal · ☠ chefe'));
+    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '10px' } }, '■ amarelo: NPC · ■ azul: Pedra do Caminho · ◆ altar (aceso: descoberto) · ☠ chefe'));
     side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para mover · roda para aproximar · duplo clique para voltar.'));
     body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
     this.drawWorldMap();

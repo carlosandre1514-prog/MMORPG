@@ -14,6 +14,9 @@ import { lite } from './lite.js';
 import { buildFortifications, bannerSpots, WALL_H } from './castle3d.js';
 import { OceanWater } from './ocean.js';
 import { Farm } from './animals.js';
+import { Altar } from './altar3d.js';
+import { ZONES } from '/shared/data/zones.js';
+import { altarId } from '/shared/altars.js';
 
 const CHUNK = 16;
 // A fazenda usa as texturas das construções da cidade (Medieval Village MegaKit) para ter cara de vila medieval: por material do modelo
@@ -273,7 +276,7 @@ export class ZoneScene {
     this.group = new THREE.Group();
     this.animated = [];
     this.flames = [];
-    this.portals = [];
+    this.altars = [];
     this.windowMat = new THREE.MeshStandardMaterial({ color: 0x5a4a2a, emissive: 0xffc861, emissiveIntensity: 0 });
     this.maxAniso = renderer.capabilities.getMaxAnisotropy();
     this.buildGround();
@@ -281,7 +284,7 @@ export class ZoneScene {
     this.buildWalls();
     this.buildObjects();
     this.buildStructures();
-    this.buildPortals();
+    this.buildAltars();
     if (medieval.ready) { this.buildScenery(); this.buildWaterPlants(); this.buildFarm(); this.buildFlora(); }
     // tudo que é sólido e alto pode ficar transparente perto do jogador
     this.group.traverse((o) => {
@@ -801,7 +804,7 @@ export class ZoneScene {
     }
   }
 
-  addFlame(x, y, z, color, size, flicker) {
+  addFlame(x, y, z, color, size, flicker, coreColor = 0xffc34d) {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     sp.position.set(x, y, z);
     sp.scale.setScalar(size);
@@ -809,7 +812,7 @@ export class ZoneScene {
     this.group.add(sp);
     this.flames.push(sp);
     if (flicker) {
-      const core = new THREE.Mesh(new THREE.ConeGeometry(0.07 * size, 0.28 * size, 6), new THREE.MeshBasicMaterial({ color: 0xffc34d }));
+      const core = new THREE.Mesh(new THREE.ConeGeometry(0.07 * size, 0.28 * size, 6), new THREE.MeshBasicMaterial({ color: coreColor }));
       core.position.set(x, y + 0.05, z);
       this.group.add(core);
       sp.userData.core = core;
@@ -1045,25 +1048,26 @@ export class ZoneScene {
     return g;
   }
 
-  buildPortals() {
-    const z = this.zone;
-    for (const p of z.def.portals) {
-      const g = new THREE.Group();
-      const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
-      const r = Math.max(p.w, p.h) * 0.45;
-      const disc = new THREE.Mesh(new THREE.CircleGeometry(r, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5dade2, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
-      disc.position.y = 0.06;
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(r * 0.8, 0.06, 6, 40), new THREE.MeshBasicMaterial({ color: 0xaed6f1, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.y = 0.12;
-      const pillar = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.7, r * 0.85, 3.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0x5dade2, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-      pillar.position.y = 1.75;
-      g.add(disc, ring, pillar);
-      g.position.set(cx, 0, cy);
-      g.userData = { ring, pillar };
-      this.group.add(g);
-      this.portals.push(g);
-    }
+  // Cada portal vira um altar de pedra com arco, runas e um cristal; começa apagado e acende quando o jogador o descobre
+  buildAltars() {
+    const z = this.zone, here = z.def.kingdom;
+    z.def.portals.forEach((p, i) => {
+      const border = !!ZONES[p.to] && ZONES[p.to].kingdom !== here;
+      const altar = new Altar(p, here, border);
+      altar.id = altarId(z.id, i);
+      altar.group.position.set(p.x + p.w / 2, 0, p.y + p.h / 2);
+      this.group.add(altar.group);
+      for (const f of altar.flames) {
+        const sp = this.addFlame(altar.group.position.x + f.x, f.y, altar.group.position.z + f.z, f.color, 0.8, true, f.core);
+        altar.flameSprites = [...(altar.flameSprites || []), sp];
+      }
+      this.altars.push(altar);
+    });
+  }
+
+  // ids dos altares que o jogador já descobriu (os outros ficam apagados); instant = sem animar
+  setAltars(ids, instant = true) {
+    for (const a of this.altars) a.setLit(ids.includes(a.id), instant);
   }
 
   update(t, darkness, sky, sunDir) {
@@ -1076,10 +1080,7 @@ export class ZoneScene {
       f.scale.setScalar(u.base * k * (0.8 + darkness * 0.6));
       if (u.core) u.core.scale.y = k;
     }
-    for (const p of this.portals) {
-      p.userData.ring.rotation.z = t * 1.5;
-      p.userData.pillar.material.opacity = 0.14 + Math.sin(t * 2) * 0.05;
-    }
+    for (const a of this.altars) a.update(t, dt);
     this.windowMat.emissiveIntensity = darkness * 1.6;
     if (village.mats.WindowGlass) village.mats.WindowGlass.emissiveIntensity = darkness * 1.5;
     if (this.water) this.water.update(t, { dark: darkness, sky, sunDir });

@@ -13,6 +13,7 @@ import { useSkill } from './systems/skills.js';
 import { addStatus, hasStatus } from './systems/effects.js';
 import { heal, isHostile, revivePlayer } from './systems/combat.js';
 import { addItem, removeItem, countItem, validSlot, canAddAll } from './systems/inventory.js';
+import { discoverAltars, travelToAltar } from './systems/altars.js';
 import { acceptQuest, turnInQuest, abandonQuest, onTalk } from './systems/quests.js';
 
 const WEAPON_PREFIX = { warrior: 'w', mage: 'm', ranger: 'r', cleric: 'c' };
@@ -75,6 +76,7 @@ const HANDLERS = {
     p.x = x; p.y = y;
     if (Number.isInteger(msg.d) && msg.d >= 0 && msg.d <= 3) p.dir = msg.d;
     p.lastMoveAt = now;
+    discoverAltars(p, now);
     if (now > p.portalLock) {
       const portal = portalAt(zone.def, x, y);
       if (portal) world.transfer(p, portal.to, portal.tx, portal.ty);
@@ -389,6 +391,8 @@ const HANDLERS = {
     const dest = ws ? { x: ws.x, y: ws.y + 1.5 } : z.spawn;
     world.transfer(p, z.id, dest.x, dest.y);
   },
+
+  atp(world, p, msg) { travelToAltar(world, p, msg.id); },
 
   rank(world, p) {
     p.send({ t: 'rank', d: world.ranking() });

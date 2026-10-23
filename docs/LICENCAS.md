@@ -17,6 +17,7 @@ arquivo de licença e a informação vem da página do autor (resumo de busca): 
 | Torres em voxel de Zahrim (8 prédios) | monogon / Max Parata — "Voxel Desert Town" | **CC BY-ND 4.0** (verificado por busca) | **crédito ao autor**; **sem derivações**: o `voxel.glb` é uma versão convertida. Peça autorização por escrito ao autor ou troque os prédios antes de publicar |
 | Música de abertura (`assets/music/theme.mp3`) | Criada no Suno pelo autor do projeto | Termos do Suno | Uso comercial só se a música foi gerada durante um plano pago (Pro/Premier); guardar o comprovante e conferir os termos antes de publicar |
 | Motor 3D Three.js | mrdoob | MIT | manter a licença (client/vendor/three/LICENSE) |
+| Login: Firebase JS SDK 10.14.1 (`client/vendor/firebase/firebase-auth.js`, módulos app e auth) | Google — firebase.google.com | Apache-2.0 | manter o texto da licença (client/vendor/firebase/LICENSE); o uso do serviço Firebase Authentication segue os Termos do Firebase (o plano gratuito Spark atende) |
 | Fontes Cinzel e Alegreya Sans | Google Fonts | OFL | — |
 
 ## Recebidos e NÃO usados (motivo)

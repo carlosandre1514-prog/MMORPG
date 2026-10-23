@@ -48,6 +48,24 @@ test('main.js liga a cena de abertura e a música: começam nas telas de menu e 
   assert.match(read('client/index.html'), /<canvas id="backdrop">/);
 });
 
+test('o login pelo Firebase: SDK local, configuração do projeto e telas ligadas ao servidor', () => {
+  const auth = read('client/js/auth.js'), main = read('client/js/main.js');
+  assert.match(auth, /import\('\/vendor\/firebase\/firebase-auth\.js'\)/, 'o SDK vem do próprio servidor, sem CDN');
+  assert.ok(fs.existsSync(path.join(ROOT, 'client/vendor/firebase/firebase-auth.js')));
+  assert.match(read('client/vendor/firebase/LICENSE'), /Apache License/);
+  assert.match(read('shared/firebase.js'), /projectId: 'gen-lang-client-0119623458'/);
+  // a tela de login manda o token ao servidor; a conta antiga fica em outra tela
+  assert.match(main, /\{ t: 'fblogin', token \}/);
+  assert.match(main, /function legacyLoginScreen/);
+  assert.match(main, /info\.fb/);
+  // sair encerra a sessão do Firebase antes de recarregar
+  assert.match(main, /async function logout\(\) \{\s*await firebaseAuth\.signOut\(\);/);
+  // os erros do Firebase aparecem em português
+  for (const code of ['auth/invalid-credential', 'auth/email-already-in-use', 'auth/weak-password', 'auth/operation-not-allowed', 'auth/unauthorized-domain']) {
+    assert.ok(auth.includes(`'${code}'`), code);
+  }
+});
+
 test('a música tema toca em repetição contínua, dentro do jogo, e some em combate', () => {
   const music = read('client/js/music.js');
   assert.match(music, /export const themeMusic/);

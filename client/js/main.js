@@ -15,6 +15,7 @@ import { medieval } from './three/medieval.js';
 import { setupLandscape } from './orientation.js';
 import { title } from './three/title.js';
 import { themeMusic } from './music.js';
+import { firebaseAuth, errorText } from './auth.js';
 
 setupLandscape();
 const net = new Net();
@@ -23,6 +24,7 @@ const canvas = document.getElementById('game');
 const overlayCanvas = document.getElementById('overlay');
 const uiRoot = document.getElementById('ui');
 let ui = null, game = null, charList = [], maxChars = 4, account = '';
+let notice = ''; // aviso depois do login (ex.: link de confirmação do e-mail), mostrado até entrar no mundo
 
 function show(el) {
   clear(screens).appendChild(el);
@@ -76,7 +78,100 @@ function startBackdrop() {
 }
 
 // ------------------------------------------------------------------ login
-function loginScreen(info = {}) {
+const logoBlock = () => h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA'), h('div', { class: 'logo-sub' }, 'A Chama Partida'));
+const loreBlock = () => h('div', { class: 'lore-blurb' }, 'A Chama Primordial foi partida. A Névoa Cinzenta avança. Das cinzas, despertam os Portadores...');
+const onlineLine = (info) => h('div', { class: 'muted small center' }, info.online != null ? `${info.online} jogador(es) online` : '');
+
+// Sai da conta: encerra a sessão do Firebase (senão o próximo acesso entra sozinho) e recarrega
+async function logout() {
+  await firebaseAuth.signOut();
+  location.reload();
+}
+
+// Entra no servidor com o login do Firebase: pega o token e manda em `fblogin`; quem confere a assinatura é o servidor
+async function enterWithFirebase(err) {
+  const token = await firebaseAuth.token();
+  const r = await net.request({ t: 'fblogin', token }, (m) => m.t === 'chars' || m.t === 'err');
+  if (r.t === 'err') { err.textContent = r.m; return false; }
+  onChars(r);
+  return true;
+}
+
+function loginScreen(info = {}, legacy = false) {
+  if (!info.fb || legacy) return legacyLoginScreen(info);
+  let mode = 'login';
+  const email = h('input', { class: 'inp', type: 'email', placeholder: 'E-mail', maxlength: 120, autocomplete: 'email' });
+  const pass = h('input', { class: 'inp', type: 'password', placeholder: 'Senha', maxlength: 64, autocomplete: 'current-password' });
+  const pass2 = h('input', { class: 'inp', type: 'password', placeholder: 'Confirme a senha', maxlength: 64, autocomplete: 'new-password', style: { display: 'none' } });
+  const err = errorBox();
+  const ok = h('div', { class: 'form-ok' });
+  const btn = h('button', { class: 'btn big' }, 'Entrar');
+  const tabLogin = h('button', { class: 'tab on' }, 'Entrar');
+  const tabReg = h('button', { class: 'tab' }, 'Criar conta');
+  const forgot = h('button', { class: 'linkbtn' }, 'Esqueci a senha');
+  const cont = h('div', { class: 'fb-continue' });
+  const setMode = (m) => {
+    mode = m;
+    tabLogin.classList.toggle('on', m === 'login');
+    tabReg.classList.toggle('on', m === 'register');
+    pass2.style.display = m === 'register' ? '' : 'none';
+    pass.autocomplete = m === 'login' ? 'current-password' : 'new-password';
+    forgot.style.display = m === 'login' ? '' : 'none';
+    btn.textContent = m === 'login' ? 'Entrar' : 'Criar conta e entrar';
+    err.textContent = ''; ok.textContent = '';
+  };
+  tabLogin.onclick = () => setMode('login');
+  tabReg.onclick = () => setMode('register');
+  // roda uma ação de login mostrando o erro em português e travando os botões enquanto espera
+  const run = async (fn) => {
+    audio.init();
+    err.textContent = ''; ok.textContent = '';
+    btn.disabled = true;
+    try {
+      await fn();
+    } catch (e) { const t = errorText(e); if (t) err.textContent = t; }
+    btn.disabled = false;
+  };
+  const submit = () => run(async () => {
+    if (mode === 'register' && pass.value !== pass2.value) throw new Error('As senhas não conferem.');
+    if (mode === 'register') {
+      await firebaseAuth.signUp(email.value, pass.value);
+      notice = `Enviamos um link de confirmação para ${email.value.trim()} (olhe também o spam).`;
+    } else await firebaseAuth.signIn(email.value, pass.value);
+    try { localStorage.setItem('aethra_email', email.value.trim()); } catch { /* */ }
+    await enterWithFirebase(err);
+  });
+  btn.onclick = submit;
+  for (const el of [email, pass, pass2]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+  const google = h('button', { class: 'btn google', onclick: () => run(async () => { await firebaseAuth.google(); await enterWithFirebase(err); }) },
+    h('span', { class: 'g-mark' }, 'G'), 'Entrar com o Google');
+  forgot.onclick = () => run(async () => {
+    if (!email.value.trim()) throw new Error('Digite o seu e-mail e clique em "Esqueci a senha".');
+    await firebaseAuth.reset(email.value);
+    ok.textContent = `Se ${email.value.trim()} tem conta, enviamos um link para criar uma nova senha (olhe também o spam).`;
+  });
+  const old = h('button', { class: 'linkbtn', onclick: () => loginScreen(info, true) }, 'Tenho uma conta antiga (usuário e senha)');
+  try { email.value = localStorage.getItem('aethra_email') || ''; } catch { /* */ }
+  const panel = h('div', { class: 'menu-panel login' }, logoBlock(), cont,
+    h('div', { class: 'tabs' }, tabLogin, tabReg),
+    email, pass, pass2, err, ok, btn,
+    h('div', { class: 'or' }, h('span', {}, 'ou')), google,
+    h('div', { class: 'row center small' }, forgot, old),
+    onlineLine(info), loreBlock());
+  show(h('div', { class: 'screen' }, panel));
+  setTimeout(() => (email.value ? pass : email).focus(), 50);
+  // quem já entrou neste navegador pode continuar com um clique
+  firebaseAuth.current().then((u) => {
+    if (!u || !cont.isConnected) return;
+    const who = u.email || u.displayName || 'sua conta';
+    cont.append(
+      h('button', { class: 'btn big', onclick: () => run(async () => { await enterWithFirebase(err); }) }, `Continuar como ${who}`),
+      h('button', { class: 'linkbtn', onclick: logout }, 'Usar outra conta'));
+  });
+}
+
+// Login antigo (usuário e senha): contas criadas antes do Firebase e servidores sem Firebase. Criar conta por aqui só no modo DEV.
+function legacyLoginScreen(info = {}) {
   let mode = 'login';
   const user = h('input', { class: 'inp', placeholder: 'Usuário', maxlength: 16, autocomplete: 'username' });
   const pass = h('input', { class: 'inp', type: 'password', placeholder: 'Senha', maxlength: 64, autocomplete: 'current-password' });
@@ -110,12 +205,14 @@ function loginScreen(info = {}) {
   btn.onclick = submit;
   for (const el of [user, pass, pass2]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
   try { user.value = localStorage.getItem('aethra_user') || ''; } catch { /* */ }
-  const panel = h('div', { class: 'menu-panel login' },
-    h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA'), h('div', { class: 'logo-sub' }, 'A Chama Partida')),
-    h('div', { class: 'tabs' }, tabLogin, tabReg),
+  // com Firebase no servidor, criar conta é pelo e-mail; o cadastro por usuário só existe no modo DEV (testes)
+  const canRegister = !info.fb || info.dev;
+  const panel = h('div', { class: 'menu-panel login' }, logoBlock(),
+    info.fb ? h('div', { class: 'muted small center' }, 'Conta antiga, de antes do login por e-mail') : null,
+    canRegister ? h('div', { class: 'tabs' }, tabLogin, tabReg) : null,
     user, pass, pass2, err, btn,
-    h('div', { class: 'muted small center' }, info.online != null ? `${info.online} jogador(es) online` : ''),
-    h('div', { class: 'lore-blurb' }, 'A Chama Primordial foi partida. A Névoa Cinzenta avança. Das cinzas, despertam os Portadores...'));
+    info.fb ? h('button', { class: 'linkbtn', onclick: () => loginScreen(info) }, '← Voltar para o login com e-mail') : null,
+    onlineLine(info), loreBlock());
   show(h('div', { class: 'screen' }, panel));
   setTimeout(() => (user.value ? pass : user).focus(), 50);
 }
@@ -183,11 +280,12 @@ function selectScreen(selectId) {
   const panel = h('div', { class: 'menu-panel select' },
     h('div', { class: 'menu-title' }, 'Escolha seu Portador'),
     h('div', { class: 'muted small center' }, `Conta: ${esc(account)}`),
+    notice ? h('div', { class: 'form-ok' }, notice) : null,
     list, err,
     h('div', { class: 'row center' },
       h('button', { class: 'btn big', onclick: () => enter(selected), disabled: charList.length ? null : true }, 'Entrar no mundo'),
       charList.length ? h('button', { class: 'btn ghost', onclick: del }, 'Apagar') : null,
-      h('button', { class: 'btn ghost', onclick: () => location.reload() }, 'Sair')));
+      h('button', { class: 'btn ghost', onclick: logout }, 'Sair')));
   show(h('div', { class: 'screen' }, panel));
   if (!charList.length) createScreen();
 }
@@ -245,6 +343,7 @@ function createScreen() {
         ...(charSprites.ready ? [] : [h('div', { class: 'lbl' }, 'Pele'), skinBox, h('div', { class: 'lbl' }, 'Cabelo'), hairBox])),
       h('div', { class: 'create-right' }, classBox, info)),
     h('div', { class: 'row center' }, name, h('button', { class: 'btn big', onclick: create }, 'Criar')),
+    notice ? h('div', { class: 'form-ok' }, notice) : null,
     err,
     charList.length ? h('button', { class: 'btn ghost small', onclick: () => selectScreen() }, 'Voltar') : null);
   show(h('div', { class: 'screen' }, panel));
@@ -253,6 +352,7 @@ function createScreen() {
 
 // ------------------------------------------------------------------ jogo
 function enterGame() {
+  notice = '';
   title.stop(); // libera a placa de vídeo para o mundo 3D
   themeMusic.setScreen('game');
   screens.style.display = 'none';
@@ -289,6 +389,7 @@ net.onClose = () => {
 async function boot() {
   document.title = GAME_NAME;
   startBackdrop();
+  firebaseAuth.preload(); // o SDK do Firebase carrega junto com o resto, para a tela de login já aparecer pronta
   const fill = h('div');
   const status = h('div', { class: 'muted center' }, 'Carregando modelos 3D...');
   show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, h('div', { class: 'logo-main' }, 'AETHRA')), status, h('div', { class: 'load-bar' }, fill))));
@@ -312,6 +413,6 @@ async function boot() {
 }
 
 // acesso para depuração pelo console do navegador
-window.aethra = { get game() { return game; }, get ui() { return ui; }, net, music: themeMusic };
+window.aethra = { get game() { return game; }, get ui() { return ui; }, net, music: themeMusic, logout };
 
 boot();

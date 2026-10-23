@@ -19,6 +19,13 @@ apagado a cada reinício). Tudo no plano gratuito, sem cartão de crédito.
 No log deve aparecer `Dados salvos em /... + Supabase`. Se a chave estiver errada, o servidor **se recusa a subir** (de propósito:
 ele não começa vazio para não apagar os dados que já existem).
 
+## 2b. Login do Firebase no endereço do Render
+O login do jogo é o Firebase Authentication e só aceita endereços autorizados. Depois que o Render der o endereço do jogo:
+1. Firebase → **Authentication → Configurações → Domínios autorizados → Adicionar domínio**: `aethra.onrender.com` (o seu endereço, sem `https://`).
+2. Em **Método de login**, confirme que **E-mail/senha** (e **Google**, se for usar) estão ativos.
+3. No seu computador: `node tools/firebase/check.mjs aethra.onrender.com` mostra o que ainda falta.
+O servidor não precisa de chave nenhuma do Firebase (só lê os certificados públicos do Google). Outras variáveis opcionais: `FIREBASE_REQUIRE_VERIFIED=1` (só entra quem confirmou o e-mail) e `FIREBASE_PROJECT_ID` (outro projeto).
+
 ## 3. Manter acordado
 O plano gratuito do Render põe o serviço para dormir após 15 minutos sem visitas, e acordar leva cerca de um minuto.
 Para evitar, crie um monitor gratuito em https://uptimerobot.com do tipo **HTTP(s)** apontando para

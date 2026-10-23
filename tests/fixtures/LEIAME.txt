@@ -1,0 +1,2 @@
+firebase-test-key.pem e firebase-test-cert.pem: par de chaves RSA gerado só para os testes (tests/firebase.test.js).
+Não vale em lugar nenhum: não é do Firebase nem do Google e não protege nenhuma conta.

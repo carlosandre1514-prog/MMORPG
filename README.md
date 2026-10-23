@@ -12,7 +12,7 @@ Requisito: **Node.js 18+**.
 npm start
 ```
 
-Abra **http://localhost:3000**, crie uma conta e um personagem. Para jogar com amigos na mesma rede, eles acessam `http://SEU_IP:3000`. Para testar multiplayer sozinho, abra outra aba anônima com outra conta.
+Abra **http://localhost:3000**, crie uma conta (e-mail e senha, ou com o Google) e um personagem. O login usa o **Firebase Authentication**; antes de usar, ative-o no console do Firebase (veja *Login com Firebase* abaixo). Para jogar com amigos na mesma rede, eles acessam `http://SEU_IP:3000`. Para testar multiplayer sozinho, abra outra aba anônima com outra conta.
 
 ### Modo de teste (recomendado para conhecer todo o conteúdo rápido)
 
@@ -31,7 +31,7 @@ No modo DEV, use no chat:
 | `/tp x y` | teleporta dentro da zona |
 | `/curar`, `/matar` | cura total / mata o alvo |
 
-Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `KINGDOM_GRACE_MS` (quanto tempo um reino vazio fica na memória, padrão 90000), `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase).
+Variáveis: `PORT` (padrão 3000), `DATA_DIR` (padrão `./save`), `XP_RATE`, `DEV=1`, `KINGDOM_GRACE_MS` (quanto tempo um reino vazio fica na memória, padrão 90000), `SUPABASE_URL` e `SUPABASE_KEY` (salvar no Supabase), `FIREBASE_PROJECT_ID` (outro projeto do Firebase), `FIREBASE_REQUIRE_VERIFIED=1` (só entra quem confirmou o e-mail) e `FIREBASE=off` (desliga o Firebase e volta ao login por usuário e senha, por exemplo numa rede local sem internet).
 
 **Celular:** ao abrir em uma tela de toque aparecem os controles virtuais: direcional flutuante (toque e arraste na metade esquerda), botões de ataque, interagir, alvo e câmera, habilidades em grade à direita, atalhos de menu/chat/missões/tela cheia no topo; arraste na tela para girar a câmera e use a pinça para o zoom. Gire o celular para a horizontal. Dá para forçar ou desligar os controles de toque em Opções.
 
@@ -81,7 +81,18 @@ Celulares fracos: nos perfis Mínimo e Baixo os materiais são só de luz difusa
 - **Chefes**: Presa-de-Ferro, Vex'ara, Kragmor e Morvath (3 fases), com ataques telegrafados no chão, invocações, fúria e teleporte.
 - **Itens**: 5 raridades, afixos aleatórios, lendários únicos, aprimoramento +1 a +10 com risco, forja e alquimia, loja, baú.
 - **Social**: grupos (XP e saque compartilhados), clãs, chat com canais, comércio seguro em duas etapas, arena JxJ e ranking.
-- **Persistência**: contas com senha (scrypt), personagens salvos em `save/world.json` automaticamente.
+- **Contas**: login pelo **Firebase Authentication** (e-mail e senha, Google, recuperação de senha por e-mail); contas antigas de usuário e senha (scrypt) continuam entrando por um link na tela. Personagens salvos em `save/world.json` automaticamente.
+
+## Login com Firebase
+
+O jogador cria a conta e entra pelo Firebase Authentication (projeto `gen-lang-client-0119623458`, configuração pública em `shared/firebase.js`). Fluxo: o navegador entra no Firebase, recebe um token assinado (JWT) e manda ao servidor na mensagem `fblogin`; o servidor confere a assinatura e o projeto com os certificados públicos do Google (`server/firebase.js`, só com `crypto`, sem Admin SDK nem chave secreta) e abre a conta do jogo ligada ao `uid`. O SDK do Firebase vem empacotado no repositório (`client/vendor/firebase/`, Apache-2.0; gerado por `tools/firebase/build.mjs`).
+
+Para funcionar, no console do Firebase (https://console.firebase.google.com, projeto do jogo):
+1. **Build → Authentication → Começar → Método de login**: ative **E-mail/senha** e, se quiser o botão do Google, **Google** (escolha um e-mail de suporte).
+2. **Authentication → Configurações → Domínios autorizados**: adicione o endereço onde o jogo roda (`localhost` para testar na sua máquina e o domínio do Render, ex.: `aethra.onrender.com`).
+3. Rode `node tools/firebase/check.mjs aethra.onrender.com`: ele confere (só leitura, não cria nada) se e-mail/senha e Google estão ativos, se o domínio está autorizado e se o servidor alcança os certificados do Google.
+
+A chave de API do app Web não é segredo (todo site com Firebase a mostra); quem protege as contas é a conferência do token no servidor e as regras do console. Em produção, o cadastro por usuário e senha é recusado pelo servidor (só no modo DEV, para os testes); contas antigas ainda entram pelo link "Tenho uma conta antiga".
 
 ## Colocar online (de graça)
 

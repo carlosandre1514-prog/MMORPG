@@ -1,0 +1,8 @@
+{
+  "name": "aethra-firebase-bundle",
+  "private": true,
+  "description": "Gera client/vendor/firebase/firebase-auth.js (SDK do Firebase Authentication em um arquivo só)",
+  "type": "module",
+  "dependencies": { "firebase": "10.14.1" },
+  "devDependencies": { "esbuild": "0.24.2" }
+}

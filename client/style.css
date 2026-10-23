@@ -108,6 +108,18 @@ input { font-family: var(--font); user-select: text; }
 .menu-title { font-family: var(--font-title); font-size: 26px; color: #ffd27a; text-align: center; }
 .lore-blurb { font-style: italic; color: #b8ab92; text-align: center; font-size: 13px; margin-top: 6px; }
 .form-err { color: var(--bad); min-height: 18px; text-align: center; font-weight: 700; }
+.form-ok { color: var(--good); text-align: center; font-weight: 700; font-size: 13px; }
+.form-ok:empty { display: none; }
+.linkbtn { background: none; border: 0; color: #e8b86b; cursor: pointer; font: inherit; font-size: 12px; text-decoration: underline; padding: 2px 4px; }
+.linkbtn:hover { color: #ffd27a; }
+.menu-panel .row.center { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
+.fb-continue { display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 4px; }
+.fb-continue:empty { display: none; }
+.fb-continue .btn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: #444; }
+.btn.google { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; border-color: #ddd; color: #3c4043; font-weight: 700; }
+.btn.google .g-mark { font-weight: 900; font-family: Arial, sans-serif; color: #4285f4; }
 
 .char-list { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
 .char-card { width: 170px; padding: 12px; border: 1px solid #4a3d28; border-radius: 8px; background: rgba(0, 0, 0, 0.35); text-align: center; cursor: pointer; transition: all 0.15s; }

@@ -592,7 +592,7 @@ export const windowsMixin = {
       h('button', { class: 'btn small', onclick: () => this.mobile.fullscreen() }, 'Tela cheia'),
       h('div', { class: 'row' },
         h('button', { class: 'btn small', onclick: () => { this.wins.options.close(); this.send({ t: 'logout' }); } }, 'Trocar personagem'),
-        h('button', { class: 'btn ghost small', onclick: () => location.reload() }, 'Sair')),
+        h('button', { class: 'btn ghost small', onclick: () => (window.aethra && window.aethra.logout ? window.aethra.logout() : location.reload()) }, 'Sair')),
       h('div', { class: 'muted small' }, `Latência: ${this.net.latency} ms`));
   },
 

@@ -55,13 +55,31 @@ export class Session {
     const db = this.world.db;
     switch (msg.t) {
       case 'hello':
-        return this.send({ t: 'hello', v: PROTOCOL_VERSION, name: GAME_NAME, online: this.world.players.size, dev: this.world.dev });
+        return this.send({ t: 'hello', v: PROTOCOL_VERSION, name: GAME_NAME, online: this.world.players.size, dev: this.world.dev, fb: !!this.world.firebase });
       case 'register': {
+        // com o Firebase ligado, contas novas nascem pelo e-mail ou pelo Google; o cadastro por usuário e senha fica só no modo DEV (testes)
+        if (this.world.firebase && !this.world.dev) return this.err('Para criar uma conta, use o e-mail ou o Google.');
         const user = String(msg.user || ''), pass = String(msg.pass || '');
         if (!USER_RE.test(user)) return this.err('Usuário deve ter de 3 a 16 caracteres (letras, números ou _).');
         if (pass.length < 4 || pass.length > 64) return this.err('A senha deve ter de 4 a 64 caracteres.');
         const acc = await db.createAccount(user, pass);
         if (!acc) return this.err('Este usuário já existe.');
+        db.save();
+        return this.loggedIn(acc);
+      }
+      case 'fblogin': {
+        // login pelo Firebase Authentication: o cliente manda o token e o servidor confere a assinatura (server/firebase.js)
+        if (this.authFails >= 8) return this.err('Muitas tentativas. Reconecte e tente novamente.');
+        if (!this.world.firebase) return this.err('O login por e-mail e Google não está disponível neste servidor.');
+        let who;
+        try { who = await this.world.firebase.verify(msg.token); } catch (e) {
+          if (e && e.code !== 'unavailable') this.authFails++;
+          return this.err(e && e.code ? e.message : 'Não foi possível conferir o login.');
+        }
+        if (this.world.requireVerifiedEmail && who.provider === 'password' && !who.emailVerified) {
+          return this.err('Confirme seu e-mail: enviamos um link para a sua caixa de entrada. Depois é só entrar de novo.');
+        }
+        const acc = db.getOrCreateFirebaseAccount(who);
         db.save();
         return this.loggedIn(acc);
       }
@@ -141,7 +159,7 @@ export class Session {
       id: c.id, name: c.name, cls: c.cls, level: c.level, zone: c.zone, skin: c.skin, hair: c.hair,
       equip: c.equip, title: c.title || null, guild: c.guild || null, last: c.lastSeen,
     }));
-    this.send({ t: 'chars', list, max: MAX_CHARS, user: this.account.username, created });
+    this.send({ t: 'chars', list, max: MAX_CHARS, user: this.account.display || this.account.username, created });
   }
 
   // volta para a seleção de personagens sem desconectar

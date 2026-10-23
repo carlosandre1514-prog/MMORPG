@@ -7,7 +7,9 @@ import { createStaticHandler } from './net/static.js';
 import { Database, remoteConfig, restoreRemote } from './db.js';
 import { World } from './world.js';
 import { Session } from './session.js';
+import { createVerifier } from './firebase.js';
 import { GAME_NAME } from '../shared/constants.js';
+import { FIREBASE_CONFIG } from '../shared/firebase.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -21,6 +23,10 @@ export async function startServer(opts = {}) {
   if (remote && (await restoreRemote(dataDir, remote)) && !opts.quiet) console.log('  Estado restaurado do Supabase');
   const db = new Database(dataDir, remote);
   const world = new World(db, { dev, xpRate, quiet: opts.quiet, kingdomGraceMs: opts.kingdomGraceMs });
+  // login pelo Firebase Authentication: confere os tokens do projeto (FIREBASE_PROJECT_ID troca o projeto; opts.firebase = false desliga;
+  // FIREBASE_REQUIRE_VERIFIED=1 só deixa entrar com e-mail confirmado; FIREBASE=off desliga, ex.: rede local sem internet)
+  world.firebase = opts.firebase === false || ['0', 'off', 'false'].includes(process.env.FIREBASE) ? null : (opts.firebase || createVerifier({ projectId: process.env.FIREBASE_PROJECT_ID || FIREBASE_CONFIG.projectId }));
+  world.requireVerifiedEmail = opts.requireVerifiedEmail ?? ['1', 'true'].includes(process.env.FIREBASE_REQUIRE_VERIFIED);
   const serveStatic = createStaticHandler([
     { prefix: '/shared/', dir: path.join(ROOT, 'shared') },
     { prefix: '/kaykit/', dir: path.join(ROOT, 'assets', 'kaykit') },

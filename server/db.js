@@ -102,7 +102,27 @@ export class Database {
     return acc;
   }
 
+  // Conta ligada a um login do Firebase (sem senha aqui): a chave é um resumo do uid, em minúsculas e com "fb:", que nunca
+  // coincide com um usuário antigo (letras, números e _). Cria na primeira vez e mantém e-mail e provedor atualizados.
+  getOrCreateFirebaseAccount({ uid, email, name, provider, emailVerified }) {
+    const key = 'fb:' + crypto.createHash('sha256').update(uid).digest('hex').slice(0, 32);
+    let acc = this.data.accounts[key];
+    if (!acc) {
+      acc = { username: key, fb: { uid }, chars: [], created: Date.now() };
+      this.data.accounts[key] = acc;
+      this.markDirty();
+    }
+    const display = (email || name || 'Conta Firebase').slice(0, 80);
+    if (acc.display !== display || acc.fb.provider !== provider || acc.fb.emailVerified !== !!emailVerified) {
+      acc.display = display;
+      acc.fb = { uid, email: email || null, provider: provider || null, emailVerified: !!emailVerified };
+      this.markDirty();
+    }
+    return acc;
+  }
+
   async verifyPassword(acc, password) {
+    if (!acc.hash || !acc.salt) return false; // conta do Firebase: não tem senha local
     const hash = await scrypt(password, acc.salt);
     const a = Buffer.from(hash, 'hex'), b = Buffer.from(acc.hash, 'hex');
     return a.length === b.length && crypto.timingSafeEqual(a, b);

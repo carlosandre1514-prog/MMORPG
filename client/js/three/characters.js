@@ -22,7 +22,7 @@ const ZOMBIE_BASE = '/brackeys/zombie/';
 // Corpo de adulto sobre o esqueleto atual (cabeçudo, de pernas curtas): cabeça menor, tronco, pernas e braços bem mais longos e
 // ombros um pouco mais largos. Mexe só na escala dos ossos, então todas as animações e as armas nas mãos continuam valendo.
 // Cada osso herda a escala do pai, então os filhos recebem a escala que desfaz o que herdaram.
-export const ADULT = { head: 0.45, torso: 1.1, shoulder: 1.0, legs: 3.0, arms: 1.55, width: 1.0 };
+export const ADULT = { head: 0.4, torso: 1.2, shoulder: 1.1, legs: 2.7, arms: 1.7, width: 1.0 };
 function adultProportions(model) {
   const A = ADULT, hy = Math.sqrt(A.torso), hx = Math.sqrt(A.shoulder);
   model.traverse((o) => {

@@ -127,7 +127,9 @@ export class UI {
     sb.appendChild(h('div', { class: 'sb-sep' }));
     this.potSlots = { hp: this.skillSlot('Q', () => this.game.usePotion('hp')), mp: this.skillSlot('R', () => this.game.usePotion('mp')) };
     sb.append(this.potSlots.hp.el, this.potSlots.mp.el);
-    R.appendChild(h('div', { id: 'bottom' }, sb, h('div', { id: 'xpbar' }, this.xpFill, this.xpText)));
+    // aviso de coleta: aparece quando o personagem está sobre um item dropado (clique, toque ou tecla F coletam)
+    this.pickEl = h('div', { id: 'pickup', style: { display: 'none' }, onclick: () => { audio.init(); this.game.pickNear(); } });
+    R.appendChild(h('div', { id: 'bottom' }, this.pickEl, sb, h('div', { id: 'xpbar' }, this.xpFill, this.xpText)));
     // menu
     const menu = [
       ['inventory', 'Inventário', 'I', 'bag'], ['character', 'Personagem', 'C', 'armor'], ['skills', 'Habilidades', 'K', 'skills'],
@@ -149,6 +151,36 @@ export class UI {
     this.menuEl = null;
     this.buildWindows();
     this.mobile = new MobileControls(this);
+  }
+
+  // Mostra "Coletar" com o nome do item quando há saque ao alcance (vários: "Coletar tudo")
+  updatePickup() {
+    const g = this.game, el = this.pickEl;
+    if (!el || !g.zone) return;
+    const list = g.me.dead ? [] : g.lootNear();
+    const key = list.map((x) => x.e.id).join(',');
+    g.pickHint = list.length ? list[0].e.id : null; // o 3D mostra o nome do item mais perto mesmo com os nomes desligados
+    if (key === this.pickKey) return;
+    this.pickKey = key;
+    if (!list.length) { el.style.display = 'none'; el.replaceChildren(); return; }
+    // nomes iguais viram "Pele de Lobo x3"
+    const summary = (items) => {
+      const by = new Map();
+      for (const { e } of items) { const n = ITEMS[e.i]?.name || 'Item'; by.set(n, (by.get(n) || 0) + (e.q || 1)); }
+      const parts = [...by].map(([n, q]) => (q > 1 ? `${n} x${q}` : n));
+      return parts.slice(0, 2).join(', ') + (parts.length > 2 ? '...' : '');
+    };
+    const one = (e) => {
+      const base = ITEMS[e.i];
+      const name = base ? base.name + (e.q > 1 ? ` x${e.q}` : '') : 'Item';
+      const color = base && base.type === 'quest' ? '#f1c40f' : RARITY[e.r || 0].color;
+      return h('span', { class: 'pk-name', style: { color } }, name);
+    };
+    el.replaceChildren(
+      h('span', { class: 'pk-key' }, document.body.classList.contains('touch-ui') ? ico('bag', 'sm') : 'F'),
+      h('b', {}, list.length > 1 ? `Coletar tudo (${list.length})` : 'Coletar'),
+      list.length > 1 ? h('span', { class: 'pk-name muted' }, summary(list)) : one(list[0].e));
+    el.style.display = '';
   }
 
   skillSlot(key, onclick) {
@@ -373,6 +405,7 @@ export class UI {
     if (now - this.lastMini > (quality().low ? 200 : 100)) {
       this.lastMini = now;
       this.updateGuideBar();
+      this.updatePickup();
       if (this.wins.map?.isOpen && this.mapCv) this.drawWorldMap();
     }
     if (this.deathEl.style.display !== 'none' && this.deathAt) {

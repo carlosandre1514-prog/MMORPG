@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { farmLayout, FARM_FOOT, FARM_ANIMALS, penInner } from '../shared/farm.js';
+import { farmLayout, FARM_FOOT, FARM_ENTER, FARM_ANIMALS, penInner } from '../shared/farm.js';
 import { generateMap } from '../shared/mapgen.js';
 import { buildMap } from '../shared/tiles.js';
 import { T, O } from '../shared/tiles.js';
 import { ZONES } from '../shared/data/zones.js';
+import { canStand } from '../shared/collision.js';
+import { findPath } from '../shared/pathfinding.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -47,7 +49,9 @@ test('o mapa dos Campos tem a fazenda: construções bloqueiam, cercas têm port
   const map = buildMap(m.w, m.h, m.tiles, m.objs, m.structures);
   const kinds = {};
   for (const s of m.structures) kinds[s.kind] = (kinds[s.kind] || 0) + 1;
-  assert.equal(kinds.farm, 8);
+  assert.equal(kinds.farm, 5); // moinho, silo, torre d'água, poço e galinheiro: só por fora
+  assert.equal(kinds.house, 3); // celeiro grande, celeiro pequeno e casa da fazenda: visitáveis
+  assert.equal(map.rooms.length, 3);
   assert.equal(kinds.pen, 4);
   assert.ok(kinds.farmprop >= 20);
   for (const s of m.structures.filter((x) => x.kind === 'farm')) {
@@ -81,7 +85,7 @@ test('o mapa dos Campos tem a fazenda: construções bloqueiam, cercas têm port
 test('os modelos usados pela fazenda existem nos GLBs convertidos (tools/farm/convert.mjs)', () => {
   const farm = glbNames('assets/farm/farm.glb'), props = glbNames('assets/farm/props.glb'), flora = glbNames('assets/farm/flora.glb'), magic = glbNames('assets/farm/magic.glb');
   const L = farmLayout();
-  for (const b of L.buildings) assert.ok([...farm].some((n) => n.startsWith('farm_' + b.model + '~')), b.model); // cada construção vem em partes por material
+  for (const b of L.buildings.filter((x) => !FARM_ENTER[x.model])) assert.ok([...farm].some((n) => n.startsWith('farm_' + b.model + '~')), b.model); // cada construção vem em partes por material
   for (const p of L.props) assert.ok(props.has('prop_' + p.m), p.m);
   const world = read('client/js/three/world3d.js');
   for (const n of world.match(/flora_[A-Za-z0-9]+/g)) assert.ok(flora.has(n), n);
@@ -102,4 +106,38 @@ test('o cliente liga a fazenda: pacotes carregados, construções, adereços, an
   assert.match(world, /buildFlora\(\)/);
   for (const k of FARM_ANIMALS) assert.ok(new RegExp(`\\b${k}\\(`).test(animals), 'espécie ' + k);
   assert.match(animals, /export class Farm/);
+});
+
+test('celeiros e casa da fazenda: dá para entrar, andar até dentro, e o interior tem feno, ferramentas e móveis', () => {
+  const m = generateMap(ZONES.fields);
+  const map = buildMap(m.w, m.h, m.tiles, m.objs, m.structures);
+  const types = map.rooms.map((g) => g.st.type).sort();
+  assert.deepEqual(types, ['barn', 'barn', 'farmhouse']);
+  for (const g of map.rooms) {
+    assert.ok(g.nx >= 2 && g.nz >= 2 && g.W >= 4 && g.D >= 4, `${g.st.label} tem tamanho de sala`);
+    const [ox, oy] = [g.door[0] - g.inward[0] * 0.6, g.door[1] - g.inward[1] * 0.6];
+    assert.ok(canStand(map, ox, oy, 0.28), `a frente da porta de ${g.st.label} está livre`);
+    const path = findPath(map, ox, oy, (g.inner[0] + g.inner[2]) / 2, (g.inner[1] + g.inner[3]) / 2, 4000);
+    assert.ok(path && path.length, `caminho até o centro de ${g.st.label}`);
+  }
+  const interiors = read('client/js/three/interiors.js'), decor = read('client/js/three/decor.js'), village = read('client/js/three/village.js');
+  assert.match(interiors, /barn\(r, room, spec, f\)/);
+  assert.match(interiors, /'HayStack'/);
+  for (const tool of ['shovel', 'pickaxe', 'saw', 'axe', 'prop_Pitchfork_A', 'wheelbarrow', 'ladder']) assert.ok(interiors.includes(`'${tool}'`), tool);
+  assert.match(decor, /pieces\.set\('HayStack'/);
+  assert.match(village, /case 'barn':/);
+  assert.match(village, /barn: \{ Plaster:/);
+});
+
+test('feno só no celeiro: nenhum outro tipo de interior usa fardos ou pilhas de feno', () => {
+  const src = read('client/js/three/interiors.js');
+  const themes = src.slice(src.indexOf('const THEMES = {'), src.indexOf('export function interiorFor'));
+  // quebra o bloco de temas em funções de nível 2 ("  nome(r, room, spec, f) {") e confere onde o feno aparece
+  const parts = themes.split(/\n  (?=[a-z]+\(r, room, spec, f\) \{)/);
+  let withHay = [];
+  for (const part of parts) {
+    const name = /^([a-z]+)\(r, room/.exec(part);
+    if (name && /Hay(Stack|Bale)/.test(part)) withHay.push(name[1]);
+  }
+  assert.deepEqual(withHay, ['barn']);
 });

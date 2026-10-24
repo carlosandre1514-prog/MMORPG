@@ -113,6 +113,52 @@ function cupboardPieces() {
   return [{ key: 'FurnWood', geo: wood }, { key: 'Soot', geo: metal }];
 }
 
+// Fardo de feno (70 × 45 cm no chão, 38 de altura; a face de trás em -Z): caixa com fios de palha e duas cintas
+function hayBale(x, y, z, rot = 0) {
+  const g = merge([box(70, 38, 45, 0, 19, 0)]);
+  const strap = merge([box(3, 40, 47, -18, 19, 0), box(3, 40, 47, 18, 19, 0)]);
+  if (rot) { g.rotateY(rot); strap.rotateY(rot); }
+  g.translate(x, y, z); strap.translate(x, y, z);
+  return { hay: g, strap };
+}
+
+// Pilha de fardos encostada na parede (origem no centro da face traseira): duas embaixo e uma em cima, com palha solta na frente
+function hayStackPieces() {
+  const parts = [hayBale(-37, 0, 24, 0.02), hayBale(37, 0, 24, -0.03), hayBale(0, 38, 24, 0.05), hayBale(-84, 0, 21, 0.1)];
+  const loose = merge([box(60, 6, 40, 20, 3, 54), box(36, 10, 26, 10, 5, 56)]);
+  const hay = merge([...parts.map((p) => p.hay), loose]);
+  return [{ key: 'Hay', geo: hay }, { key: 'Strap', geo: merge(parts.map((p) => p.strap)) }];
+}
+
+// Fardo solto no chão (origem no centro)
+function hayBalePieces() {
+  const b = hayBale(0, 0, 0, 0);
+  return [{ key: 'Hay', geo: b.hay }, { key: 'Strap', geo: b.strap }];
+}
+
+// Palha: fios amarelos e marrons em todas as direções (a textura se repete)
+function strawTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 128;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#d9b44f';
+  c.fillRect(0, 0, 128, 128);
+  let seed = 11;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const cols = ['#e8c868', '#c79a3a', '#b8862c', '#efd88a', '#a87326'];
+  for (let i = 0; i < 520; i++) {
+    c.strokeStyle = cols[Math.floor(rnd() * cols.length)];
+    c.lineWidth = 1 + rnd() * 1.4;
+    const x = rnd() * 128, y = rnd() * 128, len = 14 + rnd() * 30, a = (rnd() - 0.5) * 0.7;
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len); c.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
 // Lombada de livros: canvas com fileiras de livros de cores e alturas variadas (fundo transparente)
 function booksTexture() {
   const cv = document.createElement('canvas');
@@ -203,6 +249,10 @@ export function registerDecor(village) {
   pieces.set('Counter', counterPieces());
   pieces.set('Bookcase', bookcasePieces());
   pieces.set('Cupboard', cupboardPieces());
+  pieces.set('HayStack', hayStackPieces());
+  pieces.set('HayBale', hayBalePieces());
+  mats.Hay = lite(new THREE.MeshStandardMaterial({ name: 'Hay', map: strawTexture(), roughness: 1 }));
+  mats.Strap = lite(new THREE.MeshStandardMaterial({ name: 'Strap', color: 0x6a4a2a, roughness: 0.95 }));
   mats.Books = lite(new THREE.MeshStandardMaterial({ name: 'Books', map: booksTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }));
   mats.FurnWood = lite(new THREE.MeshStandardMaterial({ name: 'FurnWood', color: 0xa86a3e, roughness: 0.9 }));
   mats.Soot = lite(new THREE.MeshStandardMaterial({ name: 'Soot', color: 0x16120f, roughness: 1 }));

@@ -41,7 +41,7 @@ export class Overlay {
     }
     list.sort((p, q) => q.head.y - p.head.y);
     for (const it of list) {
-      if (it.e.k === 'i') { if (it.e === g.hover || g.showItemNames) this.itemLabel(it.e, it.head); }
+      if (it.e.k === 'i') { if (it.e === g.hover || g.showItemNames || it.e.id === g.pickHint) this.itemLabel(it.e, it.head); }
       else this.entityLabel(it.e, it.head, t);
     }
     this.texts();

@@ -507,7 +507,31 @@ export class Game {
     this.target = list[(idx + 1) % list.length].id;
   }
 
+  // Itens no chão ao alcance de coleta que são meus (do servidor: dono do saque ou saque já livre), do mais perto ao mais longe
+  lootNear() {
+    const me = this.me;
+    const serverNow = performance.now() + this.serverOffset;
+    const out = [];
+    for (const e of this.entities.values()) {
+      if (e.k !== 'i') continue;
+      const d = Math.hypot(e.rx - me.x, e.ry - me.y);
+      if (d > PICKUP_RANGE + 0.2) continue;
+      if (e.o && e.o.length && !e.o.includes(me.id) && serverNow < (e.fa || 0)) continue;
+      out.push({ e, d });
+    }
+    return out.sort((a, b) => a.d - b.d);
+  }
+
+  // coleta tudo o que está ao alcance (botão "Coletar", tecla F ou espaço)
+  pickNear() {
+    const list = this.lootNear();
+    if (!list.length) return false;
+    for (const { e } of list) this.net.send({ t: 'pick', id: e.id });
+    return true;
+  }
+
   interactNearest() {
+    if (this.pickNear()) return; // em cima de um saque, a tecla coleta em vez de andar até o NPC mais próximo
     const me = this.me;
     let best = null, bestD = 3.5;
     for (const e of this.entities.values()) {
@@ -543,6 +567,11 @@ export class Game {
     if (sk) this.useSkill(sk);
   }
 
+  // alcance efetivo de uma habilidade contra um alvo (a mesma tolerância do servidor)
+  skillReach(sk, t) {
+    return sk.range + 0.9 + (t.k === 'm' && MONSTERS[t.m] && MONSTERS[t.m].size > 1.5 ? 0.7 : 0);
+  }
+
   useSkill(sk) {
     const me = this.me;
     const now = performance.now();
@@ -551,7 +580,11 @@ export class Game {
     if (me.level < sk.lvl) { this.ui.toast(`${sk.name} requer nível ${sk.lvl}.`, 'err'); audio.play('error'); return; }
     const cd = this.cooldowns[sk.id];
     if (cd && cd.end > now) { this.ui.toast(`${sk.name} em recarga.`, 'err'); return; }
-    if (this.gcd.end > now + 60) return;
+    if (this.gcd.end > now + 60) {
+      // toque durante o intervalo global: fica guardado e sai assim que o intervalo acaba (se faltar pouco)
+      if (this.gcd.end - now < 450) this.buffered = { id: sk.id, until: this.gcd.end + 200 };
+      return;
+    }
     if (me.mp < sk.mp) { this.ui.toast('Mana insuficiente.', 'err'); audio.play('error'); return; }
     const mouse = this.renderer.screenToWorld(this.input.mouse.x, this.input.mouse.y);
     switch (sk.target) {
@@ -564,7 +597,13 @@ export class Game {
           this.target = t.id;
         }
         const d = Math.hypot(t.rx - me.x, t.ry - me.y);
-        if (d > sk.range + 0.5) { this.action = { type: 'skill', skill: sk.id, id: t.id }; return; }
+        // o servidor aceita o alvo até alcance + 1 tile (e um pouco mais nos monstros grandes): o cliente segue a mesma conta
+        if (d > this.skillReach(sk, t)) {
+          // fora de alcance: o personagem se aproxima e a habilidade sai sozinha assim que chegar perto, mesmo andando com o teclado
+          this.action = { type: 'skill', skill: sk.id, id: t.id, until: now + 3500 };
+          this.ui.toast(`${sk.name}: alvo fora de alcance, aproximando...`, 'info');
+          return;
+        }
         this.net.send({ t: 'sk', s: sk.id, id: t.id });
         this.action = { type: 'attack', id: t.id };
         break;
@@ -659,6 +698,11 @@ export class Game {
   processAction(now) {
     const a = this.action;
     const me = this.me;
+    if (this.buffered && !me.dead) {
+      const b = this.buffered;
+      if (now > b.until) this.buffered = null;
+      else if (this.gcd.end <= now + 60) { this.buffered = null; this.useSkill(SKILLS[b.id]); }
+    }
     if (!a || me.dead) return;
     const e = this.entities.get(a.id);
     if (!e || (e.k === 'm' && (e.f & F.DEAD))) {
@@ -667,9 +711,10 @@ export class Game {
       return;
     }
     const d = Math.hypot(e.rx - me.x, e.ry - me.y);
+    if (a.type === 'skill' && a.until && now > a.until) { this.action = { type: 'attack', id: e.id }; return; } // desistiu de esperar
     let range;
     if (a.type === 'attack') range = (me.stats ? me.stats.atkRange : 1.5) + (e.k === 'm' && MONSTERS[e.m].size > 1.5 ? 0.7 : 0) - 0.15;
-    else if (a.type === 'skill') range = SKILLS[a.skill].range;
+    else if (a.type === 'skill') range = Math.max(0.5, this.skillReach(SKILLS[a.skill], e) - 0.4); // chega um pouco antes do limite do servidor
     else if (a.type === 'npc') range = NPC_RANGE - 1;
     else range = PICKUP_RANGE - 0.5;
     if (d > range) {
@@ -728,7 +773,8 @@ export class Game {
     if (this.keyMoving) {
       if (this.guide.auto) this.guide.setAuto(false);
       this.path = null;
-      if (this.action && this.action.type !== 'attack') this.action = null;
+      // andar com o teclado cancela ir até um NPC ou item, mas não o ataque nem a habilidade que espera o alvo chegar ao alcance
+      if (this.action && this.action.type !== 'attack' && this.action.type !== 'skill') this.action = null;
     } else if (this.path && this.path.length) {
       const p = this.path[0];
       const ddx = p.x - me.x, ddy = p.y - me.y;

@@ -427,11 +427,12 @@ export const windowsMixin = {
     for (const kid of KINGDOM_ORDER) {
       const K = KINGDOMS[kid];
       const kKnown = K.zones.some((id) => g.me.visited.includes(id));
-      side.appendChild(h('div', { class: 'map-kingdom' + (kid === z.def.kingdom ? ' cur' : '') }, kKnown ? K.name : '??? (reino desconhecido)'));
+      side.appendChild(h('div', { class: 'map-kingdom' + (kid === z.def.kingdom ? ' cur' : '') }, K.name, kKnown ? null : h('small', { class: 'muted' }, ' · ainda não visitado')));
       for (const id of K.zones) {
         const zd = ZONES[id];
         const known = g.me.visited.includes(id);
-        const seen = known || reveal.near.has(id); // avistada: vizinha de uma região já visitada (o nome aparece, esmaecido)
+        const seen = true; // todas as regiões aparecem com nome (esmaecidas enquanto não visitadas), para o jogador saber para onde ir
+        void reveal;
         side.appendChild(h('div', { class: 'map-zone' + (id === sel ? ' cur' : '') + (known ? '' : ' unknown'), onclick: () => this.mapSelect?.(id) },
           h('b', {}, seen ? zd.name : '???'), h('div', { class: 'small muted' }, seen ? zd.levels : '')));
         // viagem rápida: os altares já descobertos deste reino

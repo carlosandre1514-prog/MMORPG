@@ -40,7 +40,8 @@ test('o GLB dos prédios em voxel tem todos os modelos usados por Zahrim, cada u
 });
 
 test('as torres em voxel são construções maciças: sem porta, sem interior e bloqueando a área toda', () => {
-  assert.equal((map.rooms || []).length, 0);
+  // só as casas de adobe da Avenida do Sol têm interior; nenhuma torre em voxel vira sala
+  assert.equal((map.rooms || []).filter((g) => g.st.type === 'voxel').length, 0);
   for (const st of voxels) {
     assert.equal(st.kind, 'house');
     assert.equal(doorIndex(st), -1);
@@ -99,4 +100,19 @@ test('armas de Sahaar: toda arma pedida em characters.js existe no KayKit ou em 
   // a licença CC BY exige o crédito: README e ajuda do jogo citam o autor
   for (const f of ['README.md', 'client/js/ui/windows.js']) assert.match(fs.readFileSync(path.join(ROOT, f), 'utf8'), /Alstra Infinite/, f);
   assert.match(fs.readFileSync(path.join(ROOT, 'assets/weapons/LICENSE.txt'), 'utf8'), /CC BY 4\.0/);
+});
+
+test('Zahrim: as casas de adobe da Avenida do Sol são visitáveis e a rua em frente às portas está livre', () => {
+  const houses = town.structures.filter((s) => s.kind === 'house' && s.type !== 'voxel');
+  assert.ok(houses.length >= 24, 'casas de adobe suficientes');
+  assert.equal(map.rooms.length, houses.length);
+  for (const st of houses) assert.equal(st.style, 'sand');
+  for (const g of map.rooms) {
+    const [ox, oy] = [g.door[0] - g.inward[0] * 0.6, g.door[1] - g.inward[1] * 0.6];
+    assert.ok(canStand(map, ox, oy, 0.28), `a frente da porta de ${g.st.type} ${g.st.x},${g.st.y} está livre`);
+  }
+  const labels = houses.filter((s) => s.label).map((s) => s.label).sort();
+  assert.deepEqual(labels, ['Casa das Essências', 'Forja de Dahmir', 'Taverna do Oásis']);
+  // o reino de Sahaar carrega o pacote da vila (paredes, porta e telhado das casas) além das torres
+  assert.ok(KINGDOMS.sahaar.assets.includes('village'));
 });

@@ -140,7 +140,9 @@ export const worldMapMixin = {
   queueThumbs() {
     if (this.wmQueueing) return;
     const { visited, near } = this.worldReveal();
-    const todo = ZONE_ORDER.filter((id) => (visited.has(id) || near.has(id)) && !thumbs.has(id));
+    // todas as regiões ganham miniatura (as desconhecidas aparecem bem escuras, só para mostrar onde ficam e o seu feitio)
+    void visited; void near;
+    const todo = ZONE_ORDER.filter((id) => !thumbs.has(id));
     if (!todo.length) return;
     this.wmQueueing = true;
     const step = () => {
@@ -162,16 +164,13 @@ export const worldMapMixin = {
     const state = visited.has(id) ? 'visited' : near.has(id) ? 'near' : 'hidden';
     const here = g.zone.id;
     let card;
-    if (state === 'hidden') {
-      card = h('div', { class: 'wm-card' }, h('b', {}, '??? região desconhecida'),
-        h('div', { class: 'small muted' }, 'Ainda não foi avistada. Explore as regiões vizinhas para revelá-la.'));
-    } else {
+    {
       const bosses = [...new Set((zd.spawns || []).map((s) => MONSTERS[s.m]).filter((m) => m && m.boss).map((m) => m.name))];
       const found = altarsIn(id).filter((a) => !a.pvp && (g.me.altars || []).includes(a.id)).length;
       const total = altarsIn(id).filter((a) => !a.pvp).length;
       const rows = [h('div', { class: 'wm-name' }, zd.name), h('div', { class: 'small' }, `${zd.levels} · ${KINGDOMS[zd.kingdom]?.name || ''}`)];
       if (zd.desc) rows.push(h('div', { class: 'small muted', style: { margin: '4px 0' } }, zd.desc));
-      rows.push(h('div', { class: 'small' }, state === 'visited' ? 'Explorada' : 'Avistada, ainda não explorada', total && state === 'visited' ? ` · altares ${found}/${total}` : ''));
+      rows.push(h('div', { class: 'small' }, state === 'visited' ? 'Explorada' : state === 'near' ? 'Avistada, ainda não explorada' : 'Ainda não descoberta: siga as estradas até lá', total && state === 'visited' ? ` · altares ${found}/${total}` : ''));
       if (state === 'visited' && bosses.length) rows.push(h('div', { class: 'small' }, ico('skull', 'sm'), ' ', bosses.join(', ')));
       if (id !== here) {
         const a = centerOf(ZONES[here]), b = centerOf(zd);
@@ -238,11 +237,13 @@ export const worldMapMixin = {
       const w = z.w * sc, hh = z.h * sc;
       const th = thumbs.get(id);
       ctx.save();
-      if (state === 'visited' && th) { ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(th, x, y, w, hh); }
-      else if (state === 'near') {
-        ctx.fillStyle = '#121a26'; ctx.fillRect(x, y, w, hh);
-        if (th) { ctx.globalAlpha = 0.28; ctx.drawImage(th, x, y, w, hh); ctx.globalAlpha = 1; }
-      } else { ctx.fillStyle = state === 'hidden' ? '#0e131b' : '#121a26'; ctx.fillRect(x, y, w, hh); }
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      if (state === 'visited' && th) ctx.drawImage(th, x, y, w, hh);
+      else {
+        // névoa: o desenho da região aparece esmaecido e escuro (mais ainda quando nem foi avistada)
+        ctx.fillStyle = state === 'hidden' ? '#0d1219' : '#121a26'; ctx.fillRect(x, y, w, hh);
+        if (th) { ctx.globalAlpha = state === 'near' ? 0.42 : 0.24; ctx.drawImage(th, x, y, w, hh); ctx.globalAlpha = 1; }
+      }
       ctx.restore();
       const cur = id === g.zone.id, sel = id === this.wmSel;
       ctx.lineWidth = cur ? 2.5 : 1.2;
@@ -253,20 +254,32 @@ export const worldMapMixin = {
       if (sel && !cur) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]); ctx.strokeRect(x - 2, y - 2, w + 4, hh + 4); ctx.setLineDash([]); }
       // nome e nível (as regiões desconhecidas só mostram "?")
       const cx = x + w / 2;
-      if (state === 'hidden') {
-        ctx.font = `bold ${Math.max(14, Math.min(28, w * 0.28))}px Georgia, serif`;
-        ctx.fillStyle = 'rgba(150,170,195,0.55)'; ctx.fillText('?', cx, y + hh / 2 + 8);
-        continue;
-      }
       let fs = Math.max(8, Math.min(13, w * 0.115));
       ctx.font = `bold ${fs}px Georgia, serif`;
       while (ctx.measureText(z.name).width > w - 6 && fs > 6.5) { fs -= 0.5; ctx.font = `bold ${fs}px Georgia, serif`; }
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,10,16,0.95)';
-      ctx.fillStyle = state === 'visited' ? '#fdf2e9' : '#9db1c6';
+      ctx.fillStyle = state === 'visited' ? '#fdf2e9' : state === 'near' ? '#9db1c6' : 'rgba(150,170,195,0.62)';
       ctx.strokeText(z.name, cx, y + fs + 3); ctx.fillText(z.name, cx, y + fs + 3);
       ctx.font = `${Math.max(7, fs - 2)}px sans-serif`;
       const sub = z.lvl ? `Nv ${z.lvl[0]}–${z.lvl[1]}` : z.safe ? 'Zona segura' : z.pvp ? 'JxJ' : '';
       if (sub) { ctx.fillStyle = z.pvp ? '#ff8a7a' : '#c9d6e4'; ctx.strokeText(sub, cx, y + fs * 2 + 3); ctx.fillText(sub, cx, y + fs * 2 + 3); }
+    }
+
+    // reino que o personagem ainda não pisou: o nome do reino cobre o conjunto das suas regiões
+    for (const kid of Object.keys(KINGDOMS)) {
+      const K = KINGDOMS[kid];
+      if (K.zones.some((id) => visited.has(id))) continue;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const id of K.zones) { const z = ZONES[id]; x0 = Math.min(x0, z.world.x); y0 = Math.min(y0, z.world.y); x1 = Math.max(x1, z.world.x + z.w); y1 = Math.max(y1, z.world.y + z.h); }
+      const [kx0, ky0] = S(x0, y0), [kx1] = S(x1, y1);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(201,162,74,0.35)'; ctx.setLineDash([2, 6]); ctx.lineWidth = 1;
+      ctx.strokeRect(kx0 - 6, ky0 - 22, kx1 - kx0 + 12, S(x1, y1)[1] - ky0 + 28);
+      ctx.setLineDash([]);
+      ctx.font = 'bold 13px Georgia, serif'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,10,16,0.95)'; ctx.fillStyle = 'rgba(232,200,120,0.85)';
+      const label = `${K.name} (${K.theme})`;
+      ctx.strokeText(label, (kx0 + kx1) / 2, ky0 - 8); ctx.fillText(label, (kx0 + kx1) / 2, ky0 - 8);
+      ctx.restore();
     }
 
     // portões (altares): acesos se já descobertos

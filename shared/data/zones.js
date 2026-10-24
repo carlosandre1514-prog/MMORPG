@@ -57,7 +57,7 @@ export const ZONES = {
         { type: 'farmstead' }, // a fazenda inteira (shared/farm.js): celeiros, silos, moinho, currais e animais
         { type: 'shrine', x: 76, y: 58, r: 4 },
         { type: 'ring', x: 92, y: 78, r: 7, obj: O.ROCK, gap: 'w' },
-        { type: 'pond', x: 13, y: 76, r: 3 },
+        { type: 'pond', x: 9, y: 78, r: 3 },
         { type: 'camp', x: 8, y: 43 },
       ],
     },

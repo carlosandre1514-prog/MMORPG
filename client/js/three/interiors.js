@@ -26,6 +26,8 @@ const DECOR = {
   Cupboard: { w: 110, d: 48, h: 100, oz: 24, back: true },
   Pew: { w: 200, d: 40, h: 110, oz: 0 },
   Counter: { w: 208, d: 64, h: 100, oz: 0 },
+  HayStack: { w: 184, d: 66, h: 76, oz: 33, back: true },
+  HayBale: { w: 70, d: 45, h: 38, oz: 0 },
 };
 
 // Altura (cm) dos modelos dos outros packs, que vêm em metros e não em centímetros como os do Dungeon
@@ -39,6 +41,8 @@ const DEFAULT_H = {
   Wood_Log_Stack: 46, Wood_Planks_Stack_Small: 20, Wood_Planks_Stack_Medium: 34, Textiles_Stack_Small: 40, Textiles_Stack_Large_Colored: 46, Textiles_A: 18, Stone_Bricks_Stack_Small: 22,
   magic_Cauldron: 62, magic_Gem: 14, magic_Candle: 14, magic_SkullCandle: 20, magic_Scroll: 9, magic_Lamp1: 30, magic_Lamp2: 30,
   magic_BookRed: 7, magic_BookBlue: 6, magic_BookGreen: 6, magic_BookPurple: 7, magic_BookGrey: 7,
+  prop_Pitchfork_A: 150, prop_Pitchfork_B: 150, prop_Pitchfork_C: 150, prop_Broom_A: 140, prop_Trough_1_A: 40, prop_Trough_2_A: 42, prop_Trough_3_A: 44, prop_Bag_1_A: 48, prop_Bag_2_A: 52, prop_Bag_3_A: 50,
+  prop_Wheel_A: 85, prop_Cart_1_A: 95, prop_Cart_1_B: 95, prop_Bucket_1_A: 32, prop_Bucket_1_B: 32, prop_Stool_A: 46, prop_Rope_1_A: 16, prop_Basin_A: 24, prop_Laundry_A: 60,
   weaponrack: 120, bucket_water: 40, bucket_arrows: 62, sack: 55, crate_A_small: 45, crate_A_big: 62, crate_open: 52, wheelbarrow: 60, ladder: 200, barrel: 78, resource_lumber: 40,
 };
 
@@ -257,6 +261,52 @@ function living(r, room, wall) {
 }
 
 const THEMES = {
+  // Celeiro: pilhas de feno no fundo, ferramentas de fazenda penduradas, bancada, carroça, sacos, barris e escada
+  barn(r, room, spec, f) {
+    const { IX, IZ } = room;
+    // feno: uma pilha grande encostada no fundo e fardos soltos pelo chão
+    const left = r() < 0.5;
+    const hx = left ? -IX + 100 : IX - 100;
+    room.at('back', hx, 'HayStack', {});
+    if (IX > 250) room.at('back', -hx * 0.55, 'HayStack', {});
+    room.put('HayBale', left ? -IX + 60 : IX - 60, -IZ + 140, 0.15, {});
+    room.put('HayBale', left ? -IX + 90 : IX - 90, -IZ + 190, -0.2, {});
+    // ferramentas penduradas na parede do fundo e na lateral
+    const tools = ['shovel', 'pickaxe', 'saw', 'axe', 'handplane', 'mallet'];
+    tools.forEach((m, i) => room.hang('back', -hx * 0.3 + (i - 2) * 46 + (left ? 40 : -40), m, m === 'shovel' ? 130 : 150, { gap0: 2 }));
+    room.hang('left', IZ - 160, 'lantern', 150, { gap0: 2 });
+    room.hang('right', IZ - 160, 'lantern', 150, { gap0: 2 });
+    // forcados e vassoura encostados nas paredes laterais
+    room.at('right', -IZ + 40, 'prop_Pitchfork_A', { gap0: 4 });
+    room.at('right', -IZ + 80, 'prop_Pitchfork_B', { gap0: 4 });
+    room.at('left', -IZ + 40, 'prop_Broom_A', { gap0: 4 });
+    room.at('left', -IZ + 80, 'prop_Pitchfork_C', { gap0: 4 });
+    // bancada de trabalho com ferramentas, ao lado oposto ao feno
+    const bench = left ? 'right' : 'left';
+    room.at(bench, 0, 'table_medium', { along: true, flip: bench === 'right', on: [{ m: 'hammer', dx: -30, lay: true, rot: 0.5 }, { m: 'saw', dx: 26, dz: 6, lay: true, rot: 1.3 }, { m: 'chisel', dx: -4, dz: -14, lay: true, rot: 0.2 }, { m: 'prop_Bucket_1_A', dx: 52, h: 30 }] });
+    // meio do salão: carroça e cocho, quando há espaço
+    if (IX > 250) room.put('prop_Cart_1_A', (left ? 1 : -1) * 40, 40, 0.25, {});
+    else room.put('wheelbarrow', (left ? 1 : -1) * 20, 30, 0.4, {});
+    room.at('left', IZ - 190, 'prop_Trough_1_A', { along: true });
+    // sacos, barris e caixas ao longo da frente e uma escada para o sótão
+    room.line('front', [sw('sack'), sw('barrel'), sw('sack'), sw('crate_A_big')], { from: -IX, to: room.keep[0][0] });
+    room.line('front', [sw('barrel'), sw('prop_Bag_1_A'), sw('crate_open'), sw('sack')], { from: room.keep[0][2], to: IX });
+    room.at(left ? 'right' : 'left', IZ - 110, 'ladder', { along: true, gap0: 2, flip: !left });
+    room.put('bucket_water', (left ? 1 : -1) * 110, -IZ + 60, 0, { h: 40 });
+    room.rug('Rug_C', 0, 70, 0, 0.7);
+  },
+
+  // Casa da fazenda: casa comum com cara de roça (sacos, balde, cesta)
+  farmhouse(r, room, spec, f) {
+    THEMES.house(r, room, spec, f);
+    if (f > 0) return;
+    const { IX, IZ } = room;
+    room.at('right', IZ - 110, 'prop_Bag_1_A', { gap0: 4 });
+    room.at('left', IZ - 110, 'prop_Bucket_1_A', { gap0: 4, h: 32 });
+    room.hang('back', 0, 'prop_Pitchfork_B', 70, { gap0: 2 });
+    room.put('prop_Stool_A', IX - 60, IZ - 100, 0.6, { soft: true });
+  },
+
   // Casa de moradores: cama, lareira, mesa de jantar, estante, baús, tapete e velas
   house(r, room, spec, f) {
     const { IX, IZ } = room;
@@ -539,6 +589,7 @@ export function interiorFor(spec, st) {
     if (f === 0) for (const fl of room.flames) flames.push({ ...fl, y: fl.y + 3 });
     if (type === 'tavern' || type === 'bank' || type === 'keep' || type === 'chapel') return f === 0 ? 'Floor_UnevenBrick' : 'Floor_WoodDark';
     if (type === 'smithy' || type === 'armory') return 'Floor_UnevenBrick';
+    if (type === 'barn') return 'Floor_WoodDark';
     if (f === 0 && style === 'stone') return rnd() < 0.5 ? 'Floor_WoodDark' : 'Floor_UnevenBrick';
     return rnd() < 0.5 ? 'Floor_WoodLight' : 'Floor_WoodDark';
   });

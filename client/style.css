@@ -260,6 +260,13 @@ input { font-family: var(--font); user-select: text; }
 
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
 #bottom > * { pointer-events: auto; }
+/* aviso de coleta sobre a barra de habilidades */
+#pickup { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px 14px 6px 8px; cursor: pointer; border: 2px solid var(--card-edge, #8a6a2c); border-radius: 18px; background: linear-gradient(150deg, rgba(10, 15, 24, 0.92), rgba(7, 9, 16, 0.9)); box-shadow: 0 0 0 1px #000, 0 4px 14px rgba(0, 0, 0, 0.6); color: #f4e4bd; font-size: 14px; animation: pk-in 0.18s ease-out; }
+#pickup:hover { border-color: #ffd36d; filter: brightness(1.12); }
+#pickup .pk-key { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 6px; background: linear-gradient(#e0a93a, #8a5a14); color: #1a1006; font-weight: 800; border: 1px solid #ffd36d; }
+#pickup .pk-key .ic { width: 16px; height: 16px; }
+#pickup .pk-name { font-weight: 700; text-shadow: 0 1px 2px #000; }
+@keyframes pk-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 #skillbar { display: flex; gap: 5px; padding: 6px 8px; background: rgba(15, 14, 22, 0.88); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.6); }
 .sk-slot { position: relative; width: 48px; height: 48px; border: 2px solid #5a4a30; border-radius: 6px; overflow: hidden; cursor: pointer; background: #111; }
 .sk-slot:hover { border-color: var(--border-hi); }

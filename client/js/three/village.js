@@ -63,6 +63,20 @@ export const village = {
       if (key === 'Vine') { m.alphaTest = 0.5; m.side = THREE.DoubleSide; m.color.set(0x5f9a3c); }
       this.mats[key] = lite(m);
     }));
+    // variações de cor das paredes e do telhado por estilo (st.style): 'sand' = adobe de Zahrim, 'barn' = celeiros vermelhos da fazenda
+    const VARIANTS = {
+      sand: { Plaster: 0xeed3a0, UnevenBrick: 0xd9b27f, Brick: 0xcf9f72, RoundTiles: 0xd2814c, RockTrim: 0xe0c79e, WoodTrim: 0xb08a5c },
+      barn: { Plaster: 0xc0533b, UnevenBrick: 0x9a5340, Brick: 0x9a5340, RoundTiles: 0x6a5446, RockTrim: 0xa89c90, WoodTrim: 0xc9b9a2 },
+    };
+    for (const [suffix, colors] of Object.entries(VARIANTS)) {
+      for (const [key, color] of Object.entries(colors)) {
+        if (!this.mats[key]) continue;
+        const m = this.mats[key].clone();
+        m.name = `${key}@${suffix}`;
+        m.color.set(color);
+        this.mats[m.name] = m;
+      }
+    }
     // vidro das janelas: acende à noite (emissiveIntensity é ajustada pela cena)
     this.mats.WindowGlass = lite(new THREE.MeshStandardMaterial({ name: 'WindowGlass', color: 0x9cc0d6, roughness: 0.15, metalness: 0.2, emissive: 0xffc35a, emissiveIntensity: 0 }));
     registerDecor(this);
@@ -101,11 +115,11 @@ export const village = {
       const pos = new THREE.Vector3(x + Math.sin(rot) * depth, y, z + Math.cos(rot) * depth);
       local.compose(pos, q.setFromAxisAngle(UP, rot), scale || one);
       // venezianas e trepadeiras são detalhe fino: só aparecem de perto
-      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow, inner: innerNow || FINE.test(name) };
+      const pl = { name, m: base.clone().multiply(local), bid, hide: hideNow, inner: innerNow || FINE.test(name), style: spec.style };
       if (leaf) pl.leaf = { base, pos, rot, scale: scale.clone() }; // folha da porta: gira em volta da dobradiça
       out.push(pl);
       // peças pesadas têm uma irmã simplificada (@lod) para os prédios distantes
-      if (!leaf && bid && this.pieces.has(name + '@lod')) { pl.det = true; out.push({ name: name + '@lod', m: pl.m, bid, hide: hideNow, lod: true }); }
+      if (!leaf && bid && this.pieces.has(name + '@lod')) { pl.det = true; out.push({ name: name + '@lod', m: pl.m, bid, hide: hideNow, lod: true, style: spec.style }); }
     };
     const rnd = mulberry(spec.seed || 1);
     const W = spec.nx * MOD, D = spec.nz * MOD;
@@ -254,7 +268,8 @@ export const village = {
     for (const pl of placements) {
       const { name, m } = pl;
       for (const p of this.pieces.get(name) || []) {
-        const key = this.mats[p.key] ? p.key : 'WoodTrim';
+        let key = this.mats[p.key] ? p.key : 'WoodTrim';
+        if (pl.style && this.mats[`${key}@${pl.style}`]) key = `${key}@${pl.style}`;
         let e = byKey.get(key);
         if (!e) byKey.set(key, (e = { geos: new Map(), list: [] }));
         e.geos.set(p.geo, -1);
@@ -408,7 +423,7 @@ export function villagePlan(st) {
   const nx = Math.max(2, Math.floor(W / 2)), nz = Math.max(2, Math.floor(D / 2));
   const rnd = mulberry((st.seed || 1) * 977 + 13);
   // a porta vem do mapa (o gerador deixa livre a rua em frente a ela)
-  const base = { nx, nz, seed: (st.seed || 1) * 31 + 17, door: Math.max(0, doorIndex(st)) };
+  const base = { nx, nz, seed: (st.seed || 1) * 31 + 17, door: Math.max(0, doorIndex(st)), style: st.style };
   const stacked = (n, ground = 'stone', upper = 'plaster') => Array.from({ length: n || 1 }, (_, i) => (i === 0 ? ground : upper));
   switch (st.type) {
     case 'keep': return { ...base, floors: stacked(st.floors, 'stone', 'stone'), chimneys: 2, vines: 5, windows: 0.9, shutters: true };
@@ -423,6 +438,9 @@ export function villagePlan(st) {
     case 'guardhouse': return { ...base, floors: stacked(st.floors, 'stone', 'stone'), doorStyle: 'flat', thin: true, windows: 0.5 };
     case 'chapel': return { ...base, floors: stacked(st.floors, 'stone', 'stone'), thin: true, windows: 0.8, vines: 3 };
     case 'market': return { ...base, floors: ['plaster'], market: true };
+    // fazenda: celeiros de madeira vermelha e a casa dos fazendeiros
+    case 'barn': return { ...base, floors: ['plaster'], doorStyle: 'flat', windows: 0.3, shutters: true, chimneys: 0 };
+    case 'farmhouse': return { ...base, floors: stacked(st.floors || 1, 'plaster', 'plaster'), doorStyle: 'round', chimneys: 1, vines: 2, shutters: true, windows: 0.7 };
     default: {
       const ground = rnd() < 0.55 ? 'stone' : 'plaster';
       return {

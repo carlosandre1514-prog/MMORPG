@@ -1,10 +1,12 @@
 // Zahrim, a capital do Reino de Sahaar: cidade de torres de barro (os prédios em voxel de assets/voxel) no deserto,
 // em volta de um oásis. Ruas de arenito formam uma grade: a Avenida do Sol (oeste-leste) cruza a Avenida das Palmeiras
-// (norte-sul) na Praça do Oásis; ao leste fica o Palácio do Emir. Os prédios são maciços (sem porta nem interior):
-// os serviços funcionam ao ar livre, em barracas e sob toldos, em volta da praça e da avenida.
+// (norte-sul) na Praça do Oásis; ao leste fica o Palácio do Emir. As torres em voxel são o horizonte da cidade e são maciças;
+// as duas fileiras que dão para a Avenida do Sol são casas de adobe que se pode visitar (porta, sala mobiliada e andar de cima),
+// e os serviços também funcionam ao ar livre, em barracas e sob toldos, em volta da praça e da avenida.
 // As coordenadas dos NPCs (shared/data/npcs.js) foram planejadas junto com este mapa.
 import { T, O, OBJ_INFO } from './tiles.js';
 import { mulberry32, fbm, hash2 } from './rng.js';
+import { modules, doorFront } from './housegeom.js';
 
 // Modelos de torre e a menor largura (em tiles) em que cada um cabe bem
 export const VOXEL_MODELS = {
@@ -42,6 +44,13 @@ export function buildDesertCity(grid, zone) {
   const tower = (x, y, w, h, face, model, extra = {}) => {
     grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.setT(px, py, T.SANDSTONE); grid.pathMask[idx(px, py)] = 0; });
     S.push({ kind: 'house', type: 'voxel', x, y, w, h, face, seed: towerId++, floors: 4, model, ...extra });
+  };
+  // casa de adobe visitável: paredes e telhado das peças da vila em cor de areia, porta voltada para a avenida
+  const house = (x, y, w, h, face, extra = {}) => {
+    grid.rect(x, y, w, h, (px, py) => { grid.setO(px, py, O.BUILDING); grid.setT(px, py, T.SANDSTONE); grid.pathMask[idx(px, py)] = 0; });
+    const st = { kind: 'house', type: 'house', style: 'sand', x, y, w, h, face, seed: towerId++, floors: hash2(x, y, 16) < 0.45 ? 2 : 1, ...extra };
+    st.door = Math.floor(hash2(x, y, 71) * modules(st));
+    S.push(st);
   };
   // quintal sem prédio: areia com palmeiras, cactos e arbustos secos
   const yard = (x, y, w, h) => {
@@ -82,6 +91,21 @@ export function buildDesertCity(grid, zone) {
     }
   };
 
+  // Fileira de casas de adobe (visitáveis), do mesmo jeito que as torres: larguras de 4 a 6, pátios de vez em quando
+  const houseRow = (x0, x1, y, d, face) => {
+    let x = x0;
+    while (x <= x1) {
+      const left = x1 - x + 1;
+      if (left < 4) { yard(x, y, left, d); break; }
+      if (x > x0 && left > 9 && hash2(x, y, 12) < 0.1) { yard(x, y, 3, d); x += 3; continue; }
+      const r = hash2(x, y, 11);
+      let w = r < 0.4 ? 4 : r < 0.8 ? 5 : 6;
+      if (w > left || (left - w > 0 && left - w < 4)) w = Math.min(left, 9);
+      house(x, y, w, d, face);
+      x += w;
+    }
+  };
+
   // ------------------------------------------------------------ chão base: areia com dunas
   grid.rect(0, 0, W, H, (x, y) => grid.setT(x, y, fbm(x * 0.08, y * 0.08, zone.gen.seed, 3) > 0.56 ? T.DUNE : T.SAND));
 
@@ -99,9 +123,10 @@ export function buildDesertCity(grid, zone) {
   const blocks = [[6, 'n', 's'], [21, 'n', 's'], [48, 'n', 's'], [63, 'n', 's']];
   for (const [y0, fa, fb] of blocks) {
     for (const [a, b] of SEG) {
-      row(a, b, y0, 5, fa);
+      // as fileiras que dão para a Avenida do Sol são casas de adobe visitáveis; as outras, torres em voxel
+      (y0 === 48 ? houseRow : row)(a, b, y0, 5, fa);
       lane(a, y0 + 5, b - a + 1, 2);
-      row(a, b, y0 + 7, 5, fb);
+      (y0 === 21 ? houseRow : row)(a, b, y0 + 7, 5, fb);
     }
   }
 
@@ -139,6 +164,15 @@ export function buildDesertCity(grid, zone) {
   // ------------------------------------------------------------ ferraria ao ar livre, na calçada
   obj(74, 35, O.ANVIL); obj(70, 35, O.RACK); obj(75, 33, O.TOOLS);
 
+  // ------------------------------------------------------------ nomes e serviços: a forja de Dahmir e a taverna do oásis
+  const houses = S.filter((st) => st.kind === 'house' && st.type === 'house');
+  // a casa mais próxima de (x, y) entre as da fileira que começa em y
+  const nearest = (x, y) => houses.filter((st) => st.y === y).sort((a, b) => Math.abs(a.x + a.w / 2 - x) - Math.abs(b.x + b.w / 2 - x))[0];
+  const smithy = nearest(72, 28), tavern = nearest(64, 48), bazaar = nearest(40, 28);
+  if (smithy) Object.assign(smithy, { type: 'smithy', label: 'Forja de Dahmir', floors: 1 });
+  if (tavern) Object.assign(tavern, { type: 'tavern', label: 'Taverna do Oásis', floors: 2 });
+  if (bazaar) Object.assign(bazaar, { type: 'alchemy', label: 'Casa das Essências', floors: 2 });
+
   // ------------------------------------------------------------ borda do mapa: palmeiras, cactos e pedras
   const edge = [O.PALM, O.CACTUS, O.ROCK, O.PALM, O.DRYBUSH];
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -146,6 +180,17 @@ export function buildDesertCity(grid, zone) {
     if (d < 2 || (d === 2 && hash2(x, y, 3) < 0.5)) {
       if (grid.pathMask[idx(x, y)] || grid.o(x, y) === O.BUILDING) continue;
       grid.setO(x, y, edge[Math.floor(hash2(x, y, 9) * edge.length)]);
+    }
+  }
+  // a rua em frente a cada porta fica livre de palmeiras, braseiros e barracas
+  for (const st of S) {
+    if (st.kind !== 'house') continue;
+    // (os tiles vizinhos também: uma palmeira ao lado fecharia o trecho de rua e o gerador o encheria de árvores)
+    for (const [fx, fy] of doorFront(st)) {
+      for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const x = fx + dx, y = fy + dy;
+        if (grid.in(x, y) && grid.o(x, y) !== O.BUILDING && OBJ_INFO[grid.o(x, y)].block) grid.setO(x, y, 0);
+      }
     }
   }
   // portais: chão livre ao redor

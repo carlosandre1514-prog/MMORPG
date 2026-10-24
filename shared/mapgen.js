@@ -4,7 +4,8 @@ import { mulberry32, fbm, hash2 } from './rng.js';
 import { NPCS } from './data/npcs.js';
 import { buildCapital } from './citygen.js';
 import { buildDesertCity } from './desertgen.js';
-import { farmLayout } from './farm.js';
+import { farmLayout, FARM_ENTER } from './farm.js';
+import { modules } from './housegeom.js';
 
 class Grid {
   constructor(w, h, base) {
@@ -350,10 +351,16 @@ function applyFeatures(grid, zone, rng) {
         const lock = (x, y) => { if (grid.in(x, y)) grid.lockMask[grid.i(x, y)] = 1; };
         const clear = (x, y) => { if (grid.in(x, y)) { grid.setO(x, y, 0); lock(x, y); } };
         grid.rect(L.yard.x, L.yard.y, L.yard.w, L.yard.h, (x, y) => { if (TILE_INFO[grid.t(x, y)].walk && !grid.pathMask[grid.i(x, y)]) { grid.setT(x, y, T.DIRT); clear(x, y); } });
-        for (const b of L.buildings) {
+        L.buildings.forEach((b, i) => {
           grid.rect(b.x, b.y, b.w, b.h, (x, y) => { grid.setT(x, y, T.DIRT); grid.setO(x, y, O.BUILDING); lock(x, y); });
-          grid.structures.push({ kind: 'farm', model: b.model, x: b.x, y: b.y, w: b.w, h: b.h, face: b.face });
-        }
+          const en = FARM_ENTER[b.model];
+          if (en) {
+            // celeiros e casa da fazenda: casas visitáveis (porta no meio da fachada, interior mobiliado pelo cliente)
+            const st = { kind: 'house', type: en.type, label: en.label, style: en.style, x: b.x, y: b.y, w: b.w, h: b.h, face: b.face, seed: 5200 + i, floors: 1 };
+            st.door = Math.floor((modules(st) - 1) / 2);
+            grid.structures.push(st);
+          } else grid.structures.push({ kind: 'farm', model: b.model, x: b.x, y: b.y, w: b.w, h: b.h, face: b.face });
+        });
         for (const p of L.pens) {
           grid.rect(p.x, p.y, p.w, p.h, (x, y) => {
             const edge = x === p.x || y === p.y || x === p.x + p.w - 1 || y === p.y + p.h - 1;

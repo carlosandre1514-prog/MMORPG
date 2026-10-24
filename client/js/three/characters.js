@@ -19,6 +19,26 @@ const ZOMBIE_BASE = '/brackeys/zombie/';
 
 // Aparências: modelo, armas, variação de cor (matiz em graus, saturação, brilho), escala e brilho emissivo.
 // Mortos-vivos: eyes = cor do brilho dos olhos; rise = sobem do chão ao aparecer; ghost = translúcido.
+// Corpo de adulto sobre o esqueleto atual (cabeçudo, de pernas curtas): cabeça menor, tronco, pernas e braços bem mais longos e
+// ombros um pouco mais largos. Mexe só na escala dos ossos, então todas as animações e as armas nas mãos continuam valendo.
+// Cada osso herda a escala do pai, então os filhos recebem a escala que desfaz o que herdaram.
+export const ADULT = { head: 0.4, torso: 1.2, shoulder: 1.1, legs: 2.7, arms: 1.7, width: 1.0 };
+function adultProportions(model) {
+  const A = ADULT, hy = Math.sqrt(A.torso), hx = Math.sqrt(A.shoulder);
+  model.traverse((o) => {
+    if (!o.isBone) return;
+    switch (o.name.replace(/[._]/g, '').toLowerCase()) {
+      case 'spine': case 'chest': o.scale.set(hx, hy, hx); break;
+      case 'head': o.scale.set(A.head / A.shoulder, A.head / A.torso, A.head / A.shoulder); break;
+      case 'upperarml': case 'upperarmr': o.scale.set(1 / A.shoulder, A.arms / A.torso, 1 / A.shoulder); break;
+      case 'handl': case 'handr': o.scale.set(1, 1 / A.arms, 1); break;
+      case 'upperlegl': case 'upperlegr': o.scale.set(1, A.legs, 1); break;
+      case 'footl': case 'footr': o.scale.set(1, 1 / A.legs, 1); break;
+      default:
+    }
+  });
+}
+
 export const LOOKS = {
   // classes jogáveis
   warrior: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color' },
@@ -211,12 +231,14 @@ class CharacterLibrary {
     return t;
   }
 
-  // Cria uma instância animada de um personagem.
-  create(key) {
+  // Cria uma instância animada de um personagem. opts.adult: corpo de adulto (ver adultProportions)
+  create(key, opts = {}) {
     const look = LOOKS[key];
     if (look.kind === 'zombie') return this.createZombie(key, look);
     const src = this.models[look.model];
     const model = SkeletonUtils.clone(src.scene);
+    const adult = !!opts.adult && !look.kind;
+    if (adult) adultProportions(model);
     const mats = [];
     model.traverse((o) => {
       if (!o.isMesh) return;
@@ -243,10 +265,33 @@ class CharacterLibrary {
     }
     if (look.halo) attachToHead(model, buildHalo(THREE));
     const root = new THREE.Group();
-    const scale = (TARGET_HEIGHT / src.height) * (look.scale || 1);
+    let height = src.height;
+    if (adult) {
+      // o corpo de adulto tem outra altura: mede de novo (uma vez por modelo) para ele continuar com TARGET_HEIGHT e pisar no chão
+      this.adultBox ||= {};
+      const m = this.adultBox[look.model] ||= (() => {
+        model.updateMatrixWorld(true);
+        model.traverse((o) => { if (o.isSkinnedMesh) o.skeleton.update(); }); // as matrizes dos ossos só se atualizam ao desenhar
+        const box = new THREE.Box3().setFromObject(model, true);
+        return { height: box.max.y - box.min.y, min: box.min.y };
+      })();
+      height = m.height;
+      model.position.y = -m.min * (TARGET_HEIGHT / height) * (look.scale || 1);
+    }
+    const scale = (TARGET_HEIGHT / height) * (look.scale || 1);
     model.scale.setScalar(scale);
+    if (adult) model.scale.x = model.scale.z = scale * ADULT.width;
     root.add(model);
-    return new CharacterActor(root, model, mats, key, this.clips, look);
+    return new CharacterActor(root, model, mats, key, adult ? this.adultClips() : this.clips, look);
+  }
+
+  // Animações sem as trilhas de escala dos ossos: elas voltariam todos os ossos para 1 a cada quadro e desfariam o corpo de adulto
+  adultClips() {
+    if (!this._adultClips) {
+      this._adultClips = {};
+      for (const [n, c] of Object.entries(this.clips)) this._adultClips[n] = new THREE.AnimationClip(c.name, c.duration, c.tracks.filter((t) => !t.name.endsWith('.scale')));
+    }
+    return this._adultClips;
   }
 
   createZombie(key, look) {

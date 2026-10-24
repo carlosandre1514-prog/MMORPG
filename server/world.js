@@ -153,11 +153,11 @@ export class World {
   }
 
   // ---------------------------------------------------------------- personagens
-  newCharacter(name, cls, skin, hair) {
+  newCharacter(name, cls, skin, hair, body = 0) {
     const c = CLASSES[cls];
     const town = ZONES.town;
     const ch = {
-      name, cls, skin, hair, level: 1, xp: 0, gold: 25,
+      name, cls, skin, hair, body, level: 1, xp: 0, gold: 25,
       alloc: { str: 0, dex: 0, int: 0, vit: 0 }, points: 0,
       hp: 1, mp: 1, zone: 'town', x: town.spawn.x, y: town.spawn.y,
       inv: newInventory(INV_SIZE), equip: {}, stash: newInventory(STASH_SIZE),
@@ -250,7 +250,7 @@ export class World {
         id: p.id, name: p.name, cls: p.cls, x: p.x, y: p.y, s: p.posSeq, char: {
           level: ch.level, xp: ch.xp, gold: ch.gold, points: ch.points, alloc: ch.alloc, inv: ch.inv, equip: ch.equip,
           stash: ch.stash, quests: ch.quests, visited: ch.visited, altars: ch.altars, flags: ch.flags, title: ch.title, guild: ch.guild,
-          skin: ch.skin, hair: ch.hair, record: ch.record,
+          skin: ch.skin, hair: ch.hair, body: ch.body | 0, record: ch.record,
         },
         hp: Math.round(p.hp), mp: Math.round(p.mp), dead: p.dead,
       },

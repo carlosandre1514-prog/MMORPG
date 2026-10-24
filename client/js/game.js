@@ -204,7 +204,7 @@ export class Game {
     const c = y.char;
     Object.assign(me, {
       level: c.level, xp: c.xp, gold: c.gold, points: c.points, alloc: c.alloc, inv: c.inv, equip: c.equip, stash: c.stash,
-      quests: c.quests, visited: c.visited, altars: c.altars || [], flags: c.flags, title: c.title, guild: c.guild, skin: c.skin, hair: c.hair, record: c.record,
+      quests: c.quests, visited: c.visited, altars: c.altars || [], flags: c.flags, title: c.title, guild: c.guild, skin: c.skin, hair: c.hair, body: c.body | 0, record: c.record,
     });
     this.sent = { x: me.x, y: me.y, d: 0 };
     me.facing = 0;

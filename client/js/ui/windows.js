@@ -17,6 +17,7 @@ import { themeMusic } from '../music.js';
 import { touchUiMode } from '../device.js';
 import { graphicsPanel } from './gfxpanel.js';
 import { charSprites } from '../charsprites.js';
+import { portrait3d } from '../three/portrait.js';
 import { progress, need, isComplete } from '../questlogic.js';
 import { logoMark } from './logo.js';
 import { ico, icoHTML, drawIcon } from './icons.js';
@@ -133,7 +134,9 @@ export const windowsMixin = {
     const ctx = cv.getContext('2d');
     const app = {};
     for (const [slot, it] of Object.entries(me.equip || {})) if (it) app[slot[0]] = it.id;
-    if (charSprites.has(me.cls)) ctx.drawImage(charSprites.portrait(me.cls, 200, 0, 1.9), -20, -10);
+    const adult = me.body ? portrait3d(me.cls, true, 200, 0) : null;
+    if (adult) ctx.drawImage(adult, -20, -10);
+    else if (charSprites.has(me.cls)) ctx.drawImage(charSprites.portrait(me.cls, 200, 0, 1.9), -20, -10);
     else {
       const look = playerLook({ cls: me.cls, sk: me.skin, hr: me.hair, app });
       ctx.setTransform(3.2, 0, 0, 3.2, 80, 185);

@@ -11,6 +11,7 @@ import { drawHumanoid, playerLook, skillIcon } from './sprites.js';
 import { audio } from './audio.js';
 import { charSprites } from './charsprites.js';
 import { characters } from './three/characters.js';
+import { portrait3d } from './three/portrait.js';
 import { medieval } from './three/medieval.js';
 import { setupLandscape } from './orientation.js';
 import { title } from './three/title.js';
@@ -235,6 +236,11 @@ function onChars(m) {
 }
 
 function charPreview(c, size = 120, dir = 0) {
+  // o corpo de adulto não tem retrato pronto: é desenhado ao vivo em 3D
+  if (c.body) {
+    const cv = portrait3d(c.cls, true, size, dir);
+    if (cv) { cv.className = 'char-cv'; cv.style.width = cv.style.height = size + 'px'; return cv; }
+  }
   if (charSprites.has(c.cls)) {
     const cv = charSprites.portrait(c.cls, size, dir, size >= 150 ? 1.05 : 1.35);
     cv.className = 'char-cv';
@@ -248,6 +254,14 @@ function charPreview(c, size = 120, dir = 0) {
   const s = size / 40;
   ctx.setTransform(s * 0.9, 0, 0, s * 0.9, size / 2, size * 0.92);
   drawHumanoid(ctx, 0, 0, { ...look, dir });
+  return cv;
+}
+
+// miniatura de um corpo (padrão ou adulto) na criação: os dois em 3D, para a comparação ser justa
+function bodyThumb(cls, v) {
+  const cv = portrait3d(cls, !!v, 84) || charPreview({ cls, body: v, equip: {} }, 84);
+  cv.className = 'char-cv';
+  cv.style.width = cv.style.height = '84px';
   return cv;
 }
 
@@ -300,7 +314,7 @@ function selectScreen(selectId) {
 
 // ------------------------------------------------------------------ criação de personagem
 function createScreen() {
-  let cls = 'warrior', skin = 1, hair = 0;
+  let cls = 'warrior', skin = 1, hair = 0, body = 0;
   const name = h('input', { class: 'inp', placeholder: 'Nome do personagem', maxlength: 14 });
   const err = errorBox();
   const preview = h('div', { class: 'create-preview' });
@@ -308,14 +322,20 @@ function createScreen() {
   const classBox = h('div', { class: 'class-list' });
   const skinBox = h('div', { class: 'swatches' });
   const hairBox = h('div', { class: 'swatches' });
+  const bodyBox = h('div', { class: 'body-list' });
   let dir = 0;
   const refresh = () => {
-    clear(preview).appendChild(charPreview({ cls, skin, hair, equip: { weapon: { id: CLASSES[cls].startItems[0] }, chest: { id: 'chest_1' } } }, 200, dir));
+    clear(preview).appendChild(charPreview({ cls, skin, hair, body, equip: { weapon: { id: CLASSES[cls].startItems[0] }, chest: { id: 'chest_1' } } }, 200, dir));
+    clear(bodyBox);
+    for (const [v, label] of [[0, 'Padrão'], [1, 'Adulto']]) {
+      bodyBox.appendChild(h('div', { class: 'body-card' + (v === body ? ' sel' : ''), onclick: () => { body = v; refresh(); } },
+        bodyThumb(cls, v), h('div', { class: 'cl-name' }, label)));
+    }
     clear(classBox);
     for (const id of CLASS_LIST) {
       const c = CLASSES[id];
       classBox.appendChild(h('div', { class: 'class-card' + (id === cls ? ' sel' : ''), style: { borderColor: id === cls ? c.color : '' }, onclick: () => { cls = id; refresh(); } },
-        charPreview({ cls: id, skin, hair, equip: { weapon: { id: c.startItems[0] } } }, 64),
+        charPreview({ cls: id, skin, hair, body, equip: { weapon: { id: c.startItems[0] } } }, 64),
         h('div', { class: 'cl-name', style: { color: c.color } }, c.name), h('div', { class: 'cl-role' }, c.role)));
     }
     const c = CLASSES[cls];
@@ -338,7 +358,7 @@ function createScreen() {
   const create = async () => {
     err.textContent = '';
     try {
-      const r = await net.request({ t: 'create', name: name.value.trim(), cls, skin, hair }, (m) => m.t === 'chars' || m.t === 'err');
+      const r = await net.request({ t: 'create', name: name.value.trim(), cls, skin, hair, body }, (m) => m.t === 'chars' || m.t === 'err');
       if (r.t === 'err') err.textContent = r.m;
       else onChars(r);
     } catch (e) { err.textContent = e.message; }
@@ -348,6 +368,7 @@ function createScreen() {
     h('div', { class: 'menu-title relief', 'data-t': 'Criar Portador' }, 'Criar Portador'),
     h('div', { class: 'create-wrap' },
       h('div', { class: 'create-left' }, preview, h('div', { class: 'muted small center' }, 'Clique para girar'),
+        h('div', { class: 'lbl' }, 'Corpo'), bodyBox,
         ...(charSprites.ready ? [] : [h('div', { class: 'lbl' }, 'Pele'), skinBox, h('div', { class: 'lbl' }, 'Cabelo'), hairBox])),
       h('div', { class: 'create-right' }, classBox, info)),
     h('div', { class: 'row center' }, name, h('button', { class: 'btn big', onclick: create }, 'Criar')),

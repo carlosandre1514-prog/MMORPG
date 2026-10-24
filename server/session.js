@@ -106,8 +106,7 @@ export class Session {
         if (db.charByName(name)) return this.err('Já existe um personagem com esse nome.');
         const skin = Math.max(0, Math.min(SKIN_TONES.length - 1, msg.skin | 0));
         const hair = Math.max(0, Math.min(HAIR_COLORS.length - 1, msg.hair | 0));
-        const body = msg.body ? 1 : 0; // 0 = corpo padrão, 1 = corpo de adulto
-        const ch = this.world.newCharacter(name, msg.cls, skin, hair, body);
+        const ch = this.world.newCharacter(name, msg.cls, skin, hair);
         db.addChar(this.account, ch);
         db.save();
         return this.sendChars(ch.id);
@@ -157,7 +156,7 @@ export class Session {
   sendChars(created = null) {
     const db = this.world.db;
     const list = this.account.chars.map((id) => db.getChar(id)).filter(Boolean).map((c) => ({
-      id: c.id, name: c.name, cls: c.cls, level: c.level, zone: c.zone, skin: c.skin, hair: c.hair, body: c.body | 0,
+      id: c.id, name: c.name, cls: c.cls, level: c.level, zone: c.zone, skin: c.skin, hair: c.hair,
       equip: c.equip, title: c.title || null, guild: c.guild || null, last: c.lastSeen,
     }));
     this.send({ t: 'chars', list, max: MAX_CHARS, user: this.account.display || this.account.username, created });

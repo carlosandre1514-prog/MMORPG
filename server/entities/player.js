@@ -101,7 +101,7 @@ export class Player {
   full() {
     const ch = this.char;
     return {
-      id: this.id, k: 'p', nm: this.name, cls: this.cls, lv: ch.level, sk: ch.skin, hr: ch.hair, bd: ch.body | 0,
+      id: this.id, k: 'p', nm: this.name, cls: this.cls, lv: ch.level, sk: ch.skin, hr: ch.hair,
       g: ch.guild || null, ti: ch.title || null, x: this.x, y: this.y, hp: Math.round(this.hp), mhp: this.stats.maxHp,
       app: this.appearance(), pa: this.party ? this.party.id : 0,
     };

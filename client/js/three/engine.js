@@ -272,7 +272,7 @@ export class Renderer3D {
     let a = null;
     if (e.k === 'p') {
       if (!characters.has(e.cls)) return null;
-      a = { kind: 'char', model: characters.create(e.cls, { adult: !!e.bd }) };
+      a = { kind: 'char', model: characters.create(e.cls) };
     } else if (e.k === 'm') {
       const def = MONSTERS[e.m];
       if (characters.has(def.id)) a = { kind: 'char', model: characters.create(def.id) };

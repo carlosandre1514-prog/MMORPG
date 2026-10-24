@@ -14,7 +14,6 @@ import { skillIcon, itemIcon, drawHumanoid, playerLook } from '../sprites.js';
 import { minimapColor } from '../terrain.js';
 import { audio } from '../audio.js';
 import { charSprites } from '../charsprites.js';
-import { portrait3d } from '../three/portrait.js';
 import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
@@ -427,8 +426,6 @@ export class UI {
     g.addColorStop(0, '#3a4a6b'); g.addColorStop(1, '#10141f');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 96, 96);
     const me = this.me;
-    const adult = me.body ? portrait3d(me.cls, true, 96, 0, true) : null;
-    if (adult) { ctx.drawImage(adult, 0, 22); return; }
     if (charSprites.has(me.cls)) {
       // retrato: aproxima o rosto do modelo
       ctx.drawImage(charSprites.portrait(me.cls, 96, 0, 2.6), 0, 22);

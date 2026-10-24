@@ -159,11 +159,6 @@ input { font-family: var(--font); user-select: text; }
 .cl-skills { display: flex; gap: 6px; margin: 8px 0; }
 .cl-skills img { width: 34px; height: 34px; border: 1px solid #555; border-radius: 4px; }
 .lbl { align-self: flex-start; color: var(--muted); font-size: 12px; margin-top: 6px; }
-.body-list { display: flex; gap: 8px; align-self: flex-start; }
-.body-card { border: 1px solid #4a3d28; border-radius: 8px; background: radial-gradient(#2c3550, #10131c); cursor: pointer; padding: 4px 4px 6px; text-align: center; }
-.body-card:hover { border-color: #8a7348; }
-.body-card.sel { border-color: #f1c40f; box-shadow: 0 0 0 1px #f1c40f inset; }
-.body-card .cl-name { font-size: 12px; }
 .swatches { display: flex; gap: 5px; flex-wrap: wrap; align-self: flex-start; }
 .swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #222; cursor: pointer; }
 .swatch.sel { border-color: #fff; box-shadow: 0 0 6px #fff; }

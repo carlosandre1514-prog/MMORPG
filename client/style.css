@@ -973,3 +973,5 @@ body:has(.lg-screen) #music-btn { display: none !important; }
   .menu-panel { padding: 16px 20px; gap: 6px; }
   .menu-panel .logo .aw { width: min(44vw, 220px); }
 }
+
+#durable-warn { position: fixed; left: 8px; right: 8px; top: 8px; z-index: 50; padding: 8px 12px; border-radius: 8px; background: #7a2a14; border: 1px solid #ffb27a; color: #fff3e0; font-size: 13px; text-align: center; pointer-events: none; }

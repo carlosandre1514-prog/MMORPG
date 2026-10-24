@@ -394,6 +394,12 @@ net.onClose = () => {
   document.body.appendChild(ov);
 };
 
+// servidor sem armazenamento permanente: o jogador precisa saber que o progresso pode sumir
+function showDurableWarning() {
+  const el = h('div', { id: 'durable-warn', role: 'alert' }, 'Este servidor ainda não tem armazenamento permanente: contas e personagens podem ser apagados quando ele reiniciar.');
+  document.body.appendChild(el);
+}
+
 async function boot() {
   document.title = GAME_NAME;
   startBackdrop();
@@ -412,6 +418,7 @@ async function boot() {
     status.textContent = 'Conectando...';
     await net.connect();
     const hello = await net.request({ t: 'hello' }, (m) => m.t === 'hello');
+    if (hello.durable === false) showDurableWarning();
     loginScreen(hello);
   } catch (e) {
     show(h('div', { class: 'screen' }, h('div', { class: 'menu-panel' }, h('div', { class: 'logo' }, logoMark()),

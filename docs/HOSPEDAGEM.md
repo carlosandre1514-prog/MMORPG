@@ -37,6 +37,7 @@ o suficiente para um serviço ligado o mês inteiro.
 - Projetos gratuitos do Supabase pausam depois de 1 semana sem uso; como o jogo grava a cada poucos segundos enquanto há
   jogadores, isso só acontece se ninguém jogar por uma semana (basta reativar no painel).
 - Se o servidor reiniciar, até alguns segundos de progresso podem se perder; o resto volta do Supabase.
+- **O personagem some depois de criar a conta?** Sem `SUPABASE_URL` e `SUPABASE_KEY` no Render, o disco é apagado a cada reinício (o plano gratuito dorme sem visitas e reinicia a cada publicação). O login do Firebase continua valendo, mas o personagem, que fica no servidor, desaparece. Com isso faltando, o jogo mostra uma faixa vermelha de aviso na tela inicial e `/status` devolve `"durable": false`.
 - Faça uma cópia do JSON de vez em quando (Table Editor → game_state → coluna `data`).
 - **Nunca** ligue `DEV=1` em produção: libera comandos como `/nivel` e `/ouro` para qualquer jogador.
 

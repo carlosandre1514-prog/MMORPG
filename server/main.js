@@ -23,6 +23,9 @@ export async function startServer(opts = {}) {
   if (remote && (await restoreRemote(dataDir, remote)) && !opts.quiet) console.log('  Estado restaurado do Supabase');
   const db = new Database(dataDir, remote);
   const world = new World(db, { dev, xpRate, quiet: opts.quiet, kingdomGraceMs: opts.kingdomGraceMs });
+  // no Render gratuito o disco é apagado a cada reinício: sem Supabase, contas e personagens somem (ver docs/HOSPEDAGEM.md)
+  world.durable = opts.durable ?? (!!remote || !process.env.RENDER);
+  if (!world.durable) console.warn('  AVISO: servidor no Render sem SUPABASE_URL/SUPABASE_KEY: os personagens serao apagados a cada reinicio.');
   // login pelo Firebase Authentication: confere os tokens do projeto (FIREBASE_PROJECT_ID troca o projeto; opts.firebase = false desliga;
   // FIREBASE_REQUIRE_VERIFIED=1 só deixa entrar com e-mail confirmado; FIREBASE=off desliga, ex.: rede local sem internet)
   world.firebase = opts.firebase === false || ['0', 'off', 'false'].includes(process.env.FIREBASE) ? null : (opts.firebase || createVerifier({ projectId: process.env.FIREBASE_PROJECT_ID || FIREBASE_CONFIG.projectId }));
@@ -41,7 +44,7 @@ export async function startServer(opts = {}) {
   const server = http.createServer((req, res) => {
     if (req.url === '/status') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ online: world.players.size, uptime: Math.round((Date.now() - world.started) / 1000), zones: [...world.zones.keys()] }));
+      res.end(JSON.stringify({ durable: world.durable !== false, online: world.players.size, uptime: Math.round((Date.now() - world.started) / 1000), zones: [...world.zones.keys()] }));
       return;
     }
     if (!serveStatic(req, res)) { res.writeHead(404); res.end(); }

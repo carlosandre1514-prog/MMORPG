@@ -33,9 +33,13 @@ export function setupLandscape() {
   ov.querySelector('button').addEventListener('click', enterLandscape);
   document.body.appendChild(ov);
   // o primeiro toque do jogador liga a tela cheia e a trava (uma vez só; depois o botão de tela cheia e o aviso fazem isso)
-  const first = () => { enterLandscape(); window.removeEventListener('pointerup', first, true); window.removeEventListener('click', first, true); };
+  // tocar num campo de texto não pode entrar em tela cheia: a troca fecha o teclado na hora
+  const first = (e) => {
+    if (e && e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+    enterLandscape(); window.removeEventListener('pointerup', first, true); window.removeEventListener('click', first, true); };
   window.addEventListener('pointerup', first, true);
   window.addEventListener('click', first, true);
-  document.addEventListener('fullscreenchange', lock);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) lock(); });
+  const typing = () => document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+  document.addEventListener('fullscreenchange', () => { if (!typing()) lock(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !typing()) lock(); });
 }

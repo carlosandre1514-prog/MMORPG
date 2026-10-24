@@ -131,3 +131,21 @@ test('mapa-múndi no cliente: abas, miniaturas, névoa e destino da missão', ()
   for (const id of ['swamp', 'catacombs', 'peaks', 'citadel', 'undercroft']) assert.match(eng, new RegExp(`${id}: \\{ day:`));
   assert.match(read('client/js/audio.js'), /swamp:.*\n.*crypt:.*\n.*frost:.*\n.*void:/);
 });
+
+test('servidor no Render sem Supabase avisa o cliente de que os personagens não ficam salvos', async () => {
+  const { startServer } = await import('../server/main.js');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aethra-dur-'));
+  const status = async (srv) => (await fetch(`http://127.0.0.1:${srv.port}/status`)).json();
+  const a = await startServer({ port: 0, dataDir: dir, quiet: true, firebase: false, host: '127.0.0.1', durable: false });
+  const b = await startServer({ port: 0, dataDir: dir, quiet: true, firebase: false, host: '127.0.0.1' });
+  try {
+    assert.equal((await status(a)).durable, false);
+    assert.equal((await status(b)).durable, true);
+  } finally { await a.close(); await b.close(); fs.rmSync(dir, { recursive: true, force: true }); }
+  const main = read('client/js/main.js');
+  assert.match(main, /hello\.durable === false/);
+  assert.match(read('server/session.js'), /durable: this\.world\.durable !== false/);
+  // teclado do celular: a cena de abertura não redimensiona e o primeiro toque num campo não entra em tela cheia
+  assert.match(read('client/js/three/title.js'), /if \(typing && sized && sized\.w === w\) return;/);
+  assert.match(read('client/js/orientation.js'), /closest\('input, textarea, select, \[contenteditable\]'\)/);
+});

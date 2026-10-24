@@ -55,7 +55,7 @@ export class Session {
     const db = this.world.db;
     switch (msg.t) {
       case 'hello':
-        return this.send({ t: 'hello', v: PROTOCOL_VERSION, name: GAME_NAME, online: this.world.players.size, dev: this.world.dev, fb: !!this.world.firebase });
+        return this.send({ t: 'hello', v: PROTOCOL_VERSION, name: GAME_NAME, online: this.world.players.size, dev: this.world.dev, fb: !!this.world.firebase, durable: this.world.durable !== false });
       case 'register': {
         // com o Firebase ligado, contas novas nascem pelo e-mail ou pelo Google; o cadastro por usuário e senha fica só no modo DEV (testes)
         if (this.world.firebase && !this.world.dev) return this.err('Para criar uma conta, use o e-mail ou o Google.');

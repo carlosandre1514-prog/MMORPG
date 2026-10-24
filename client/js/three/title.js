@@ -499,8 +499,14 @@ export const title = {
     const camera = new THREE.PerspectiveCamera(50, 1, 0.3, 700);
     const parts = build(level, scene, camera);
     const state = { x: 0, y: 0, tx: 0, ty: 0, raf: 0, last: 0, t0: performance.now(), canvas, renderer };
+    let sized = null;
     const resize = () => {
       const w = window.innerWidth, h = window.innerHeight;
+      // o teclado do celular encolhe só a altura da janela: redimensionar a cena a cada quadro dessa animação pisca a tela
+      // e tira o foco do campo de texto, então a cena mantém o tamanho enquanto alguém digita
+      const typing = document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+      if (typing && sized && sized.w === w) return;
+      sized = { w, h };
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, level >= 2 ? 1.5 : 1));
       renderer.setSize(w, h, false);
       canvas.style.width = '100%'; canvas.style.height = '100%';

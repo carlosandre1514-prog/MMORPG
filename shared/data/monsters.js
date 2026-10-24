@@ -4,34 +4,34 @@
 export const MONSTERS = {
   // ---------- Campos Verdejantes ----------
   slime: {
-    id: 'slime', name: 'Gosma Verde', lvl: [1, 2], hp: 0.7, dmg: 0.55, def: 0.5,
+    id: 'slime', name: 'Gosma Verde', lvl: [1, 4], hp: 0.7, dmg: 0.55, def: 0.5,
     speed: 1.8, aggro: 0, atkRange: 1.1, atkInterval: 1.8, sprite: 'slime', color: '#58d68d', size: 0.8,
     gold: [1, 3], equipChance: 0.05,
     drops: [{ id: 'mat_slime', chance: 0.5 }, { id: 'pot_hp_1', chance: 0.06 }],
     lore: 'Gelatina animada pela Névoa Cinzenta. Inofensiva sozinha, irritante em bando.',
   },
   slime_red: {
-    id: 'slime_red', name: 'Gosma Rubra', lvl: [2, 3], hp: 0.8, dmg: 0.7, def: 0.6,
+    id: 'slime_red', name: 'Gosma Rubra', lvl: [4, 8], hp: 0.8, dmg: 0.7, def: 0.6,
     speed: 2.0, aggro: 4, atkRange: 1.1, atkInterval: 1.7, sprite: 'slime', color: '#ec7063', size: 0.85,
     gold: [2, 4], equipChance: 0.06,
     drops: [{ id: 'mat_slime', chance: 0.5 }, { id: 'pot_hp_1', chance: 0.08 }],
   },
   wolf: {
-    id: 'wolf', name: 'Lobo Cinzento', lvl: [3, 5], hp: 0.9, dmg: 0.8, def: 0.8,
+    id: 'wolf', name: 'Lobo Cinzento', lvl: [8, 15], hp: 0.9, dmg: 0.8, def: 0.8,
     speed: 3.6, aggro: 5.5, atkRange: 1.3, atkInterval: 1.4, sprite: 'wolf', color: '#85929e', size: 1,
     gold: [2, 6], equipChance: 0.07,
     drops: [{ id: 'mat_pelt', chance: 0.45 }, { id: 'mat_herb', chance: 0.08 }],
     lore: 'Os lobos das colinas ficaram mais ferozes desde que a Névoa chegou. Seus olhos brilham em cinza.',
   },
   boar: {
-    id: 'boar', name: 'Javali Selvagem', lvl: [4, 6], hp: 1.2, dmg: 0.85, def: 1.0,
+    id: 'boar', name: 'Javali Selvagem', lvl: [11, 18], hp: 1.2, dmg: 0.85, def: 1.0,
     speed: 3.0, aggro: 0, atkRange: 1.3, atkInterval: 1.6, sprite: 'boar', color: '#795548', size: 1.05,
     gold: [3, 8], equipChance: 0.08,
     drops: [{ id: 'mat_tusk', chance: 0.45 }, { id: 'mat_herb', chance: 0.1 }],
     abilities: [{ type: 'charge', cd: 9, range: 6, mult: 1.4, delay: 0.7, radius: 1.3 }],
   },
   boar_boss: {
-    id: 'boar_boss', name: 'Presa-de-Ferro', title: 'O Javali Ancião', lvl: [7, 7], hp: 9, dmg: 1.15, def: 1.4,
+    id: 'boar_boss', name: 'Presa-de-Ferro', title: 'O Javali Ancião', lvl: [20, 20], hp: 9, dmg: 1.15, def: 1.4,
     speed: 3.2, aggro: 7, atkRange: 1.8, atkInterval: 1.7, sprite: 'boar', color: '#4e342e', size: 1.9,
     boss: true, respawn: 180, leash: 18, xpMult: 8,
     gold: [40, 80], equipDrops: 2, uniqueDrop: { id: 'u_boar_tusk', chance: 0.3 },
@@ -46,14 +46,14 @@ export const MONSTERS = {
 
   // ---------- Floresta Sussurrante ----------
   goblin: {
-    id: 'goblin', name: 'Goblin Saqueador', lvl: [6, 8], hp: 1.0, dmg: 0.95, def: 0.9,
+    id: 'goblin', name: 'Goblin Saqueador', lvl: [18, 25], hp: 1.0, dmg: 0.95, def: 0.9,
     speed: 3.3, aggro: 6, atkRange: 1.2, atkInterval: 1.3, sprite: 'goblin', color: '#7dcea0', size: 0.85,
     gold: [4, 10], equipChance: 0.09,
     drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'pot_hp_1', chance: 0.08 }],
     questDrops: [{ id: 'q_supplies', chance: 0.5, quest: 'ms7' }],
   },
   goblin_shaman: {
-    id: 'goblin_shaman', name: 'Goblin Xamã', lvl: [7, 9], hp: 0.8, dmg: 1.0, def: 0.7,
+    id: 'goblin_shaman', name: 'Goblin Xamã', lvl: [21, 28], hp: 0.8, dmg: 1.0, def: 0.7,
     speed: 3.0, aggro: 7, atkRange: 6, atkInterval: 2.0, proj: 'shadow', sprite: 'goblin_shaman', color: '#52be80', size: 0.85,
     gold: [5, 12], equipChance: 0.1,
     drops: [{ id: 'mat_cloth', chance: 0.3 }, { id: 'mat_herb', chance: 0.25 }, { id: 'pot_mp_1', chance: 0.1 }],
@@ -61,14 +61,14 @@ export const MONSTERS = {
     abilities: [{ type: 'healAlly', cd: 8, radius: 7, pct: 0.25 }],
   },
   spider: {
-    id: 'spider', name: 'Aranha Tecelã', lvl: [8, 10], hp: 1.0, dmg: 1.0, def: 0.9,
+    id: 'spider', name: 'Aranha Tecelã', lvl: [25, 32], hp: 1.0, dmg: 1.0, def: 0.9,
     speed: 3.6, aggro: 5, atkRange: 1.3, atkInterval: 1.4, sprite: 'spider', color: '#6c3483', size: 1,
     gold: [5, 12], equipChance: 0.09,
     drops: [{ id: 'mat_silk', chance: 0.5 }, { id: 'mat_herb', chance: 0.1 }],
     abilities: [{ type: 'poisonHit', chance: 0.3, dps: 0.25, dur: 4 }],
   },
   ent: {
-    id: 'ent', name: 'Ent Corrompido', lvl: [10, 12], hp: 2.0, dmg: 1.2, def: 1.3,
+    id: 'ent', name: 'Ent Corrompido', lvl: [32, 39], hp: 2.0, dmg: 1.2, def: 1.3,
     speed: 2.0, aggro: 4, atkRange: 1.8, atkInterval: 2.0, sprite: 'ent', color: '#5d4037', size: 1.6,
     gold: [8, 18], equipChance: 0.14,
     drops: [{ id: 'mat_bark', chance: 0.55 }, { id: 'mat_herb', chance: 0.3 }],
@@ -76,12 +76,12 @@ export const MONSTERS = {
     lore: 'Antigos protetores da floresta. A Névoa apodreceu suas raízes e suas mentes.',
   },
   spiderling: {
-    id: 'spiderling', name: 'Filhote de Tecelã', lvl: [11, 11], hp: 0.35, dmg: 0.6, def: 0.5,
+    id: 'spiderling', name: 'Filhote de Tecelã', lvl: [35, 35], hp: 0.35, dmg: 0.6, def: 0.5,
     speed: 4.0, aggro: 15, atkRange: 1.1, atkInterval: 1.1, sprite: 'spider', color: '#a569bd', size: 0.55,
     gold: [0, 1], equipChance: 0, summon: true, xpMult: 0.3, drops: [],
   },
   vexara: {
-    id: 'vexara', name: "Vex'ara", title: 'A Rainha Tecelã', lvl: [13, 13], hp: 12, dmg: 1.2, def: 1.3,
+    id: 'vexara', name: "Vex'ara", title: 'A Rainha Tecelã', lvl: [40, 40], hp: 12, dmg: 1.2, def: 1.3,
     speed: 3.0, aggro: 8, atkRange: 2.0, atkInterval: 1.6, sprite: 'spider_queen', color: '#4a235a', size: 2.4,
     boss: true, respawn: 240, leash: 20, xpMult: 10,
     gold: [100, 180], equipDrops: 2, uniqueDrop: { id: 'u_vexara_crown', chance: 0.3 },
@@ -98,27 +98,27 @@ export const MONSTERS = {
 
   // ---------- Minas de Ferro Negro ----------
   bat: {
-    id: 'bat', name: 'Morcego das Cavernas', lvl: [12, 13], hp: 0.7, dmg: 0.9, def: 0.6,
+    id: 'bat', name: 'Morcego das Cavernas', lvl: [39, 42], hp: 0.7, dmg: 0.9, def: 0.6,
     speed: 4.4, aggro: 7, atkRange: 1.2, atkInterval: 1.2, sprite: 'bat', color: '#5d6d7e', size: 0.8, flying: true,
     gold: [6, 14], equipChance: 0.08,
     drops: [{ id: 'mat_wing', chance: 0.45 }],
   },
   skeleton: {
-    id: 'skeleton', name: 'Esqueleto Mineiro', lvl: [13, 15], hp: 1.1, dmg: 1.0, def: 1.1,
+    id: 'skeleton', name: 'Esqueleto Mineiro', lvl: [42, 49], hp: 1.1, dmg: 1.0, def: 1.1,
     speed: 3.0, aggro: 6, atkRange: 1.4, atkInterval: 1.5, sprite: 'skeleton', color: '#f2f3f4', size: 1, undead: true,
     gold: [8, 18], equipChance: 0.1,
     drops: [{ id: 'mat_bone', chance: 0.45 }, { id: 'mat_ore', chance: 0.1 }],
     questDrops: [{ id: 'q_miner_tag', chance: 0.45, quest: 'ms12' }],
   },
   skeleton_archer: {
-    id: 'skeleton_archer', name: 'Esqueleto Arqueiro', lvl: [14, 16], hp: 0.85, dmg: 1.0, def: 0.9,
+    id: 'skeleton_archer', name: 'Esqueleto Arqueiro', lvl: [45, 52], hp: 0.85, dmg: 1.0, def: 0.9,
     speed: 2.8, aggro: 8, atkRange: 7, atkInterval: 1.9, proj: 'arrow', sprite: 'skeleton_archer', color: '#e5e7e9', size: 1, undead: true,
     gold: [8, 18], equipChance: 0.1,
     drops: [{ id: 'mat_bone', chance: 0.4 }],
     questDrops: [{ id: 'q_miner_tag', chance: 0.4, quest: 'ms12' }],
   },
   skeleton_guard: {
-    id: 'skeleton_guard', name: 'Guarda Esquelético', lvl: [16, 18], hp: 1.6, dmg: 1.15, def: 1.5,
+    id: 'skeleton_guard', name: 'Guarda Esquelético', lvl: [52, 59], hp: 1.6, dmg: 1.15, def: 1.5,
     speed: 2.7, aggro: 6, atkRange: 1.5, atkInterval: 1.7, sprite: 'skeleton', color: '#d5d8dc', size: 1.15, undead: true,
     gold: [12, 24], equipChance: 0.15,
     drops: [{ id: 'mat_bone', chance: 0.55 }, { id: 'mat_ore', chance: 0.2 }, { id: 'enh_stone', chance: 0.02 }],
@@ -127,14 +127,14 @@ export const MONSTERS = {
     lore: 'Os guardas da antiga guarnição anã ainda vigiam o caminho até o Coração da Montanha, escudo erguido.',
   },
   golem: {
-    id: 'golem', name: 'Golem de Pedra', lvl: [16, 17], hp: 2.1, dmg: 1.25, def: 2.0,
+    id: 'golem', name: 'Golem de Pedra', lvl: [52, 56], hp: 2.1, dmg: 1.25, def: 2.0,
     speed: 2.1, aggro: 4, atkRange: 1.8, atkInterval: 2.1, sprite: 'golem', color: '#7f8c8d', size: 1.5,
     gold: [12, 25], equipChance: 0.14,
     drops: [{ id: 'mat_ore', chance: 0.6, qty: [1, 2] }, { id: 'mat_crystal', chance: 0.25 }],
     abilities: [{ type: 'stomp', cd: 12, radius: 2.5, delay: 1.2, mult: 1.3, stun: 0.8 }],
   },
   kragmor: {
-    id: 'kragmor', name: 'Kragmor', title: 'O Coração da Montanha', lvl: [19, 19], hp: 12, dmg: 1.3, def: 1.6,
+    id: 'kragmor', name: 'Kragmor', title: 'O Coração da Montanha', lvl: [60, 60], hp: 12, dmg: 1.3, def: 1.6,
     speed: 2.4, aggro: 8, atkRange: 2.4, atkInterval: 2.0, sprite: 'golem_boss', color: '#566573', size: 2.8,
     boss: true, respawn: 240, leash: 20, xpMult: 12,
     gold: [200, 350], equipDrops: 3, uniqueDrop: { id: 'u_kragmor_heart', chance: 0.3 },
@@ -151,7 +151,7 @@ export const MONSTERS = {
 
   // ---------- Ruínas de Cinza ----------
   cultist: {
-    id: 'cultist', name: 'Cultista Velado', lvl: [18, 20], hp: 1.0, dmg: 1.1, def: 1.0,
+    id: 'cultist', name: 'Cultista Velado', lvl: [59, 66], hp: 1.0, dmg: 1.1, def: 1.0,
     speed: 3.0, aggro: 7, atkRange: 6, atkInterval: 1.9, proj: 'shadow', sprite: 'cultist', color: '#4a235a', size: 1, voidborn: true,
     gold: [12, 25], equipChance: 0.12,
     drops: [{ id: 'mat_essence', chance: 0.3 }, { id: 'pot_mp_2', chance: 0.1 }],
@@ -159,14 +159,14 @@ export const MONSTERS = {
     abilities: [{ type: 'pools', cd: 12, radius: 1.6, delay: 1.4, mult: 1.2, style: 'void' }],
   },
   zombie: {
-    id: 'zombie', name: 'Zumbi das Cinzas', lvl: [19, 21], hp: 1.5, dmg: 1.05, def: 1.0,
+    id: 'zombie', name: 'Zumbi das Cinzas', lvl: [62, 69], hp: 1.5, dmg: 1.05, def: 1.0,
     speed: 2.4, aggro: 5, atkRange: 1.5, atkInterval: 1.9, sprite: 'skeleton', color: '#7d8f69', size: 1.15, undead: true,
     gold: [14, 28], equipChance: 0.12,
     drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'mat_bone', chance: 0.3 }, { id: 'mat_essence', chance: 0.15 }],
     lore: 'Os soldados de Lúmen que a Névoa não deixou descansar. Arrastam-se pelas ruínas sem lembrar por que lutavam.',
   },
   zombie_brute: {
-    id: 'zombie_brute', name: 'Brutamontes Putrefato', lvl: [22, 24], hp: 2.5, dmg: 1.3, def: 1.4,
+    id: 'zombie_brute', name: 'Brutamontes Putrefato', lvl: [73, 80], hp: 2.5, dmg: 1.3, def: 1.4,
     speed: 2.0, aggro: 4, atkRange: 1.9, atkInterval: 2.2, sprite: 'skeleton', color: '#8a5a44', size: 1.45, undead: true,
     gold: [22, 44], equipChance: 0.16,
     drops: [{ id: 'mat_ash', chance: 0.4 }, { id: 'mat_essence', chance: 0.25 }, { id: 'enh_stone', chance: 0.03 }],
@@ -174,21 +174,21 @@ export const MONSTERS = {
     lore: 'Um guarda de Lúmen que a Névoa inchou até virar uma muralha de carne podre. Cada passo faz o chão tremer.',
   },
   wraith: {
-    id: 'wraith', name: 'Espectro Cinzento', lvl: [20, 22], hp: 1.1, dmg: 1.1, def: 0.9,
+    id: 'wraith', name: 'Espectro Cinzento', lvl: [66, 73], hp: 1.1, dmg: 1.1, def: 0.9,
     speed: 3.4, aggro: 6, atkRange: 1.4, atkInterval: 1.5, sprite: 'wraith', color: '#aab7b8', size: 1.1, undead: true, flying: true,
     gold: [14, 28], equipChance: 0.12,
     drops: [{ id: 'mat_essence', chance: 0.4 }],
     abilities: [{ type: 'drain', pct: 0.5 }],
   },
   ash_knight: {
-    id: 'ash_knight', name: 'Cavaleiro das Cinzas', lvl: [22, 24], hp: 1.7, dmg: 1.3, def: 1.6,
+    id: 'ash_knight', name: 'Cavaleiro das Cinzas', lvl: [73, 80], hp: 1.7, dmg: 1.3, def: 1.6,
     speed: 2.8, aggro: 6, atkRange: 1.8, atkInterval: 1.8, sprite: 'ash_knight', color: '#2c3e50', size: 1.3, voidborn: true,
     gold: [20, 40], equipChance: 0.16,
     drops: [{ id: 'mat_ash', chance: 0.5 }, { id: 'mat_essence', chance: 0.15 }, { id: 'enh_stone', chance: 0.03 }],
     abilities: [{ type: 'stomp', cd: 9, radius: 2.4, delay: 1.0, mult: 1.6, name: 'Golpe Giratório', burn: 0.15, burnDur: 3 }],
   },
   morvath: {
-    id: 'morvath', name: 'Morvath', title: 'O Rei Cinzento', lvl: [26, 26], hp: 20, dmg: 1.35, def: 1.5,
+    id: 'morvath', name: 'Morvath', title: 'O Rei Cinzento', lvl: [84, 84], hp: 20, dmg: 1.35, def: 1.5,
     speed: 3.0, aggro: 10, atkRange: 7, atkInterval: 2.0, proj: 'ash', sprite: 'morvath', color: '#5d6d7e', size: 2.4,
     boss: true, respawn: 300, leash: 24, xpMult: 16, voidborn: true, flying: true,
     gold: [600, 1000], equipDrops: 4, uniqueDrop: { id: 'u_ashen_crown', chance: 0.3 },
@@ -209,7 +209,7 @@ export const MONSTERS = {
 
   // ---------- Reino de Sahaar: Dunas Ardentes ----------
   scorpion: {
-    id: 'scorpion', name: 'Escorpião Dourado', lvl: [24, 26], hp: 1.4, dmg: 1.25, def: 1.3,
+    id: 'scorpion', name: 'Escorpião Dourado', lvl: [80, 86], hp: 1.4, dmg: 1.25, def: 1.3,
     speed: 3.3, aggro: 6, atkRange: 1.5, atkInterval: 1.5, sprite: 'scorpion', color: '#c98b3a', size: 1.1,
     gold: [18, 36], equipChance: 0.13,
     drops: [{ id: 'mat_venom', chance: 0.4 }, { id: 'mat_chitin', chance: 0.35 }],
@@ -218,7 +218,7 @@ export const MONSTERS = {
     lore: 'Escorpiões do tamanho de lobos que cavam ninhos sob as dunas. A carapaça brilha como ouro velho.',
   },
   sand_bandit: {
-    id: 'sand_bandit', name: 'Bandido das Dunas', lvl: [25, 27], hp: 1.5, dmg: 1.3, def: 1.2,
+    id: 'sand_bandit', name: 'Bandido das Dunas', lvl: [83, 90], hp: 1.5, dmg: 1.3, def: 1.2,
     speed: 3.4, aggro: 7, atkRange: 1.4, atkInterval: 1.4, sprite: 'goblin', color: '#c27c3a', size: 1,
     gold: [22, 44], equipChance: 0.15,
     drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'pot_hp_3', chance: 0.1 }, { id: 'enh_stone', chance: 0.03 }],
@@ -226,21 +226,21 @@ export const MONSTERS = {
     lore: 'Saqueadores que atacam as caravanas entre as Ruínas e Zahrim. Conhecem cada poço do deserto.',
   },
   dune_sorcerer: {
-    id: 'dune_sorcerer', name: 'Feiticeiro das Dunas', lvl: [26, 28], hp: 1.1, dmg: 1.35, def: 1.0,
+    id: 'dune_sorcerer', name: 'Feiticeiro das Dunas', lvl: [86, 93], hp: 1.1, dmg: 1.35, def: 1.0,
     speed: 3.0, aggro: 8, atkRange: 7, atkInterval: 2.0, proj: 'fire', sprite: 'goblin_shaman', color: '#e67e22', size: 1,
     gold: [26, 50], equipChance: 0.15,
     drops: [{ id: 'mat_essence', chance: 0.3 }, { id: 'pot_mp_3', chance: 0.12 }, { id: 'mat_ash', chance: 0.2 }],
     abilities: [{ type: 'pools', cd: 11, radius: 1.8, delay: 1.4, mult: 1.2, burn: 0.12, burnDur: 3, style: 'fire', name: 'Chamas do Deserto' }],
   },
   sand_golem: {
-    id: 'sand_golem', name: 'Golem de Arenito', lvl: [27, 28], hp: 2.6, dmg: 1.4, def: 2.0,
+    id: 'sand_golem', name: 'Golem de Arenito', lvl: [90, 93], hp: 2.6, dmg: 1.4, def: 2.0,
     speed: 2.1, aggro: 4, atkRange: 1.9, atkInterval: 2.2, sprite: 'golem', color: '#c9a56a', size: 1.7,
     gold: [28, 56], equipChance: 0.16,
     drops: [{ id: 'mat_crystal', chance: 0.3 }, { id: 'mat_ore', chance: 0.4, qty: [1, 2] }, { id: 'enh_stone', chance: 0.04 }],
     abilities: [{ type: 'stomp', cd: 11, radius: 2.8, delay: 1.2, mult: 1.4, stun: 0.8, name: 'Pisada de Arenito' }],
   },
   scorpion_queen: {
-    id: 'scorpion_queen', name: 'Skorvax', title: 'A Rainha das Areias', lvl: [28, 28], hp: 16, dmg: 1.4, def: 1.7,
+    id: 'scorpion_queen', name: 'Skorvax', title: 'A Rainha das Areias', lvl: [92, 92], hp: 16, dmg: 1.4, def: 1.7,
     speed: 3.4, aggro: 9, atkRange: 2.2, atkInterval: 1.8, sprite: 'scorpion_boss', color: '#a04000', size: 2.7,
     boss: true, respawn: 300, leash: 22, xpMult: 14,
     gold: [500, 800], equipDrops: 3, uniqueDrop: { id: 'u_scorpion_sting', chance: 0.3 },
@@ -258,7 +258,7 @@ export const MONSTERS = {
 
   // ---------- Reino de Sahaar: Tumbas dos Reis-Sol ----------
   mummy: {
-    id: 'mummy', name: 'Múmia Real', lvl: [28, 29], hp: 2.0, dmg: 1.4, def: 1.5,
+    id: 'mummy', name: 'Múmia Real', lvl: [91, 95], hp: 2.0, dmg: 1.4, def: 1.5,
     speed: 2.3, aggro: 5, atkRange: 1.5, atkInterval: 1.9, sprite: 'skeleton', color: '#d9c9a0', size: 1.2, undead: true,
     gold: [30, 58], equipChance: 0.16,
     drops: [{ id: 'mat_linen', chance: 0.45 }, { id: 'mat_essence', chance: 0.2 }, { id: 'mat_scarab', chance: 0.06 }],
@@ -267,7 +267,7 @@ export const MONSTERS = {
     lore: 'Servos embalsamados dos reis-sol. A resina que os preserva também os faz queimar devagar por dentro.',
   },
   tomb_guard: {
-    id: 'tomb_guard', name: 'Guardião Dourado', lvl: [29, 30], hp: 2.4, dmg: 1.5, def: 2.0,
+    id: 'tomb_guard', name: 'Guardião Dourado', lvl: [94, 97], hp: 2.4, dmg: 1.5, def: 2.0,
     speed: 2.7, aggro: 6, atkRange: 1.6, atkInterval: 1.8, sprite: 'skeleton', color: '#f4d03f', size: 1.2, undead: true,
     gold: [34, 64], equipChance: 0.18,
     drops: [{ id: 'mat_bone', chance: 0.5 }, { id: 'mat_scarab', chance: 0.1 }, { id: 'enh_stone', chance: 0.05 }],
@@ -276,7 +276,7 @@ export const MONSTERS = {
     lore: 'Soldados de elite sepultados em ouro. Juraram guardar o sono do rei enquanto houvesse sol.',
   },
   sun_king: {
-    id: 'sun_king', name: 'Amun-Kheb', title: 'O Rei-Sol', lvl: [30, 30], hp: 26, dmg: 1.5, def: 1.8,
+    id: 'sun_king', name: 'Amun-Kheb', title: 'O Rei-Sol', lvl: [98, 98], hp: 26, dmg: 1.5, def: 1.8,
     speed: 3.0, aggro: 10, atkRange: 7, atkInterval: 2.0, proj: 'fire', sprite: 'morvath', color: '#f4d03f', size: 2.3,
     boss: true, respawn: 360, leash: 24, xpMult: 18, flying: true, undead: true,
     gold: [900, 1400], equipDrops: 4, uniqueDrop: { id: 'u_sun_crown', chance: 0.3 }, legendWeapon: 0.3,
@@ -296,7 +296,7 @@ export const MONSTERS = {
 
   // ---------- Pântano das Brumas ----------
   bog_toad: {
-    id: 'bog_toad', name: 'Sapo-Boi do Brejo', lvl: [21, 23], hp: 1.6, dmg: 1.2, def: 1.1,
+    id: 'bog_toad', name: 'Sapo-Boi do Brejo', lvl: [69, 76], hp: 1.6, dmg: 1.2, def: 1.1,
     speed: 3.0, aggro: 5, atkRange: 1.5, atkInterval: 1.7, sprite: 'toad', color: '#5f8a3c', size: 1.2,
     gold: [20, 40], equipChance: 0.13,
     drops: [{ id: 'mat_toadskin', chance: 0.45 }, { id: 'mat_herb', chance: 0.15 }, { id: 'pot_hp_3', chance: 0.06 }],
@@ -305,12 +305,12 @@ export const MONSTERS = {
     lore: 'Sapos do tamanho de bois que se alimentam de tudo que cai na água. A Névoa engordou o brejo e eles acompanharam.',
   },
   toadling: {
-    id: 'toadling', name: 'Girino Gigante', lvl: [24, 24], hp: 0.35, dmg: 0.6, def: 0.5,
+    id: 'toadling', name: 'Girino Gigante', lvl: [80, 80], hp: 0.35, dmg: 0.6, def: 0.5,
     speed: 4.0, aggro: 15, atkRange: 1.1, atkInterval: 1.1, sprite: 'toad', color: '#8bbf5a', size: 0.6,
     gold: [0, 1], equipChance: 0, summon: true, xpMult: 0.3, drops: [],
   },
   wisp: {
-    id: 'wisp', name: 'Fogo-Fátuo', lvl: [22, 24], hp: 0.8, dmg: 1.25, def: 0.6,
+    id: 'wisp', name: 'Fogo-Fátuo', lvl: [73, 80], hp: 0.8, dmg: 1.25, def: 0.6,
     speed: 3.6, aggro: 7, atkRange: 6, atkInterval: 2.0, proj: 'arcane', sprite: 'wisp', color: '#7fffd4', size: 0.9, flying: true, voidborn: true,
     gold: [22, 42], equipChance: 0.1,
     drops: [{ id: 'mat_wisp', chance: 0.4 }, { id: 'pot_mp_3', chance: 0.1 }],
@@ -319,7 +319,7 @@ export const MONSTERS = {
     lore: 'As luzes verdes que atraem os viajantes para o fundo. Dizem que cada uma é a última lanterna de alguém que se afogou.',
   },
   bog_witch: {
-    id: 'bog_witch', name: 'Bruxa do Brejo', lvl: [23, 25], hp: 1.3, dmg: 1.35, def: 1.0,
+    id: 'bog_witch', name: 'Bruxa do Brejo', lvl: [76, 83], hp: 1.3, dmg: 1.35, def: 1.0,
     speed: 3.0, aggro: 8, atkRange: 7, atkInterval: 2.0, proj: 'poison', sprite: 'goblin_shaman', color: '#6fa84a', size: 1,
     gold: [26, 50], equipChance: 0.15,
     drops: [{ id: 'mat_essence', chance: 0.25 }, { id: 'mat_herb', chance: 0.3 }, { id: 'pot_mp_3', chance: 0.12 }],
@@ -331,7 +331,7 @@ export const MONSTERS = {
     lore: 'Mulheres que fugiram para o brejo quando a Névoa chegou e aprenderam com ela. A choupana de cada uma tem uma panela que nunca esfria.',
   },
   drowned: {
-    id: 'drowned', name: 'Afogado', lvl: [22, 24], hp: 1.8, dmg: 1.2, def: 1.1,
+    id: 'drowned', name: 'Afogado', lvl: [73, 80], hp: 1.8, dmg: 1.2, def: 1.1,
     speed: 2.4, aggro: 5, atkRange: 1.5, atkInterval: 1.9, sprite: 'skeleton', color: '#6fa8a0', size: 1.1, undead: true,
     gold: [20, 40], equipChance: 0.13,
     drops: [{ id: 'mat_cloth', chance: 0.4 }, { id: 'mat_bone', chance: 0.3 }, { id: 'mat_essence', chance: 0.12 }],
@@ -340,7 +340,7 @@ export const MONSTERS = {
     lore: 'Viajantes que seguiram as luzes. Levantam do lodo com os bolsos ainda cheios do que levaram para a viagem.',
   },
   nhaga: {
-    id: 'nhaga', name: 'Nhaga', title: 'A Mãe-do-Brejo', lvl: [25, 25], hp: 17, dmg: 1.35, def: 1.5,
+    id: 'nhaga', name: 'Nhaga', title: 'A Mãe-do-Brejo', lvl: [80, 80], hp: 17, dmg: 1.35, def: 1.5,
     speed: 3.0, aggro: 9, atkRange: 2.4, atkInterval: 1.9, sprite: 'toad', color: '#3f6b2c', size: 2.5,
     boss: true, respawn: 300, leash: 22, xpMult: 14,
     gold: [500, 800], equipDrops: 3, uniqueDrop: { id: 'u_nhaga_eye', chance: 0.3 },
@@ -358,7 +358,7 @@ export const MONSTERS = {
 
   // ---------- Catacumbas Afogadas ----------
   drowned_skeleton: {
-    id: 'drowned_skeleton', name: 'Esqueleto Afogado', lvl: [24, 26], hp: 1.5, dmg: 1.3, def: 1.3,
+    id: 'drowned_skeleton', name: 'Esqueleto Afogado', lvl: [80, 86], hp: 1.5, dmg: 1.3, def: 1.3,
     speed: 3.0, aggro: 6, atkRange: 1.4, atkInterval: 1.5, sprite: 'skeleton', color: '#8fd8cc', size: 1.1, undead: true,
     gold: [26, 50], equipChance: 0.14,
     drops: [{ id: 'mat_bone', chance: 0.5 }, { id: 'mat_gravedust', chance: 0.25 }],
@@ -367,7 +367,7 @@ export const MONSTERS = {
     lore: 'Cavaleiros da antiga Ordem. A água da cripta preservou os ossos e as insígnias, mas apagou todos os nomes.',
   },
   ghoul: {
-    id: 'ghoul', name: 'Carniçal', lvl: [25, 27], hp: 1.7, dmg: 1.4, def: 1.1,
+    id: 'ghoul', name: 'Carniçal', lvl: [83, 90], hp: 1.7, dmg: 1.4, def: 1.1,
     speed: 3.3, aggro: 6, atkRange: 1.5, atkInterval: 1.5, sprite: 'skeleton', color: '#c9c1a3', size: 1.1, undead: true,
     gold: [28, 54], equipChance: 0.15,
     drops: [{ id: 'mat_gravedust', chance: 0.4 }, { id: 'mat_essence', chance: 0.15 }, { id: 'mat_linen', chance: 0.2 }],
@@ -376,7 +376,7 @@ export const MONSTERS = {
     lore: 'O que sobrou dos que tentaram roubar as criptas. Rápidos, famintos e sempre em bando.',
   },
   bone_priest: {
-    id: 'bone_priest', name: 'Sacerdote Ossudo', lvl: [25, 27], hp: 1.2, dmg: 1.4, def: 1.0,
+    id: 'bone_priest', name: 'Sacerdote Ossudo', lvl: [83, 90], hp: 1.2, dmg: 1.4, def: 1.0,
     speed: 2.8, aggro: 8, atkRange: 7, atkInterval: 2.0, proj: 'shadow', sprite: 'wraith', color: '#9b7fd1', size: 1.1, undead: true,
     gold: [30, 56], equipChance: 0.16,
     drops: [{ id: 'mat_gravedust', chance: 0.3 }, { id: 'mat_essence', chance: 0.3 }, { id: 'pot_mp_3', chance: 0.12 }],
@@ -388,7 +388,7 @@ export const MONSTERS = {
     lore: 'Sacerdotes da Ordem que continuaram os ritos depois da morte. Ainda cantam os mesmos hinos, agora para os mortos errados.',
   },
   crypt_warden: {
-    id: 'crypt_warden', name: 'Guardião da Cripta', lvl: [26, 27], hp: 2.6, dmg: 1.45, def: 2.0,
+    id: 'crypt_warden', name: 'Guardião da Cripta', lvl: [86, 90], hp: 2.6, dmg: 1.45, def: 2.0,
     speed: 2.6, aggro: 6, atkRange: 1.7, atkInterval: 1.8, sprite: 'skeleton', color: '#7fb8b0', size: 1.3, undead: true,
     gold: [34, 64], equipChance: 0.18,
     drops: [{ id: 'mat_bone', chance: 0.5 }, { id: 'mat_gravedust', chance: 0.35 }, { id: 'enh_stone', chance: 0.05 }],
@@ -400,7 +400,7 @@ export const MONSTERS = {
     lore: 'Os últimos guardas das criptas. Juraram não deixar ninguém passar, nem os vivos, nem os que querem sair.',
   },
   valdric: {
-    id: 'valdric', name: 'Valdric', title: 'O Rei Afogado', lvl: [27, 27], hp: 22, dmg: 1.45, def: 1.7,
+    id: 'valdric', name: 'Valdric', title: 'O Rei Afogado', lvl: [90, 90], hp: 22, dmg: 1.45, def: 1.7,
     speed: 3.0, aggro: 10, atkRange: 2.2, atkInterval: 1.9, sprite: 'skeleton', color: '#8fd8cc', size: 1.7,
     boss: true, respawn: 330, leash: 24, xpMult: 16, undead: true,
     gold: [700, 1100], equipDrops: 4, uniqueDrop: { id: 'u_valdric_crown', chance: 0.3 }, legendWeapon: 0.3,
@@ -419,7 +419,7 @@ export const MONSTERS = {
 
   // ---------- Picos Gelados ----------
   frost_wolf: {
-    id: 'frost_wolf', name: 'Lobo-de-Gelo', lvl: [22, 24], hp: 1.3, dmg: 1.25, def: 1.0,
+    id: 'frost_wolf', name: 'Lobo-de-Gelo', lvl: [73, 80], hp: 1.3, dmg: 1.25, def: 1.0,
     speed: 4.0, aggro: 6.5, atkRange: 1.4, atkInterval: 1.3, sprite: 'wolf', color: '#d6eaf8', size: 1.2,
     gold: [20, 40], equipChance: 0.13,
     drops: [{ id: 'mat_frostpelt', chance: 0.45 }, { id: 'mat_frost', chance: 0.1 }],
@@ -428,12 +428,12 @@ export const MONSTERS = {
     lore: 'Lobos brancos que caçam em silêncio. Não uivam: o frio faz isso por eles.',
   },
   snow_pup: {
-    id: 'snow_pup', name: 'Filhote da Matilha', lvl: [24, 24], hp: 0.35, dmg: 0.6, def: 0.5,
+    id: 'snow_pup', name: 'Filhote da Matilha', lvl: [80, 80], hp: 0.35, dmg: 0.6, def: 0.5,
     speed: 4.4, aggro: 15, atkRange: 1.1, atkInterval: 1.1, sprite: 'wolf', color: '#eaf2f8', size: 0.7,
     gold: [0, 1], equipChance: 0, summon: true, xpMult: 0.3, drops: [],
   },
   yeti: {
-    id: 'yeti', name: 'Yeti', lvl: [23, 25], hp: 2.5, dmg: 1.35, def: 1.4,
+    id: 'yeti', name: 'Yeti', lvl: [76, 83], hp: 2.5, dmg: 1.35, def: 1.4,
     speed: 2.8, aggro: 5, atkRange: 1.9, atkInterval: 2.0, sprite: 'yeti', color: '#eaf2f8', size: 1.7,
     gold: [28, 54], equipChance: 0.15,
     drops: [{ id: 'mat_frostpelt', chance: 0.55 }, { id: 'mat_frost', chance: 0.15 }, { id: 'pot_hp_4', chance: 0.06 }],
@@ -442,7 +442,7 @@ export const MONSTERS = {
     lore: 'Os gigantes das nevascas. Antes eram só lenda de caçador; agora há um em cada desfiladeiro.',
   },
   frost_raven: {
-    id: 'frost_raven', name: 'Corvo de Geada', lvl: [22, 24], hp: 0.8, dmg: 1.2, def: 0.7,
+    id: 'frost_raven', name: 'Corvo de Geada', lvl: [73, 80], hp: 0.8, dmg: 1.2, def: 0.7,
     speed: 4.4, aggro: 8, atkRange: 1.2, atkInterval: 1.2, sprite: 'bat', color: '#aed6f1', size: 1.0, flying: true,
     gold: [20, 38], equipChance: 0.1,
     drops: [{ id: 'mat_wing', chance: 0.3 }, { id: 'mat_frost', chance: 0.2 }],
@@ -450,7 +450,7 @@ export const MONSTERS = {
     lore: 'Corvos que nunca pousam: o gelo gruda nas asas se o fizerem.',
   },
   frost_mage: {
-    id: 'frost_mage', name: 'Xamã do Gelo', lvl: [25, 27], hp: 1.2, dmg: 1.4, def: 1.0,
+    id: 'frost_mage', name: 'Xamã do Gelo', lvl: [83, 90], hp: 1.2, dmg: 1.4, def: 1.0,
     speed: 3.0, aggro: 8, atkRange: 7, atkInterval: 2.0, proj: 'frost', sprite: 'goblin_shaman', color: '#85c1e9', size: 1,
     gold: [28, 52], equipChance: 0.15,
     drops: [{ id: 'mat_frost', chance: 0.35 }, { id: 'pot_mp_3', chance: 0.12 }],
@@ -462,7 +462,7 @@ export const MONSTERS = {
     lore: 'Os últimos magos do Círculo do Norte. Sobreviveram escolhendo o frio, e o frio escolheu de volta.',
   },
   ice_golem: {
-    id: 'ice_golem', name: 'Golem de Gelo', lvl: [25, 27], hp: 2.7, dmg: 1.4, def: 2.0,
+    id: 'ice_golem', name: 'Golem de Gelo', lvl: [83, 90], hp: 2.7, dmg: 1.4, def: 2.0,
     speed: 2.1, aggro: 4, atkRange: 1.9, atkInterval: 2.2, sprite: 'golem', color: '#aed6f1', size: 1.7,
     gold: [30, 58], equipChance: 0.16,
     drops: [{ id: 'mat_frost', chance: 0.5, qty: [1, 2] }, { id: 'mat_crystal', chance: 0.2 }, { id: 'enh_stone', chance: 0.04 }],
@@ -471,7 +471,7 @@ export const MONSTERS = {
     lore: 'Sentinelas de gelo erguidas pelo Círculo do Norte para guardar os passos. Ninguém lembra a palavra que as desliga.',
   },
   vargnar: {
-    id: 'vargnar', name: 'Vargnar', title: 'O Lobo do Inverno', lvl: [26, 26], hp: 19, dmg: 1.4, def: 1.5,
+    id: 'vargnar', name: 'Vargnar', title: 'O Lobo do Inverno', lvl: [86, 86], hp: 19, dmg: 1.4, def: 1.5,
     speed: 4.0, aggro: 10, atkRange: 2.2, atkInterval: 1.7, sprite: 'wolf', color: '#cfe3f3', size: 2.7,
     boss: true, respawn: 320, leash: 24, xpMult: 15,
     gold: [600, 950], equipDrops: 3, uniqueDrop: { id: 'u_vargnar_fang', chance: 0.3 },
@@ -489,7 +489,7 @@ export const MONSTERS = {
 
   // ---------- Cidadela de Gelo ----------
   frozen_knight: {
-    id: 'frozen_knight', name: 'Cavaleiro Congelado', lvl: [26, 28], hp: 2.0, dmg: 1.45, def: 1.9,
+    id: 'frozen_knight', name: 'Cavaleiro Congelado', lvl: [86, 93], hp: 2.0, dmg: 1.45, def: 1.9,
     speed: 2.8, aggro: 6, atkRange: 1.8, atkInterval: 1.8, sprite: 'ash_knight', color: '#7fb3d5', size: 1.3,
     gold: [36, 66], equipChance: 0.17,
     drops: [{ id: 'mat_frost', chance: 0.45 }, { id: 'mat_essence', chance: 0.15 }, { id: 'enh_stone', chance: 0.05 }],
@@ -498,7 +498,7 @@ export const MONSTERS = {
     lore: 'Cavaleiros da Ordem do Norte, congelados em posição de combate quando a Névoa chegou. O gelo os mantém de pé; a Rainha, em marcha.',
   },
   frost_wraith: {
-    id: 'frost_wraith', name: 'Espectro Glacial', lvl: [27, 29], hp: 1.3, dmg: 1.4, def: 1.0,
+    id: 'frost_wraith', name: 'Espectro Glacial', lvl: [90, 97], hp: 1.3, dmg: 1.4, def: 1.0,
     speed: 3.4, aggro: 6, atkRange: 1.4, atkInterval: 1.5, sprite: 'wraith', color: '#cfe8f7', size: 1.2, undead: true, flying: true,
     gold: [34, 62], equipChance: 0.15,
     drops: [{ id: 'mat_frost', chance: 0.4 }, { id: 'mat_essence', chance: 0.3 }],
@@ -507,7 +507,7 @@ export const MONSTERS = {
     lore: 'As almas dos que morreram de frio entre as muralhas. Não guardam rancor: guardam o frio.',
   },
   kaelisa: {
-    id: 'kaelisa', name: 'Kaelisa', title: 'A Rainha Gélida', lvl: [29, 29], hp: 25, dmg: 1.5, def: 1.7,
+    id: 'kaelisa', name: 'Kaelisa', title: 'A Rainha Gélida', lvl: [96, 96], hp: 25, dmg: 1.5, def: 1.7,
     speed: 3.0, aggro: 10, atkRange: 7, atkInterval: 2.0, proj: 'frost', sprite: 'morvath', color: '#aed6f1', size: 2.3,
     boss: true, respawn: 360, leash: 24, xpMult: 18, flying: true, voidborn: true,
     gold: [900, 1400], equipDrops: 4, uniqueDrop: { id: 'u_kaelisa_heart', chance: 0.3 }, legendWeapon: 0.35,
@@ -527,7 +527,7 @@ export const MONSTERS = {
 
   // ---------- Cripta da Chama Primeva ----------
   void_stalker: {
-    id: 'void_stalker', name: 'Espreitador do Vazio', lvl: [29, 30], hp: 1.5, dmg: 1.5, def: 1.1,
+    id: 'void_stalker', name: 'Espreitador do Vazio', lvl: [97, 100], hp: 1.5, dmg: 1.5, def: 1.1,
     speed: 3.6, aggro: 8, atkRange: 1.4, atkInterval: 1.4, sprite: 'wraith', color: '#6c3483', size: 1.25, undead: true, voidborn: true, flying: true,
     gold: [40, 74], equipChance: 0.17,
     drops: [{ id: 'mat_voidshard', chance: 0.35 }, { id: 'mat_essence', chance: 0.4 }],
@@ -536,7 +536,7 @@ export const MONSTERS = {
     lore: 'O que sobra de quem o Faminto devorou: fome com forma. Perseguem qualquer coisa que ainda brilhe.',
   },
   void_knight: {
-    id: 'void_knight', name: 'Cavaleiro do Vazio', lvl: [29, 30], hp: 2.2, dmg: 1.55, def: 1.9,
+    id: 'void_knight', name: 'Cavaleiro do Vazio', lvl: [97, 100], hp: 2.2, dmg: 1.55, def: 1.9,
     speed: 2.8, aggro: 6, atkRange: 1.8, atkInterval: 1.7, sprite: 'ash_knight', color: '#4a235a', size: 1.35, voidborn: true,
     gold: [44, 78], equipChance: 0.18,
     drops: [{ id: 'mat_voidshard', chance: 0.4 }, { id: 'mat_essence', chance: 0.3 }, { id: 'enh_stone', chance: 0.06 }],
@@ -545,7 +545,7 @@ export const MONSTERS = {
     lore: 'Os cavaleiros que Aurelion enterrou com o Faminto para vigiar o selo. Vigiaram tempo demais.',
   },
   fallen_keeper: {
-    id: 'fallen_keeper', name: 'Guardião Caído', lvl: [29, 30], hp: 2.4, dmg: 1.5, def: 1.7,
+    id: 'fallen_keeper', name: 'Guardião Caído', lvl: [97, 100], hp: 2.4, dmg: 1.5, def: 1.7,
     speed: 2.9, aggro: 6, atkRange: 1.8, atkInterval: 1.8, sprite: 'ash_knight', color: '#b8860b', size: 1.35, voidborn: true,
     gold: [46, 80], equipChance: 0.18,
     drops: [{ id: 'mat_voidshard', chance: 0.35 }, { id: 'mat_ember', chance: 0.04 }, { id: 'enh_stone', chance: 0.06 }],
@@ -554,7 +554,7 @@ export const MONSTERS = {
     lore: 'Guardiões da Chama que desceram para proteger o selo e foram esquecidos por quem os mandou. A armadura ainda tem o brasão de Lúmen.',
   },
   nyxthar: {
-    id: 'nyxthar', name: 'Nyxthar', title: 'O Faminto', lvl: [30, 30], hp: 32, dmg: 1.6, def: 1.9,
+    id: 'nyxthar', name: 'Nyxthar', title: 'O Faminto', lvl: [100, 100], hp: 32, dmg: 1.6, def: 1.9,
     speed: 2.8, aggro: 12, atkRange: 2.8, atkInterval: 2.0, sprite: 'golem_boss', color: '#2c1338', size: 3.3,
     boss: true, respawn: 420, leash: 26, xpMult: 22, voidborn: true,
     gold: [1500, 2400], equipDrops: 5, uniqueDrop: { id: 'u_nyxthar_shard', chance: 0.3 }, legendWeapon: 0.5,

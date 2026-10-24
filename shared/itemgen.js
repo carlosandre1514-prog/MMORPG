@@ -2,8 +2,9 @@
 import { ITEMS, isEquipment } from './data/items.js';
 import { rand, uid } from './rng.js';
 import { RARITY } from './constants.js';
+import { evLevel } from './levels.js';
 
-// Valor base de cada afixo em função do nível do item.
+// Valor base de cada afixo em função do nível do item (na escala interna de combate, ver levels.js).
 const AFFIX_DEFS = {
   str: { w: 10, v: (l) => 1 + l * 0.35 },
   dex: { w: 10, v: (l) => 1 + l * 0.35 },
@@ -54,7 +55,7 @@ function rollAffixes(base, rarity, rng) {
       pick -= d.w;
       if (pick <= 0) { key = k; break; }
     }
-    const val = AFFIX_DEFS[key].v(base.lvl) * (0.6 + rng() * 0.6) * (1 + rarity * 0.1);
+    const val = AFFIX_DEFS[key].v(evLevel(base.lvl)) * (0.6 + rng() * 0.6) * (1 + rarity * 0.1);
     out[key] = Math.max(1, Math.round(val));
   }
   return out;
@@ -82,8 +83,9 @@ export function createItem(baseId, opts = {}) {
 
 // Escolhe um equipamento adequado ao nível do monstro.
 export function randomEquipmentBase(lvl, rng = rand, cls = null) {
+  const ev = evLevel(lvl);
   const candidates = Object.values(ITEMS).filter((b) =>
-    isEquipment(b) && !b.unique && b.lvl <= lvl && b.lvl >= lvl - 7);
+    isEquipment(b) && !b.unique && b.lvl <= lvl && evLevel(b.lvl) >= ev - 7);
   let list = candidates.length ? candidates : Object.values(ITEMS).filter((b) => isEquipment(b) && !b.unique && b.lvl <= Math.max(1, lvl));
   // Leve preferência por armas da classe de quem saqueou.
   if (cls && rng() < 0.35) {
@@ -100,7 +102,7 @@ export function itemName(item) {
   if (item.r >= 2 && !base.unique && item.a) {
     let best = null, bestV = -1;
     for (const [k, v] of Object.entries(item.a)) {
-      const norm = v / AFFIX_DEFS[k].v(base.lvl);
+      const norm = v / AFFIX_DEFS[k].v(evLevel(base.lvl));
       if (norm > bestV) { bestV = norm; best = k; }
     }
     if (best) name += ' ' + SUFFIX[best];

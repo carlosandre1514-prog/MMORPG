@@ -1,7 +1,10 @@
 // Testes unitários da lógica compartilhada.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { xpToNext, computeStats, monsterStats, enhanceChance, enhanceCost, xpLevelMod } from '../shared/formulas.js';
+import { xpToNext, computeStats, monsterStats, monsterXp, enhanceChance, enhanceCost, xpLevelMod } from '../shared/formulas.js';
+import { MAX_LEVEL } from '../shared/constants.js';
+import { evLevel, lvlFromEv } from '../shared/levels.js';
+import { migrateLevelScale, migrateDatabaseLevels, LEVEL_SCALE } from '../server/levelscale.js';
 import { createItem, itemStats, itemName, sellPrice, rollRarity } from '../shared/itemgen.js';
 import { ITEMS } from '../shared/data/items.js';
 import { QUESTS } from '../shared/data/quests.js';
@@ -19,9 +22,57 @@ import { mulberry32 } from '../shared/rng.js';
 import { addItem, removeItem, countItem, newInventory, canAddAll } from '../server/systems/inventory.js';
 
 test('curva de experiência cresce e termina no nível máximo', () => {
-  for (let l = 1; l < 30; l++) assert.ok(xpToNext(l + 1) > xpToNext(l) || l + 1 === 30);
-  assert.equal(xpToNext(30), 0);
-  assert.ok(xpLevelMod(20, 5) < xpLevelMod(5, 5));
+  for (let l = 1; l < MAX_LEVEL; l++) assert.ok(xpToNext(l + 1) > xpToNext(l) || l + 1 === MAX_LEVEL);
+  assert.equal(xpToNext(MAX_LEVEL), 0);
+  assert.ok(xpLevelMod(60, 15) < xpLevelMod(15, 15));
+});
+
+test('níveis de 1 a 100: o caminho até o topo fica só um pouco mais longo e o combate segue a curva antiga', () => {
+  assert.equal(MAX_LEVEL, 100);
+  // soma do XP do nível 1 ao 100 em relação à curva antiga de 1 a 30 (que somava 368.300): de 10% a 25% mais difícil
+  let total = 0;
+  for (let l = 1; l < MAX_LEVEL; l++) total += xpToNext(l);
+  assert.ok(total > 368300 * 1.1 && total < 368300 * 1.25, `XP total ${total}`);
+  // os números de combate de um nível de hoje são os da escala interna: o último nível equivale ao antigo 30
+  assert.equal(evLevel(1), 1);
+  assert.equal(evLevel(MAX_LEVEL), 30);
+  assert.equal(lvlFromEv(30), MAX_LEVEL);
+  assert.equal(monsterStats({}, MAX_LEVEL).maxHp, Math.round(35 + 18 * 30 + 1.6 * 900));
+  assert.equal(monsterXp(MAX_LEVEL), Math.round(10 + 7 * 30 + 0.9 * 900));
+  // quem está muito acima do monstro ainda ganha pouco; igual ou acima ganha mais
+  assert.equal(xpLevelMod(100, 100), 1);
+  assert.ok(xpLevelMod(100, 60) < 0.2 && xpLevelMod(40, 60) > 1);
+});
+
+test('o último chefe é nível 100 e os outros ficam abaixo, e cada região lista a faixa dos seus monstros', () => {
+  const bosses = Object.values(MONSTERS).filter((m) => m.boss);
+  assert.ok(bosses.length >= 11);
+  assert.deepEqual(MONSTERS.nyxthar.lvl, [MAX_LEVEL, MAX_LEVEL]);
+  for (const b of bosses) if (b.id !== 'nyxthar') assert.ok(b.lvl[1] < MAX_LEVEL, `${b.id} abaixo do nível ${MAX_LEVEL}`);
+  assert.equal(new Set(bosses.map((b) => b.lvl[0])).size, bosses.length, 'cada chefe tem um nível só seu');
+  for (const z of Object.values(ZONES)) {
+    if (!z.spawns || !z.lvl) continue;
+    const lo = Math.min(...z.spawns.map((s) => MONSTERS[s.m].lvl[0])), hi = Math.max(...z.spawns.map((s) => MONSTERS[s.m].lvl[1]));
+    assert.deepEqual(z.lvl, [lo, hi], `${z.id}: faixa de nível`);
+    assert.equal(z.levels, `Níveis ${lo}–${hi}`);
+  }
+});
+
+test('saves antigos (níveis 1 a 30) são convertidos para a escala de 1 a 100 sem perder o ponto de progresso', () => {
+  const novo = { level: 1, xp: 0 };
+  migrateLevelScale(novo);
+  assert.deepEqual(novo, { level: 1, xp: 0 });
+  const topo = { level: 30, xp: 0 };
+  migrateLevelScale(topo);
+  assert.equal(topo.level, MAX_LEVEL);
+  const meio = { level: 15, xp: 4000 };
+  migrateLevelScale(meio);
+  assert.ok(meio.level >= 49 && meio.level <= 52 && meio.xp >= 0 && meio.xp < xpToNext(meio.level));
+  const data = { chars: { a: { level: 10, xp: 100 }, b: { level: 29, xp: 5 } } };
+  assert.equal(migrateDatabaseLevels(data), 2);
+  assert.equal(data.levelScale, LEVEL_SCALE);
+  assert.equal(migrateDatabaseLevels(data), 0, 'só converte uma vez');
+  assert.ok(data.chars.a.level > 30 && data.chars.b.level >= 96);
 });
 
 test('atributos derivados respondem a equipamento e pontos', () => {

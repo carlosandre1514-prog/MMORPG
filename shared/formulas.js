@@ -4,19 +4,34 @@ import { ITEMS } from './data/items.js';
 import { itemStats } from './itemgen.js';
 import { MAX_LEVEL, EQUIP_SLOTS } from './constants.js';
 import { masteryBonus } from './mastery.js';
+import { evLevel, LEVEL_RATIO } from './levels.js';
 
+// Os números de combate seguem a escala interna (ver levels.js): um nível de hoje vale uma fração de um nível antigo.
+// XP_HARDER deixa o caminho até o nível máximo um pouco mais longo do que era na escala antiga.
+export const XP_HARDER = 1.15;
+
+// A curva antiga cobrava 40n² + 60n para ir do nível n ao n+1, em degraus inteiros. Esta é a mesma curva em passos mais finos:
+// a derivada do XP acumulado dessa curva (f(e) - f'(e)/2, com f = 40e² + 60e) medida no meio de cada degrau, que passa pelos
+// mesmos pontos acumulados, só que dividida entre os níveis de hoje.
 export function xpToNext(lvl) {
   if (lvl >= MAX_LEVEL) return 0;
-  return Math.round(40 * lvl * lvl + 60 * lvl);
+  const e = evLevel(lvl) + 0.5 / LEVEL_RATIO;
+  return Math.max(1, Math.round(XP_HARDER * (40 * e * e + 20 * e - 30) / LEVEL_RATIO));
+}
+
+// XP que um nível valeria na escala antiga: base das recompensas dadas como "fração de um nível" e da penalidade de morte.
+export function xpStep(lvl) {
+  return xpToNext(lvl) * LEVEL_RATIO;
 }
 
 export function monsterXp(lvl) {
-  return Math.round(10 + 7 * lvl + 0.9 * lvl * lvl);
+  const ev = evLevel(lvl);
+  return Math.round(10 + 7 * ev + 0.9 * ev * ev);
 }
 
 // Modificador de XP pela diferença de nível (monstros fracos dão pouco).
 export function xpLevelMod(playerLvl, monLvl) {
-  const d = monLvl - playerLvl;
+  const d = evLevel(monLvl) - evLevel(playerLvl);
   if (d >= 0) return 1 + Math.min(5, d) * 0.1;
   if (d >= -2) return 1;
   if (d >= -4) return 0.6;
@@ -24,7 +39,8 @@ export function xpLevelMod(playerLvl, monLvl) {
   return 0.1;
 }
 
-export function monsterStats(def, lvl) {
+export function monsterStats(def, level) {
+  const lvl = evLevel(level);
   return {
     maxHp: Math.round((35 + 18 * lvl + 1.6 * lvl * lvl) * (def.hp ?? 1)),
     power: (5 + 3 * lvl + 0.06 * lvl * lvl) * (def.dmg ?? 1),
@@ -37,7 +53,7 @@ export function monsterStats(def, lvl) {
 // mods: modificadores temporários vindos de efeitos (power%, def%, crit, haste, lifesteal, speed%)
 export function computeStats(ch, mods = {}) {
   const cls = CLASSES[ch.cls];
-  const lvl = ch.level;
+  const lvl = evLevel(ch.level);
   const g = {};
   for (const slot of EQUIP_SLOTS) {
     const it = ch.equip && ch.equip[slot];
@@ -47,7 +63,7 @@ export function computeStats(ch, mods = {}) {
   }
   const attr = {};
   for (const k of ['str', 'dex', 'int', 'vit']) {
-    attr[k] = cls.base[k] + cls.growth[k] * (lvl - 1) + ((ch.alloc && ch.alloc[k]) || 0) + (g[k] || 0);
+    attr[k] = Math.round(cls.base[k] + cls.growth[k] * (lvl - 1)) + ((ch.alloc && ch.alloc[k]) || 0) + (g[k] || 0);
   }
   const flags = ch.flags || {};
   const mb = masteryBonus(ch.mastery && ch.mastery.ranks); // graus gastos em maestria
@@ -88,7 +104,7 @@ export function computeStats(ch, mods = {}) {
 
 // Redução de dano pela defesa (escala com o nível do atacante).
 export function damageReduction(def, attackerLvl) {
-  return def / (def + 40 + 8 * attackerLvl);
+  return def / (def + 40 + 8 * evLevel(attackerLvl));
 }
 
 export function rollDamage(power, mult, targetDef, attackerLvl, rng = Math.random) {
@@ -113,7 +129,7 @@ export function enhanceCost(item) {
   const base = ITEMS[item.id];
   const p = item.p || 0;
   return {
-    gold: Math.round(60 * (p + 1) * (1 + base.lvl / 8)),
+    gold: Math.round(60 * (p + 1) * (1 + evLevel(base.lvl) / 8)),
     stones: Math.ceil((p + 1) / 3),
   };
 }
@@ -123,5 +139,5 @@ export function enhanceFailDowngrade(plus) {
 }
 
 export function deathXpPenalty(lvl) {
-  return Math.floor(xpToNext(lvl) * 0.04);
+  return Math.floor(xpStep(lvl) * 0.04);
 }

@@ -1,5 +1,5 @@
 // Chat, grupos, clãs, comércio entre jogadores e comandos.
-import { PARTY_MAX, GUILD_COST, CHAT } from '../shared/constants.js';
+import { PARTY_MAX, GUILD_COST, CHAT, MAX_LEVEL } from '../shared/constants.js';
 import { ITEMS } from '../shared/data/items.js';
 import { ZONES } from '../shared/data/zones.js';
 import { MONSTERS } from '../shared/data/monsters.js';
@@ -140,7 +140,7 @@ export class Social {
     const w = this.world;
     switch (cmd) {
       case 'nivel': {
-        const lvl = Math.max(1, Math.min(30, parseInt(args[0], 10) || 1));
+        const lvl = Math.max(1, Math.min(MAX_LEVEL, parseInt(args[0], 10) || 1));
         while (p.char.level < lvl) w.giveXp(p, xpToNext(p.char.level) - p.char.xp + 1);
         return true;
       }

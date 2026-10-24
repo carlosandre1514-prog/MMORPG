@@ -2,6 +2,7 @@
 // proceduralmente (shared/mapgen.js) garantindo áreas livres nos pontos de interesse.
 import { T, O } from '../tiles.js';
 import { KINGDOMS, KINGDOM_ORDER } from './kingdoms.js';
+import { lvSpan } from '../levels.js';
 
 export const ZONES = {
   town: {
@@ -24,7 +25,7 @@ export const ZONES = {
   },
 
   fields: {
-    id: 'fields', name: 'Campos Verdejantes', levels: 'Níveis 1–7', lvl: [1, 7], w: 110, h: 90, world: { x: 112, y: 2 },
+    id: 'fields', name: 'Campos Verdejantes', levels: 'Níveis 1–20', lvl: [1, 20], w: 110, h: 90, world: { x: 112, y: 2 },
     spawn: { x: 6.5, y: 45.5 },
     night: 0.6, music: 'fields',
     portals: [
@@ -71,7 +72,7 @@ export const ZONES = {
   },
 
   forest: {
-    id: 'forest', name: 'Floresta Sussurrante', levels: 'Níveis 6–13', lvl: [6, 13], w: 110, h: 100, world: { x: 222, y: -26 },
+    id: 'forest', name: 'Floresta Sussurrante', levels: 'Níveis 18–40', lvl: [18, 40], w: 110, h: 100, world: { x: 222, y: -26 },
     spawn: { x: 6.5, y: 50.5 },
     night: 0.7, tint: 'rgba(20,60,30,0.10)', music: 'forest',
     portals: [
@@ -114,7 +115,7 @@ export const ZONES = {
   },
 
   mines: {
-    id: 'mines', name: 'Minas de Ferro Negro', levels: 'Níveis 12–19', lvl: [12, 19], w: 100, h: 90, dark: true, world: { x: 273, y: -116 },
+    id: 'mines', name: 'Minas de Ferro Negro', levels: 'Níveis 39–60', lvl: [39, 60], w: 100, h: 90, dark: true, world: { x: 273, y: -116 },
     spawn: { x: 50.5, y: 84.5 },
     night: 0.85, alwaysDark: 0.55, music: 'mines',
     portals: [
@@ -157,7 +158,7 @@ export const ZONES = {
   },
 
   ruins: {
-    id: 'ruins', name: 'Ruínas de Cinza', levels: 'Níveis 18–26', lvl: [18, 26], w: 110, h: 100, world: { x: 163, y: -154 },
+    id: 'ruins', name: 'Ruínas de Cinza', levels: 'Níveis 59–84', lvl: [59, 84], w: 110, h: 100, world: { x: 163, y: -154 },
     spawn: { x: 104.5, y: 50.5 },
     night: 0.7, tint: 'rgba(80,30,20,0.12)', music: 'ruins', ash: true,
     portals: [
@@ -214,7 +215,7 @@ export const ZONES = {
   },
 
   dunes: {
-    id: 'dunes', name: 'Dunas Ardentes', levels: 'Níveis 24–28', lvl: [24, 28], w: 130, h: 100, world: { x: 163, y: -254 },
+    id: 'dunes', name: 'Dunas Ardentes', levels: 'Níveis 80–93', lvl: [80, 93], w: 130, h: 100, world: { x: 163, y: -254 },
     spawn: { x: 6.5, y: 70.5 },
     night: 0.45, tint: 'rgba(255,170,60,0.08)', music: 'desert',
     portals: [
@@ -261,7 +262,7 @@ export const ZONES = {
   },
 
   tombs: {
-    id: 'tombs', name: 'Tumbas dos Reis-Sol', levels: 'Níveis 28–30', lvl: [28, 30], w: 110, h: 100, dark: true, world: { x: 293, y: -348 },
+    id: 'tombs', name: 'Tumbas dos Reis-Sol', levels: 'Níveis 91–98', lvl: [91, 98], w: 110, h: 100, dark: true, world: { x: 293, y: -348 },
     spawn: { x: 55.5, y: 92.5 },
     night: 0.9, alwaysDark: 0.5, music: 'ruins',
     portals: [
@@ -304,7 +305,7 @@ export const ZONES = {
 
   // ======================= Oeste: Pântano das Brumas e Catacumbas Afogadas =======================
   swamp: {
-    id: 'swamp', name: 'Pântano das Brumas', levels: 'Níveis 21–25', lvl: [21, 25], w: 110, h: 100, world: { x: -110, y: -1 },
+    id: 'swamp', name: 'Pântano das Brumas', levels: 'Níveis 69–83', lvl: [69, 83], w: 110, h: 100, world: { x: -110, y: -1 },
     spawn: { x: 104.5, y: 48.5 },
     night: 0.8, tint: 'rgba(40,70,40,0.16)', music: 'swamp', fog: true,
     portals: [
@@ -352,7 +353,7 @@ export const ZONES = {
   },
 
   catacombs: {
-    id: 'catacombs', name: 'Catacumbas Afogadas', levels: 'Níveis 24–27', lvl: [24, 27], w: 100, h: 90, dark: true, world: { x: -109, y: 99 },
+    id: 'catacombs', name: 'Catacumbas Afogadas', levels: 'Níveis 80–90', lvl: [80, 90], w: 100, h: 90, dark: true, world: { x: -109, y: 99 },
     spawn: { x: 49.5, y: 6.5 },
     night: 0.9, alwaysDark: 0.5, tint: 'rgba(30,70,80,0.14)', music: 'crypt',
     portals: [
@@ -398,7 +399,7 @@ export const ZONES = {
 
   // ======================= Norte: Picos Gelados e Cidadela de Gelo =======================
   peaks: {
-    id: 'peaks', name: 'Picos Gelados', levels: 'Níveis 22–26', lvl: [22, 26], w: 110, h: 100, world: { x: 46, y: -100 },
+    id: 'peaks', name: 'Picos Gelados', levels: 'Níveis 73–90', lvl: [73, 90], w: 110, h: 100, world: { x: 46, y: -100 },
     spawn: { x: 47.5, y: 94.5 },
     night: 0.65, tint: 'rgba(120,170,230,0.10)', music: 'frost', snow: true,
     portals: [
@@ -446,7 +447,7 @@ export const ZONES = {
   },
 
   citadel: {
-    id: 'citadel', name: 'Cidadela de Gelo', levels: 'Níveis 26–29', lvl: [26, 29], w: 100, h: 90, dark: true, world: { x: 51, y: -190 },
+    id: 'citadel', name: 'Cidadela de Gelo', levels: 'Níveis 83–97', lvl: [83, 97], w: 100, h: 90, dark: true, world: { x: 51, y: -190 },
     spawn: { x: 49.5, y: 84.5 },
     night: 0.8, alwaysDark: 0.3, tint: 'rgba(110,160,230,0.14)', music: 'frost', snow: true,
     portals: [
@@ -490,7 +491,7 @@ export const ZONES = {
 
   // ======================= Sul, sob a capital: Cripta da Chama Primeva =======================
   undercroft: {
-    id: 'undercroft', name: 'Cripta da Chama Primeva', levels: 'Níveis 29–30', lvl: [29, 30], w: 100, h: 80, dark: true, world: { x: 20, y: 150 },
+    id: 'undercroft', name: 'Cripta da Chama Primeva', levels: 'Níveis 97–100', lvl: [97, 100], w: 100, h: 80, dark: true, world: { x: 20, y: 150 },
     spawn: { x: 50.5, y: 72.5 },
     night: 0.95, alwaysDark: 0.6, tint: 'rgba(90,40,120,0.16)', music: 'void',
     portals: [
@@ -574,6 +575,6 @@ export function portalSealed(ch, portal) {
 // aviso ao entrar numa região muito acima do nível do personagem (null se estiver tudo bem)
 export function dangerWarning(zoneId, level) {
   const z = ZONES[zoneId];
-  if (!z || !z.lvl || level >= z.lvl[0] - 5) return null;
+  if (!z || !z.lvl || level >= z.lvl[0] - lvSpan(5)) return null;
   return `Região perigosa: ${z.name} é recomendada para os ${z.levels.toLowerCase()}. Volte pelo mesmo portal se precisar.`;
 }

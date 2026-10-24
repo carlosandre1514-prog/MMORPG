@@ -3,13 +3,14 @@
 //   estatísticas   ch.stats        contadores que só crescem (ouro ganho, missões, saques raros...)
 //   feitos         ch.ach          { id: data } — conquistas em degraus (10, 100, 1 000... até dezenas de milhares)
 //   títulos        ch.titles       nomes desbloqueados por feitos; ch.title é o que está em uso
-//   maestria       ch.mastery      { xp, level, ranks } — depois do nível 30 o XP vira níveis de maestria, sem teto
+//   maestria       ch.mastery      { xp, level, ranks } — depois do nível 100 o XP vira níveis de maestria, sem teto
 //   bestiário      ch.bestiary     { monstro: abates } — cada espécie dá dano extra contra ela
 //   desafios       ch.chal         { d, w } — três do dia e dois da semana, sorteados e guardados no personagem
 import { MONSTERS } from './monsters.js';
 import { QUESTS } from './quests.js';
 import { ZONE_ORDER } from './zones.js';
 import { MAX_LEVEL } from '../constants.js';
+import { evLevel, lvSpan } from '../levels.js';
 
 // ---------------------------------------------------------------- contadores
 // Os quatro primeiros já existiam em ch.record; os demais ficam em ch.stats. Chaves com ":" são consultas:
@@ -121,8 +122,8 @@ family('mastery', 'species', 'species', [1, 5, 15, BESTIARY_LIST.length],
   ['Estudioso', 'Naturalista', 'Grande Naturalista', 'Enciclopédia Viva'], (n) => `Estude ${n} espécie${n > 1 ? 's' : ''} (${SPECIES_STUDIED} abates de cada).`, { 3: 'Enciclopédia Viva' });
 
 // marcos de nível
-for (const [lv, name, title] of [[10, 'Chama Crescente', null], [20, 'Chama Forte', null], [MAX_LEVEL, 'Portador Completo', 'Portador Completo']]) {
-  add({ id: `level${lv}`, cat: 'mastery', counter: 'level', goal: lv, name, desc: `Alcance o nível ${lv}.`, pts: lv >= MAX_LEVEL ? 60 : 15, gold: lv * 50, mxp: 0, title });
+for (const [lv, name, title] of [[30, 'Chama Crescente', null], [65, 'Chama Forte', null], [MAX_LEVEL, 'Portador Completo', 'Portador Completo']]) {
+  add({ id: `level${lv}`, cat: 'mastery', counter: 'level', goal: lv, name, desc: `Alcance o nível ${lv}.`, pts: lv >= MAX_LEVEL ? 60 : 15, gold: Math.round(lv * 15), mxp: 0, title });
 }
 // campanha e saga
 const mainQuests = Object.values(QUESTS).filter((q) => q.main);
@@ -206,7 +207,7 @@ export function makeChallenges(kind, idx, level, salt = 0) {
     const mod = bag.splice(Math.floor(r() * bag.length), 1)[0];
     let counter = mod.counter, mon = null;
     if (mod.species) {
-      const near = Object.values(MONSTERS).filter((m) => !m.boss && m.lvl[0] <= level + 2 && m.lvl[1] >= level - 8);
+      const near = Object.values(MONSTERS).filter((m) => !m.boss && m.lvl[0] <= level + lvSpan(2) && m.lvl[1] >= level - lvSpan(8));
       if (!near.length) continue;
       mon = pick(r, near);
       counter = `bst:${mon.id}`;
@@ -217,7 +218,7 @@ export function makeChallenges(kind, idx, level, salt = 0) {
     const tier = kind === 'd' ? 1 : 3;
     out.push({
       id: `${kind}${idx}_${out.length}`, counter, target, text: mod.text(target, mon),
-      rw: { xp: 0.18 * tier, mxp: 40000 * tier * (1 + gi * 0.25), gold: Math.round((15 + level * 6) * tier * (1 + gi * 0.25)), pts: kind === 'd' ? 2 : 6 },
+      rw: { xp: 0.18 * tier, mxp: 40000 * tier * (1 + gi * 0.25), gold: Math.round((15 + evLevel(level) * 6) * tier * (1 + gi * 0.25)), pts: kind === 'd' ? 2 : 6 },
     });
   }
   return out;

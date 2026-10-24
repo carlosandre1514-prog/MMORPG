@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { migrateDatabaseLevels } from './levelscale.js';
 
 // Armazenamento remoto opcional (Supabase/PostgREST). O arquivo local continua sendo o cache de trabalho; o remoto
 // é a cópia durável para hospedagens com disco efêmero (como o plano gratuito do Render).
@@ -45,7 +46,10 @@ export class Database {
         console.error('[db] arquivo corrompido, cópia salva em', bak, e.message);
       }
     }
-    this.dirty = false;
+    // saves anteriores ao nível 100 guardam níveis de 1 a 30: converte uma única vez
+    const converted = migrateDatabaseLevels(this.data);
+    if (converted) console.log(`[db] ${converted} personagem(ns) convertido(s) para a escala de níveis 1-100`);
+    this.dirty = converted > 0;
   }
 
   save() {

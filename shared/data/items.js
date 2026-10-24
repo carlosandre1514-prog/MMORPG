@@ -1,6 +1,8 @@
 // Banco de itens. Equipamentos comuns são gerados por níveis (tiers);
 // instâncias recebem raridade e afixos aleatórios em shared/itemgen.js.
 
+import { lvlFromEv } from '../levels.js';
+
 export const ITEMS = {};
 
 function add(item) {
@@ -9,6 +11,8 @@ function add(item) {
 }
 
 // ---------------- Armas ----------------
+// Os tiers (WEAPON_TIERS etc.) estão na escala interna de 1 a 30 (ver shared/levels.js): é ela que dá os números de combate.
+// O nível exigido para equipar é o tier convertido para a escala de 1 a 100.
 const WEAPON_TIERS = [1, 5, 10, 15, 20, 25, 30];
 const WEAPON_NAMES = {
   warrior: ['Espada Curta', 'Espada Longa', 'Lâmina de Ferro Negro', 'Montante do Guardião', 'Lâmina Rúnica', 'Executora das Cinzas', 'Cimitarra do Sol'],
@@ -23,13 +27,13 @@ const PREFIX = { warrior: 'w', berserker: 'b', assassin: 'a', mage: 'm', ranger:
 const TIER_COLORS = ['#a0a0a0', '#b87333', '#5d6d7e', '#aab7b8', '#76d7c4', '#e74c3c', '#f4d03f'];
 
 for (const cls of Object.keys(WEAPON_NAMES)) {
-  WEAPON_TIERS.forEach((lvl, i) => {
+  WEAPON_TIERS.forEach((ev, i) => {
     add({
       id: `${PREFIX[cls]}_weapon_${i + 1}`,
       name: WEAPON_NAMES[cls][i],
-      type: 'weapon', slot: 'weapon', cls, lvl, tier: i + 1,
-      dmg: Math.round(6 + lvl * 2.6),
-      price: Math.round(20 + lvl * lvl * 8),
+      type: 'weapon', slot: 'weapon', cls, lvl: lvlFromEv(ev), tier: i + 1,
+      dmg: Math.round(6 + ev * 2.6),
+      price: Math.round(20 + ev * ev * 8),
       icon: { shape: WEAPON_ICON[cls], c1: TIER_COLORS[i], c2: '#5a3d1e' },
     });
   });
@@ -53,15 +57,15 @@ function matSuffix(i, slotName) {
   return `de ${m}`;
 }
 for (const [slot, info] of Object.entries(ARMOR_SLOTS)) {
-  ARMOR_TIERS.forEach((lvl, i) => {
+  ARMOR_TIERS.forEach((ev, i) => {
     const n = info.names[i];
     add({
       id: `${slot}_${i + 1}`,
       name: `${n} ${matSuffix(i, n)}`,
-      type: 'armor', slot, lvl, tier: i + 1,
-      def: Math.max(1, Math.round((2 + lvl * 1.1) * info.mult)),
-      base: { hp: Math.round(lvl * info.hp + info.hp * 4) },
-      price: Math.round(15 + lvl * lvl * 5 * info.mult),
+      type: 'armor', slot, lvl: lvlFromEv(ev), tier: i + 1,
+      def: Math.max(1, Math.round((2 + ev * 1.1) * info.mult)),
+      base: { hp: Math.round(ev * info.hp + info.hp * 4) },
+      price: Math.round(15 + ev * ev * 5 * info.mult),
       icon: { shape: info.icon, c1: ARMOR_MAT_COLORS[i], c2: '#2c2c2c' },
     });
   });
@@ -72,96 +76,96 @@ const ACC_TIERS = [1, 8, 16, 24, 30];
 const RING_NAMES = ['Anel de Cobre', 'Anel de Prata', 'Anel de Ouro', 'Anel Rúnico', 'Anel do Sol'];
 const AMULET_NAMES = ['Amuleto de Osso', 'Amuleto de Prata', 'Amuleto de Jade', 'Amuleto Rúnico', 'Escaravelho Sagrado'];
 const ACC_COLORS = ['#b87333', '#d5dbdb', '#f4d03f', '#5dade2', '#f5b041'];
-ACC_TIERS.forEach((lvl, i) => {
+ACC_TIERS.forEach((ev, i) => {
   add({
-    id: `ring_${i + 1}`, name: RING_NAMES[i], type: 'accessory', slot: 'ring', lvl, tier: i + 1,
-    base: { power: Math.round(2 + lvl * 0.7) },
-    price: Math.round(40 + lvl * lvl * 7),
+    id: `ring_${i + 1}`, name: RING_NAMES[i], type: 'accessory', slot: 'ring', lvl: lvlFromEv(ev), tier: i + 1,
+    base: { power: Math.round(2 + ev * 0.7) },
+    price: Math.round(40 + ev * ev * 7),
     icon: { shape: 'ring', c1: ACC_COLORS[i], c2: '#c0392b' },
   });
   add({
-    id: `amulet_${i + 1}`, name: AMULET_NAMES[i], type: 'accessory', slot: 'amulet', lvl, tier: i + 1,
-    base: { hp: Math.round(15 + lvl * 7) },
-    price: Math.round(40 + lvl * lvl * 7),
+    id: `amulet_${i + 1}`, name: AMULET_NAMES[i], type: 'accessory', slot: 'amulet', lvl: lvlFromEv(ev), tier: i + 1,
+    base: { hp: Math.round(15 + ev * 7) },
+    price: Math.round(40 + ev * ev * 7),
     icon: { shape: 'amulet', c1: ACC_COLORS[i], c2: '#16a085' },
   });
 });
 
 // ---------------- Lendários únicos ----------------
 add({
-  id: 'u_boar_tusk', name: 'Presa de Ferro', type: 'accessory', slot: 'amulet', lvl: 6, unique: true,
+  id: 'u_boar_tusk', name: 'Presa de Ferro', type: 'accessory', slot: 'amulet', lvl: 18, unique: true,
   base: { hp: 70 }, fixed: { str: 5, vit: 6, def: 5, power: 4 }, price: 600,
   desc: 'Arrancada do Javali Ancião. Ainda pulsa com sua teimosia.',
   icon: { shape: 'tusk', c1: '#f0e6d2', c2: '#7f8c8d' },
 });
 add({
-  id: 'u_vexara_crown', name: 'Coroa da Tecelã', type: 'armor', slot: 'head', lvl: 12, unique: true,
+  id: 'u_vexara_crown', name: 'Coroa da Tecelã', type: 'armor', slot: 'head', lvl: 38, unique: true,
   def: 12, base: { hp: 40 }, fixed: { int: 9, dex: 9, crit: 4, mp: 50 }, price: 1500,
   desc: 'Fios de seda e prata. Vex\'ara a usava antes de esquecer o próprio nome.',
   icon: { shape: 'crown', c1: '#bb8fce', c2: '#4a235a' },
 });
 add({
-  id: 'u_kragmor_heart', name: 'Coração de Kragmor', type: 'accessory', slot: 'amulet', lvl: 18, unique: true,
+  id: 'u_kragmor_heart', name: 'Coração de Kragmor', type: 'accessory', slot: 'amulet', lvl: 58, unique: true,
   base: { hp: 160 }, fixed: { vit: 16, def: 18, str: 8 }, price: 3000,
   desc: 'Uma pedra viva entalhada pelos anões. Bate devagar, como uma montanha que respira.',
   icon: { shape: 'heart', c1: '#e67e22', c2: '#6e2c00' },
 });
 add({
-  id: 'u_ashen_crown', name: 'Coroa Cinzenta', type: 'armor', slot: 'head', lvl: 25, unique: true,
+  id: 'u_ashen_crown', name: 'Coroa Cinzenta', type: 'armor', slot: 'head', lvl: 82, unique: true,
   def: 30, base: { hp: 120 }, fixed: { str: 12, dex: 12, int: 12, vit: 12, power: 15, crit: 5 }, price: 8000,
   desc: 'A coroa de Morvath. Sussurra promessas que você prefere não ouvir.',
   icon: { shape: 'crown', c1: '#7b7d7d', c2: '#c0392b' },
 });
 add({
-  id: 'u_flame_amulet', name: 'Coração da Chama', type: 'accessory', slot: 'amulet', lvl: 20, unique: true,
+  id: 'u_flame_amulet', name: 'Coração da Chama', type: 'accessory', slot: 'amulet', lvl: 66, unique: true,
   base: { hp: 250 }, fixed: { str: 10, dex: 10, int: 10, vit: 10, lifesteal: 3, speed: 5 }, price: 10000,
   desc: 'Uma centelha da Chama Primordial reacendida. Concedida apenas aos Portadores.',
   icon: { shape: 'brasa', c1: '#ffd54f', c2: '#ff6f00' },
 });
 add({
-  id: 'u_scorpion_sting', name: 'Ferrão da Rainha', type: 'accessory', slot: 'ring', lvl: 28, unique: true,
+  id: 'u_scorpion_sting', name: 'Ferrão da Rainha', type: 'accessory', slot: 'ring', lvl: 90, unique: true,
   base: { power: 30 }, fixed: { dex: 14, crit: 8, haste: 6, speed: 4 }, price: 9000,
   desc: 'O ferrão de Skorvax, ainda pingando veneno dourado. Cada golpe encontra o ponto fraco.',
   icon: { shape: 'tusk', c1: '#e59866', c2: '#6e2c00' },
 });
 add({
-  id: 'u_sun_crown', name: 'Coroa do Rei-Sol', type: 'armor', slot: 'head', lvl: 30, unique: true,
+  id: 'u_sun_crown', name: 'Coroa do Rei-Sol', type: 'armor', slot: 'head', lvl: 96, unique: true,
   def: 38, base: { hp: 160 }, fixed: { str: 14, dex: 14, int: 14, vit: 14, power: 18, crit: 6, mp: 100 }, price: 15000,
   desc: 'O ouro de Amun-Kheb nunca esfriou. Quem a usa sente o sol nascer dentro do peito.',
   icon: { shape: 'crown', c1: '#f4d03f', c2: '#e67e22' },
 });
 add({
-  id: 'u_pharaoh_scarab', name: 'Escaravelho de Amun-Kheb', type: 'accessory', slot: 'amulet', lvl: 30, unique: true,
+  id: 'u_pharaoh_scarab', name: 'Escaravelho de Amun-Kheb', type: 'accessory', slot: 'amulet', lvl: 96, unique: true,
   base: { hp: 320 }, fixed: { vit: 14, def: 20, int: 12, lifesteal: 4, speed: 6 }, price: 14000,
   desc: 'Um escaravelho de ouro que guardava o coração do rei. Ainda bate, devagar, no ritmo das dunas.',
   icon: { shape: 'brasa', c1: '#f5b041', c2: '#1e8449' },
 });
 add({
-  id: 'u_nhaga_eye', name: 'Olho da Mãe-do-Brejo', type: 'accessory', slot: 'amulet', lvl: 25, unique: true,
+  id: 'u_nhaga_eye', name: 'Olho da Mãe-do-Brejo', type: 'accessory', slot: 'amulet', lvl: 78, unique: true,
   base: { hp: 280 }, fixed: { vit: 14, int: 12, def: 14, lifesteal: 3, mp: 90 }, price: 9000,
   desc: 'Um olho âmbar, do tamanho de um punho, que continua abrindo e fechando. O brejo inteiro parece olhar por ele.',
   icon: { shape: 'heart', c1: '#9ccc3c', c2: '#1b4d20' },
 });
 add({
-  id: 'u_valdric_crown', name: 'Diadema Afogada', type: 'armor', slot: 'head', lvl: 27, unique: true,
+  id: 'u_valdric_crown', name: 'Diadema Afogada', type: 'armor', slot: 'head', lvl: 88, unique: true,
   def: 34, base: { hp: 150 }, fixed: { str: 13, dex: 13, int: 13, vit: 13, power: 16, crit: 5, mp: 90 }, price: 12000,
   desc: 'O aro de ouro de Valdric, cheio de algas. Lembra a quem a usa que a água sempre sobe.',
   icon: { shape: 'crown', c1: '#8fd8cc', c2: '#14504a' },
 });
 add({
-  id: 'u_vargnar_fang', name: 'Presa do Inverno', type: 'accessory', slot: 'ring', lvl: 26, unique: true,
+  id: 'u_vargnar_fang', name: 'Presa do Inverno', type: 'accessory', slot: 'ring', lvl: 84, unique: true,
   base: { power: 34 }, fixed: { dex: 15, crit: 9, haste: 7, speed: 5 }, price: 10000,
   desc: 'Uma presa de gelo que nunca derrete. Cada golpe dado com ela deixa uma linha de geada no ar.',
   icon: { shape: 'tusk', c1: '#d6eaf8', c2: '#2874a6' },
 });
 add({
-  id: 'u_kaelisa_heart', name: 'Coração Gélido', type: 'accessory', slot: 'amulet', lvl: 29, unique: true,
+  id: 'u_kaelisa_heart', name: 'Coração Gélido', type: 'accessory', slot: 'amulet', lvl: 94, unique: true,
   base: { hp: 340 }, fixed: { vit: 15, def: 22, int: 14, lifesteal: 4, speed: 5 }, price: 14000,
   desc: 'O cristal que prendia o Quarto Selo no peito da Rainha. Bate devagar, no ritmo de uma nevasca.',
   icon: { shape: 'heart', c1: '#aed6f1', c2: '#1b4f72' },
 });
 add({
-  id: 'u_nyxthar_shard', name: 'Estilhaço do Faminto', type: 'accessory', slot: 'ring', lvl: 30, unique: true,
+  id: 'u_nyxthar_shard', name: 'Estilhaço do Faminto', type: 'accessory', slot: 'ring', lvl: 100, unique: true,
   base: { power: 42 }, fixed: { str: 12, dex: 12, int: 12, crit: 10, haste: 8, lifesteal: 5 }, price: 20000,
   desc: 'Um caco de escuridão que ainda tem fome. Quanto mais você luta, mais ele quer — e mais ele devolve.',
   icon: { shape: 'brasa', c1: '#b36ae0', c2: '#2c1338' },
@@ -176,7 +180,7 @@ const LEGEND_WEAPONS = {
 };
 for (const [cls, [name, fixed]] of Object.entries(LEGEND_WEAPONS)) {
   add({
-    id: `u_${cls}_legend`, name, type: 'weapon', slot: 'weapon', cls, lvl: 25, unique: true,
+    id: `u_${cls}_legend`, name, type: 'weapon', slot: 'weapon', cls, lvl: 82, unique: true,
     dmg: 92, fixed, price: 12000,
     desc: 'Forjada na luz da Chama Primordial, tomada de Morvath em sua queda.',
     icon: { shape: WEAPON_ICON[cls], c1: '#ffd54f', c2: '#ff6f00' },
@@ -187,12 +191,12 @@ for (const [cls, [name, fixed]] of Object.entries(LEGEND_WEAPONS)) {
 const pot = (id, name, lvl, use, price, c1, desc) =>
   add({ id, name, type: 'consumable', lvl, stack: true, use, price, icon: { shape: 'potion', c1, c2: '#ecf0f1' }, desc });
 pot('pot_hp_1', 'Poção de Vida Menor', 1, { hp: 70 }, 15, '#e74c3c', 'Restaura 70 de vida.');
-pot('pot_hp_2', 'Poção de Vida', 8, { hp: 200 }, 45, '#c0392b', 'Restaura 200 de vida.');
-pot('pot_hp_3', 'Poção de Vida Maior', 15, { hp: 450 }, 110, '#922b21', 'Restaura 450 de vida.');
-pot('pot_hp_4', 'Poção de Vida Suprema', 22, { hp: 900 }, 240, '#641e16', 'Restaura 900 de vida.');
+pot('pot_hp_2', 'Poção de Vida', 25, { hp: 200 }, 45, '#c0392b', 'Restaura 200 de vida.');
+pot('pot_hp_3', 'Poção de Vida Maior', 49, { hp: 450 }, 110, '#922b21', 'Restaura 450 de vida.');
+pot('pot_hp_4', 'Poção de Vida Suprema', 73, { hp: 900 }, 240, '#641e16', 'Restaura 900 de vida.');
 pot('pot_mp_1', 'Poção de Mana Menor', 1, { mp: 50 }, 15, '#3498db', 'Restaura 50 de mana.');
-pot('pot_mp_2', 'Poção de Mana', 8, { mp: 130 }, 45, '#2471a3', 'Restaura 130 de mana.');
-pot('pot_mp_3', 'Poção de Mana Maior', 15, { mp: 300 }, 110, '#1a5276', 'Restaura 300 de mana.');
+pot('pot_mp_2', 'Poção de Mana', 25, { mp: 130 }, 45, '#2471a3', 'Restaura 130 de mana.');
+pot('pot_mp_3', 'Poção de Mana Maior', 49, { mp: 300 }, 110, '#1a5276', 'Restaura 300 de mana.');
 add({
   id: 'scroll_return', name: 'Pergaminho de Retorno', type: 'consumable', lvl: 1, stack: true,
   use: { recall: true }, price: 30, desc: 'Após 3s de concentração, transporta você para a capital do reino onde está (Alvorada ou Zahrim). Interrompido por dano ou movimento.',

@@ -594,7 +594,7 @@ export const windowsMixin = {
           <ul class="tips">
             <li>Siga as missões <b class="gold">${icoHTML('star')} principais</b>: elas contam a história e levam você por todas as regiões.</li>
             <li>NPCs com <b class="gold">!</b> têm missões; <b class="gold">?</b> amarelo indica missão pronta para entregar.</li>
-            <li>A cada nível você ganha 3 pontos de atributo (C). O atributo marcado com ${icoHTML('star')} aumenta seu Poder.</li>
+            <li>A cada nível você ganha 1 ponto de atributo (C). O atributo marcado com ${icoHTML('star')} aumenta seu Poder.</li>
             <li>Chefes avisam seus golpes com <b style="color:#ff6b6b">círculos vermelhos</b> no chão — saia deles!</li>
             <li>Toque nas <b style="color:#85c1e9">Pedras do Caminho</b> para viajar rapidamente entre regiões descobertas do mesmo reino.</li>
             <li>O mundo é dividido em <b class="gold">reinos</b>: só o reino onde você está é carregado. Ao atravessar a fronteira o jogo carrega o novo reino; suas missões e progresso ficam guardados, e o Pergaminho de Retorno e o renascimento levam à capital do reino atual.</li>

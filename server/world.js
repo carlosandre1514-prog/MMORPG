@@ -307,7 +307,7 @@ export class World {
       p.ver++;
       p.zone.fx({ k: 'lv', id: p.id }, p.x, p.y);
       p.send({ t: 'lvl', lv: ch.level });
-      if (ch.level % 5 === 0 || ch.level === MAX_LEVEL) this.broadcastSystem(`${p.name} alcançou o nível ${ch.level}!`, 'good');
+      if (ch.level % 10 === 0 || ch.level === MAX_LEVEL) this.broadcastSystem(`${p.name} alcançou o nível ${ch.level}!`, 'good');
       if (p.party) this.social.sendParty(p.party);
     }
     p.dirty.me = true;

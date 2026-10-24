@@ -32,10 +32,10 @@ Reacesa a Chama, os sinos de Alvorada passam a tocar sozinhos. A Arquivista **Ys
 
 | Ato | Região | Arco |
 |---|---|---|
-| V — A Sombra sob a Chama | Alvorada, Pântano das Brumas (nv 21–25) | Sinos sem badalo; a laje rachada; Garrett e Madre Zélia; sapos-boi, fogos-fátuos, bruxas e afogados; **Nhaga, a Mãe-do-Brejo**, guarda o Selo do Brejo. |
-| VI — As Águas Mortas | Catacumbas Afogadas (nv 24–27) | A Irmã Beatriz e a lápide do comandante; esqueletos afogados, carniçais, sacerdotes ossudos e guardiões; **Valdric, o Rei Afogado**, e o Selo das Águas Mortas. |
-| VII — O Inverno Eterno | Picos Gelados (nv 22–26) e Cidadela de Gelo (nv 26–29) | A expedição do Capitão Hjalmar; lobos-de-gelo, yetis, corvos e xamãs; **Vargnar, o Lobo do Inverno** (Selo da Geada). Na Cidadela, Runa, os cavaleiros congelados e **Kaelisa, a Rainha Gélida** (Selo do Inverno). |
-| VIII — O Faminto | Sahaar, Alvorada e Cripta da Chama Primeva (nv 29–30) | O quinto selo é o da saga de Sahaar (exige a saga concluída): Nefer entrega o disco dourado; a laje se abre; o Eco de Aurelion; espreitadores, cavaleiros e guardiões caídos; **Nyxthar, o Faminto**. |
+| V — A Sombra sob a Chama | Alvorada, Pântano das Brumas (nv 69–83) | Sinos sem badalo; a laje rachada; Garrett e Madre Zélia; sapos-boi, fogos-fátuos, bruxas e afogados; **Nhaga, a Mãe-do-Brejo**, guarda o Selo do Brejo. |
+| VI — As Águas Mortas | Catacumbas Afogadas (nv 80–90) | A Irmã Beatriz e a lápide do comandante; esqueletos afogados, carniçais, sacerdotes ossudos e guardiões; **Valdric, o Rei Afogado**, e o Selo das Águas Mortas. |
+| VII — O Inverno Eterno | Picos Gelados (nv 73–90) e Cidadela de Gelo (nv 83–97) | A expedição do Capitão Hjalmar; lobos-de-gelo, yetis, corvos e xamãs; **Vargnar, o Lobo do Inverno** (Selo da Geada). Na Cidadela, Runa, os cavaleiros congelados e **Kaelisa, a Rainha Gélida** (Selo do Inverno). |
+| VIII — O Faminto | Sahaar, Alvorada e Cripta da Chama Primeva (nv 97–100) | O quinto selo é o da saga de Sahaar (exige a saga concluída): Nefer entrega o disco dourado; a laje se abre; o Eco de Aurelion; espreitadores, cavaleiros e guardiões caídos; **Nyxthar, o Faminto**. |
 | Epílogo | Alvorada | Thalric fecha a campanha; título **Selador do Faminto**. |
 
 Cada chefe entrega o selo da missão e a vitória só vale depois de levar o selo a Ysolde em Alvorada, então cada ato volta ao centro do mundo. A entrada da Cripta (`req.flag = cripta_aberta`) só deixa passar quem concluiu "A Laje se Abre". Pedras de Memória de todas as regiões entram na peregrinação **Peregrino da Memória I e II**, que obriga a percorrer o mapa inteiro.
@@ -48,24 +48,24 @@ Missões secundárias (gato do Pip, fazendeiro, ervas, forja, xamãs, ents, morc
 
 | Classe | Papel | Atributo | Habilidades (nível) |
 |---|---|---|---|
-| Guerreiro | tanque / corpo a corpo (espada e escudo) | Força | Golpe Poderoso (1), Grito de Guerra — provoca (3), Investida de Escudo — atordoa (6), Redemoinho (10), Muralha de Aço — 45% menos dano e regeneração (15), Execução (20) |
-| Berserker | dano corpo a corpo / fúria (machado) | Força | Golpe Ceifador — acerta quem está em volta (1), Dilacerar — sangramento (3), Salto Selvagem — esmaga e retarda (6), Frenesi — mais poder e velocidade, menos defesa (10), Rugido Sanguinário — cura ao ferir (15), Massacre — roubo de vida e velocidade (20) |
-| Assassino | dano corpo a corpo / furtividade (adagas) | Destreza | Estocada (1), Golpe nas Costas — mais dano em quem está de olho em outro (3), Lâmina Envenenada (6), Passo Sombrio — surge atrás do alvo com crítico garantido (10), Bomba de Fumaça — retarda e protege (15), Dança das Lâminas — 4 golpes em volta (20) |
-| Mago | dano mágico / controle | Inteligência | Bola de Fogo (1), Lança de Gelo (3), Escudo Arcano (6), Chuva de Meteoros (10), Teleporte (15), Nova Glacial (20) |
-| Arqueiro | dano à distância | Destreza | Tiro Certeiro (1), Flecha Venenosa (3), Rolamento — invulnerável (6), Chuva de Flechas (10), Olho de Falcão (15), Tiro Múltiplo (20) |
-| Clérigo | cura / suporte | Inteligência | Luz Sagrada — +50% contra mortos-vivos (1), Cura (2), Bênção (6), Consagração (10), Escudo da Fé (15), Graça Divina — cura em área e ressuscita (20) |
+| Guerreiro | tanque / corpo a corpo (espada e escudo) | Força | Golpe Poderoso (1), Grito de Guerra — provoca (8), Investida de Escudo — atordoa (18), Redemoinho (32), Muralha de Aço — 45% menos dano e regeneração (50), Execução (65) |
+| Berserker | dano corpo a corpo / fúria (machado) | Força | Golpe Ceifador — acerta quem está em volta (1), Dilacerar — sangramento (8), Salto Selvagem — esmaga e retarda (18), Frenesi — mais poder e velocidade, menos defesa (32), Rugido Sanguinário — cura ao ferir (50), Massacre — roubo de vida e velocidade (65) |
+| Assassino | dano corpo a corpo / furtividade (adagas) | Destreza | Estocada (1), Golpe nas Costas — mais dano em quem está de olho em outro (8), Lâmina Envenenada (18), Passo Sombrio — surge atrás do alvo com crítico garantido (32), Bomba de Fumaça — retarda e protege (50), Dança das Lâminas — 4 golpes em volta (65) |
+| Mago | dano mágico / controle | Inteligência | Bola de Fogo (1), Lança de Gelo (8), Escudo Arcano (18), Chuva de Meteoros (32), Teleporte (50), Nova Glacial (65) |
+| Arqueiro | dano à distância | Destreza | Tiro Certeiro (1), Flecha Venenosa (8), Rolamento — invulnerável (18), Chuva de Flechas (32), Olho de Falcão (50), Tiro Múltiplo (65) |
+| Clérigo | cura / suporte | Inteligência | Luz Sagrada — +50% contra mortos-vivos (1), Cura (4), Bênção (18), Consagração (32), Escudo da Fé (50), Graça Divina — cura em área e ressuscita (65) |
 
-A cada nível: crescimento automático por classe + **3 pontos livres** (Força, Destreza, Inteligência, Vitalidade). Nível máximo 30.
+A cada nível: crescimento automático por classe + **1 ponto livre** (Força, Destreza, Inteligência, Vitalidade). Nível máximo **100**. Os números de combate (vida, dano, atributos, itens) foram afinados numa escala de 1 a 30; `shared/levels.js` converte o nível mostrado (`evLevel`) para essa escala interna, então o nível 100 equivale ao antigo 30 e cada nível vale um pouco menos que antes.
 
 ## 4. Fórmulas principais
 
-- XP para o próximo nível: `40·N² + 60·N`; XP de monstro: `10 + 7·N + 0,9·N²`, ajustado pela diferença de nível.
+- Com `E = evLevel(nível)` (o nível 1 é E=1 e o 100 é E=30): XP para o próximo nível `1,15·(40·E² + 20·E − 30)/3,41` (a curva antiga `40·N² + 60·N` em passos mais finos e 15% mais cara; do 1 ao 100 somam cerca de 423 mil XP, contra 368 mil na escala antiga); XP de monstro: `10 + 7·E + 0,9·E²`, ajustado pela diferença de E entre jogador e monstro.
 - Vida: `base + vidaPorNível·(N−1) + 8·VIT + itens`; Mana: `base + manaPorNível·(N−1) + 4·INT + itens`.
 - Poder: `dano da arma + 1,2·atributo principal + bônus`.
-- Defesa: `armadura + 0,6·VIT`. Redução de dano: `DEF / (DEF + 40 + 8·nível do atacante)`.
+- Defesa: `armadura + 0,6·VIT`. Redução de dano: `DEF / (DEF + 40 + 8·E do atacante)`.
 - Crítico: `5% + 0,12%·DES` (×1,6). Esquiva até 15%. Celeridade reduz o intervalo de ataque.
-- Monstros: vida `(35 + 18N + 1,6N²)·mult`, poder `(5 + 3N + 0,06N²)·mult`.
-- Morte fora da arena: perde 4% da XP do nível (não perde nível). Arena: sem penalidade, dano JxJ reduzido em 40%.
+- Monstros (com `E` do nível do monstro): vida `(35 + 18E + 1,6E²)·mult`, poder `(5 + 3E + 0,06E²)·mult`.
+- Morte fora da arena: perde 4% da XP de um nível da escala antiga (não perde nível). Arena: sem penalidade, dano JxJ reduzido em 40%.
 
 ## 5. Itens e economia
 
@@ -97,10 +97,10 @@ Chat por zona, mundo, grupo, clã e sussurro; grupos de até 4 (XP com bônus de
 
 ## Legado: o que faz o jogo durar anos
 
-O nível máximo é 30, mas o personagem não para de crescer. A janela **Legado** (tecla N) reúne quatro camadas, todas guardadas no personagem:
+O nível máximo é 100, mas o personagem não para de crescer. A janela **Legado** (tecla N) reúne quatro camadas, todas guardadas no personagem:
 
 - **Feitos** (105): conquistas em degraus que vão de 10 abates a 50 mil, de 1 hora de jogo a 5 mil horas (mais de seis meses ligado), do 1º chefe ao 500º. Cada feito dá Glória (pontos que sobem a patente: Recruta, Aventureiro, Veterano, Herói, Campeão, Lenda, Mito, Eterno), ouro, XP de maestria e, nos degraus altos, **títulos**. Cada chefe tem o seu feito e a campanha e a saga de Sahaar também.
-- **Maestria**: no nível 30 todo XP vira níveis de maestria, sem teto (150 mil XP no primeiro, +4,5 mil a cada novo nível). Cada nível dá 1 ponto para gastar em 9 atributos permanentes (Poder, Vitalidade, Resistência, Precisão, Fúria, Sede de Sangue, Pés Ligeiros, Faro para Ouro e Estudo), 380 pontos no total. Dá para redistribuir por uma taxa em ouro.
+- **Maestria**: no nível 100 todo XP vira níveis de maestria, sem teto (150 mil XP no primeiro, +4,5 mil a cada novo nível). Cada nível dá 1 ponto para gastar em 9 atributos permanentes (Poder, Vitalidade, Resistência, Precisão, Fúria, Sede de Sangue, Pés Ligeiros, Faro para Ouro e Estudo), 380 pontos no total. Dá para redistribuir por uma taxa em ouro.
 - **Bestiário**: cada espécie derrotada 10, 50, 250, 1 000 e 5 000 vezes dá degraus de dano extra contra ela (até +15%). Estudar uma espécie (100 abates) conta para feitos.
 - **Desafios**: 3 por dia e 2 por semana, sorteados para o nível do jogador (matar uma espécie, entregar missões, criar e aprimorar, ganhar ouro...). Pagam ouro, Glória e XP de maestria.
 
@@ -119,7 +119,7 @@ Os contadores (abates, ouro ganho, saques raros, itens criados...) ficam em `ch.
 ## Efeitos de habilidades em shader e armas de Sahaar
 - Efeitos (`client/js/three/vfx.js`): portes em GLSL dos shaders CC0 dos pacotes Binbun VFX (Hit, Battle, Elemental, Dark, Status e Explosion FX). As texturas de ruído da Godot viraram ruído de valor calculado no shader (`noi`, `pnoi` para coordenadas polares sem emenda). O `Effects3D` (fx3d.js) chama `vfx.build(e)` para cada evento `proj`, `swing`, `aoe`, `area`, `buff` e `falling`; se devolver verdadeiro o visual é do VFX (`e.v.update(t, now)`), senão cai nos efeitos simples antigos (flechas, teias e o nível Simples). `fx.hit()` (acerto) e `fx.heal()` (sinais de mais) são chamados por `game.js`. O nível vem de `quality().vfx` (0/1/2), por perfil e ajustável em Opções > Gráficos.
 - Paletas por estilo de habilidade em `PAL` (principal, secundária, terciária); estilos novos sem paleta usam a de `hit`. Todos os materiais compartilham o relógio `vfxTime`; as geometrias são compartilhadas (`userData.shared`) e só os materiais são descartados com o efeito.
-- Armas de Sahaar (`client/js/three/arms.js`, `assets/weapons/weapons.glb`, `tools/weapons/convert.mjs`): carregadas junto com o reino (`kingdoms.assets = ['voxel', 'arms']`). Entram nas mãos de bandidos das dunas (cimitarra e falcata), guardiões dourados (espada e escudo dourados) e do ferreiro Dahmir (martelo), e no saque de armas de nível 30 (cimitarra, arco dourado, martelo) quando o reino já carregou.
+- Armas de Sahaar (`client/js/three/arms.js`, `assets/weapons/weapons.glb`, `tools/weapons/convert.mjs`): carregadas junto com o reino (`kingdoms.assets = ['voxel', 'arms']`). Entram nas mãos de bandidos das dunas (cimitarra e falcata), guardiões dourados (espada e escudo dourados) e do ferreiro Dahmir (martelo), e no saque de armas do tier 7, o Solar (cimitarra, arco dourado, martelo) quando o reino já carregou.
 - Licenças de tudo o que é de terceiros: `docs/LICENCAS.md`.
 
 ## Fazenda e animais

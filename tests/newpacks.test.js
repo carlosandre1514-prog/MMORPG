@@ -65,7 +65,7 @@ test('zumbis: monstros, spawns nas Ruínas e contrato no quadro', () => {
     const m = MONSTERS[id];
     assert.ok(m, id);
     assert.equal(m.id, id);
-    assert.ok(m.undead && m.lvl[0] >= 18 && m.lvl[1] <= 26);
+    assert.ok(m.undead && m.lvl[0] >= ZONES.ruins.lvl[0] && m.lvl[1] <= ZONES.ruins.lvl[1]);
     assert.ok(ZONES.ruins.spawns.some((s) => s.m === id), `${id} nas Ruínas`);
   }
   const q = QUESTS.rb_zombie;

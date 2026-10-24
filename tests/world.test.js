@@ -12,6 +12,7 @@ import { MONSTERS } from '../shared/data/monsters.js';
 import { NPCS } from '../shared/data/npcs.js';
 import { generateMap } from '../shared/mapgen.js';
 import { T } from '../shared/tiles.js';
+import { MAX_LEVEL } from '../shared/constants.js';
 
 const read = (f) => fs.readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 
@@ -72,7 +73,7 @@ test('regiões novas: níveis, chefes, climas e terrenos próprios', () => {
     const z = ZONES[zid];
     assert.ok(z.spawns.some((s) => s.m === bid && s.n === 1), `${zid} tem o chefe ${bid}`);
     for (const s of z.spawns) assert.ok(MONSTERS[s.m], `${zid}: ${s.m}`);
-    assert.ok(z.lvl && z.lvl[0] <= z.lvl[1] && z.lvl[1] <= 30, `${zid} níveis`);
+    assert.ok(z.lvl && z.lvl[0] <= z.lvl[1] && z.lvl[1] <= MAX_LEVEL, `${zid} níveis`);
     const mlv = z.spawns.map((s) => MONSTERS[s.m].lvl[0]);
     assert.ok(Math.min(...mlv) >= z.lvl[0] - 1 && Math.max(...mlv) <= z.lvl[1] + 1, `${zid}: monstros dentro da faixa ${z.lvl}`);
     assert.ok(Object.values(NPCS).some((n) => n.zone === zid && n.services.includes('teleport')), `${zid} tem Pedra do Caminho`);
@@ -91,7 +92,7 @@ test('cripta selada: o portal só deixa passar quem abriu o selo e o aviso de pe
   assert.equal(portalSealed({ flags: { cripta_aberta: true } }, crypt), null);
   assert.equal(portalSealed({ flags: {} }, ZONES.town.portals[0]), null);
   assert.ok(dangerWarning('citadel', 10));
-  assert.equal(dangerWarning('citadel', 26), null);
+  assert.equal(dangerWarning('citadel', 80), null);
   assert.equal(dangerWarning('town', 1), null);
   assert.equal(dangerWarning('fields', 1), null);
 

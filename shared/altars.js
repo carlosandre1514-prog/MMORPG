@@ -1,13 +1,14 @@
 // Altares de viagem. Cada portal de uma zona é um altar: quem chega perto o descobre e, depois disso, pode viajar
 // para ele a partir do mapa (de graça se estiver ao lado de outro altar; com uma taxa em ouro de qualquer outro lugar).
 import { ZONES, ZONE_ORDER } from './data/zones.js';
+import { evLevel } from './levels.js';
 
 export const ALTAR_RANGE = 7; // tiles do centro do altar: descobre e conta como "ao lado do altar"
 export const ALTAR_COOLDOWN_MS = 12000; // intervalo entre duas viagens
 export const altarId = (zone, i) => `${zone}:${i}`;
 
 // ouro cobrado ao viajar longe de um altar; cresce com o nível para continuar fazendo diferença no fim do jogo
-export const travelFee = (level) => 30 + level * 10;
+export const travelFee = (level) => Math.round(30 + evLevel(level) * 10);
 
 let cache = null;
 

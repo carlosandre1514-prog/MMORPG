@@ -7,6 +7,7 @@ import { KINGDOMS } from '/shared/data/kingdoms.js';
 import { EQUIP_SLOTS, SLOT_NAMES, NPC_RANGE, RARITY } from '/shared/constants.js';
 import { itemName, itemStats, rarityColor, sellPrice } from '/shared/itemgen.js';
 import { enhanceChance, enhanceCost, MAX_PLUS } from '/shared/formulas.js';
+import { lvlFromEv } from '/shared/levels.js';
 import { h, clear, esc, fmt } from './dom.js';
 import { ico, icoHTML } from './icons.js';
 import { slotEl } from './itemview.js';
@@ -15,6 +16,9 @@ import { canAccept, almostAvailable, isComplete, progress, need, countItem } fro
 import { objText, rewardsEl, fill } from './windows.js';
 import { audio } from '../audio.js';
 import { charSprites, NPC_SPRITES } from '../charsprites.js';
+
+// nível mostrado para o tier do equipamento criado (os tiers contam na escala interna de combate, ver shared/levels.js)
+const gearLevel = (tier) => ([0, 1, 5, 10, 15, 20, 25][tier] ? lvlFromEv([0, 1, 5, 10, 15, 20, 25][tier]) : '');
 
 export const npcMixin = {
   buildNpcWindows(W) {
@@ -192,7 +196,7 @@ export const npcMixin = {
       let resultEl;
       if (r.result.id) resultEl = slotEl({ id: r.result.id, q: r.result.qty, r: 0 }, { me, compare: false });
       else {
-        resultEl = h('div', { class: 'slot gear-result', 'data-tip': `<b>${esc(r.name)}</b><div class="tt-desc">Cria um equipamento aleatório de nível ${[0, 1, 5, 10, 15, 20, 25][r.result.tier] || ''} com raridade mínima ${RARITY[r.result.minRarity].name}${r.result.gear === 'weapon' ? ' (arma da sua classe)' : ''}.</div>` }, '?');
+        resultEl = h('div', { class: 'slot gear-result', 'data-tip': `<b>${esc(r.name)}</b><div class="tt-desc">Cria um equipamento aleatório de nível ${gearLevel(r.result.tier)} com raridade mínima ${RARITY[r.result.minRarity].name}${r.result.gear === 'weapon' ? ' (arma da sua classe)' : ''}.</div>` }, '?');
         resultEl.style.borderColor = RARITY[r.result.minRarity].color;
       }
       body.appendChild(h('div', { class: 'craft-row' + (okLvl ? '' : ' locked') },

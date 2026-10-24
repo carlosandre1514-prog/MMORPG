@@ -6,7 +6,7 @@
 export const QUESTS = {
   // ===================== REINO DE SAHAAR — AS AREIAS ARDENTES =====================
   sa1: {
-    id: 'sa1', saga: 'sahaar', act: 'Sahaar', name: 'O Chamado das Areias', giver: 'thalric', turnIn: 'soraya', lvl: 24, prereq: ['ms20'],
+    id: 'sa1', saga: 'sahaar', act: 'Sahaar', name: 'O Chamado das Areias', giver: 'thalric', turnIn: 'soraya', lvl: 80, prereq: ['ms20'],
     desc: 'Atravesse a Estrada do Sol (norte das Ruínas de Cinza) até Zahrim e fale com a Emira Soraya, no Palácio do Emir.',
     offer: 'Portador, a Chama voltou a arder, mas a luz que ela acendeu chegou mais longe do que eu esperava.\n\n' +
       'Hoje de manhã um mensageiro de Sahaar, o reino das areias ao norte das Ruínas de Cinza, chegou sem fôlego às nossas portas. ' +
@@ -20,7 +20,7 @@ export const QUESTS = {
     rewards: { xp: 8000, gold: 800, items: [['pot_hp_4', 3]] },
   },
   sa2: {
-    id: 'sa2', saga: 'sahaar', act: 'Sahaar', name: 'Odres Roubados', giver: 'soraya', turnIn: 'karim', lvl: 24, prereq: ['sa1'],
+    id: 'sa2', saga: 'sahaar', act: 'Sahaar', name: 'Odres Roubados', giver: 'soraya', turnIn: 'karim', lvl: 80, prereq: ['sa1'],
     desc: 'Recupere os odres de água roubados dos Bandidos das Dunas e leve-os a Karim, no acampamento beduíno, a oeste das dunas.',
     offer: 'A água de Zahrim vem do Oásis de Karim, no meio das dunas, e as caravanas que a levavam foram saqueadas. ' +
       'Bandidos das Dunas roubam os odres e vendem aos poços secos por dez vezes o preço.\n\n' +
@@ -33,7 +33,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1500, items: [['pot_hp_4', 3], ['elixir_speed', 1]] },
   },
   sa3: {
-    id: 'sa3', saga: 'sahaar', act: 'Sahaar', name: 'Ninhos Dourados', giver: 'karim', turnIn: 'karim', lvl: 25, prereq: ['sa2'],
+    id: 'sa3', saga: 'sahaar', act: 'Sahaar', name: 'Ninhos Dourados', giver: 'karim', turnIn: 'karim', lvl: 83, prereq: ['sa2'],
     desc: 'Destrua os Escorpiões Dourados no centro das dunas e traga cinco ovos do ninho.',
     offer: 'Os escorpiões sempre existiram, mas nunca vi tantos. Cada ninho rende dez ninhadas por estação, e a Névoa os faz crescer em semanas.\n\n' +
       'Preciso que você mate dez escorpiões e traga cinco dos ovos dourados que eles carregam. ' +
@@ -45,7 +45,7 @@ export const QUESTS = {
     rewards: { xp: 22000, gold: 1800, items: [['enh_stone', 1], ['pot_mp_3', 4]] },
   },
   sa4: {
-    id: 'sa4', saga: 'sahaar', act: 'Sahaar', name: 'A Sede dos Poços', giver: 'karim', turnIn: 'soraya', lvl: 26, prereq: ['sa3'],
+    id: 'sa4', saga: 'sahaar', act: 'Sahaar', name: 'A Sede dos Poços', giver: 'karim', turnIn: 'soraya', lvl: 86, prereq: ['sa3'],
     desc: 'Derrote os Feiticeiros das Dunas e os Golens de Arenito, depois fale com a Emira Soraya, em Zahrim.',
     offer: 'Os poços não estão secando por acaso, Portador. Há feiticeiros nas dunas que queimam a água do subsolo para alimentar rituais, ' +
       'e golens de arenito que guardam as fendas por onde eles descem.\n\n' +
@@ -57,7 +57,7 @@ export const QUESTS = {
     rewards: { xp: 26000, gold: 2200, items: [['pot_hp_4', 4], ['enh_stone', 1]] },
   },
   sa5: {
-    id: 'sa5', saga: 'sahaar', act: 'Sahaar', name: 'A Rainha das Areias', giver: 'soraya', turnIn: 'soraya', lvl: 27, prereq: ['sa4'],
+    id: 'sa5', saga: 'sahaar', act: 'Sahaar', name: 'A Rainha das Areias', giver: 'soraya', turnIn: 'soraya', lvl: 90, prereq: ['sa4'],
     desc: 'Derrote Skorvax, a Rainha das Areias, no covil a sudeste das dunas, e traga o Ferrão-Selo.',
     offer: 'Todos os ninhos respondem a uma única escorpiã: Skorvax, a Rainha das Areias. Meus avós já a chamavam de lenda; hoje ela é do tamanho de um palácio.\n\n' +
       'Enquanto ela viver, as caravanas não passam e Zahrim não come. Vá ao covil dela, a sudeste das dunas, e derrote-a. ' +
@@ -71,7 +71,7 @@ export const QUESTS = {
     rewards: { xp: 40000, gold: 3500, items: [['enh_stone', 2], ['pot_hp_4', 5]] },
   },
   sa6: {
-    id: 'sa6', saga: 'sahaar', act: 'Sahaar', name: 'O Sono dos Reis', giver: 'soraya', turnIn: 'nefer', lvl: 28, prereq: ['sa5'],
+    id: 'sa6', saga: 'sahaar', act: 'Sahaar', name: 'O Sono dos Reis', giver: 'soraya', turnIn: 'nefer', lvl: 93, prereq: ['sa5'],
     desc: 'Cruze o portão norte de Zahrim até as Tumbas dos Reis-Sol e fale com a Sacerdotisa Nefer.',
     offer: 'Meus ancestrais dormem sob a cidade, mas as tumbas ficam ao norte, no deserto fundo. A última sacerdotisa do Culto do Sol, Nefer, ainda vigia a entrada.\n\n' +
       'À noite, os passos sob o palácio ficaram mais altos. Não ouso entrar lá sozinha. Vá até ela e descubra o que está acontecendo, {name}.',
@@ -82,7 +82,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 1500, items: [['pot_mp_3', 5]] },
   },
   sa7: {
-    id: 'sa7', saga: 'sahaar', act: 'Sahaar', name: 'As Tábuas Solares', giver: 'nefer', turnIn: 'nefer', lvl: 28, prereq: ['sa6'],
+    id: 'sa7', saga: 'sahaar', act: 'Sahaar', name: 'As Tábuas Solares', giver: 'nefer', turnIn: 'nefer', lvl: 93, prereq: ['sa6'],
     desc: 'Destrua as Múmias Reais e os Guardiões Dourados e recupere quatro Tábuas Solares.',
     offer: 'Os selos que mantêm os reis dormindo foram arrancados dos sarcófagos pelos próprios servos, enlouquecidos pela Névoa. ' +
       'Nas mãos das múmias e dos guardiões, as Tábuas Solares são armas. Nas minhas, são a cura.\n\n' +
@@ -94,7 +94,7 @@ export const QUESTS = {
     rewards: { xp: 35000, gold: 3000, items: [['enh_stone', 2], ['pot_hp_4', 5]] },
   },
   sa8: {
-    id: 'sa8', saga: 'sahaar', act: 'Sahaar', name: 'O Rei-Sol', giver: 'nefer', turnIn: 'soraya', lvl: 29, prereq: ['sa7'],
+    id: 'sa8', saga: 'sahaar', act: 'Sahaar', name: 'O Rei-Sol', giver: 'nefer', turnIn: 'soraya', lvl: 97, prereq: ['sa7'],
     desc: 'Derrote Amun-Kheb, o Rei-Sol, na câmara real ao norte das Tumbas, e leve a notícia à Emira Soraya.',
     offer: 'Amun-Kheb foi o rei que fundou Zahrim. Quando a Névoa chegou, ele jurou "guardar o reino para sempre" e se enterrou vivo para cumprir a promessa. ' +
       'A Névoa torceu as palavras: agora ele acredita que guardar é impedir que qualquer um entre ou saia.\n\n' +
@@ -134,7 +134,7 @@ export const QUESTS = {
     rewards: { xp: 180, gold: 30, items: [['pot_hp_1', 3], ['legs_1', 1]] },
   },
   ms3: {
-    id: 'ms3', main: true, act: 'Ato I', name: 'Uivos ao Entardecer', giver: 'lyra', turnIn: 'lyra', lvl: 3, prereq: ['ms2'],
+    id: 'ms3', main: true, act: 'Ato I', name: 'Uivos ao Entardecer', giver: 'lyra', turnIn: 'lyra', lvl: 8, prereq: ['ms2'],
     desc: 'Cace Lobos Cinzentos ao norte dos Campos e traga suas peles para Lyra.',
     offer: 'A capitã me disse que você é bom com... seja lá o que for isso que você usa.\n\n' +
       'Os lobos do norte dos campos ficaram loucos. Atacaram a carroça do Otto ontem e quase levaram o cavalo. ' +
@@ -147,7 +147,7 @@ export const QUESTS = {
     rewards: { xp: 420, gold: 50, items: [['feet_1', 1]] },
   },
   ms4: {
-    id: 'ms4', main: true, act: 'Ato I', name: 'O Eremita da Colina', giver: 'thalric', turnIn: 'osric', lvl: 4, prereq: ['ms3'],
+    id: 'ms4', main: true, act: 'Ato I', name: 'O Eremita da Colina', giver: 'thalric', turnIn: 'osric', lvl: 11, prereq: ['ms3'],
     desc: 'Encontre Osric, o Eremita, em seu santuário a sudeste dos Campos Verdejantes.',
     offer: 'Sangue cinza... então a Névoa já não apenas cerca as criaturas. Ela as transforma por dentro.\n\n' +
       'Há um homem que entende disso melhor do que eu: Osric, um antigo erudito da Ordem que preferiu a solidão às nossas regras. ' +
@@ -160,7 +160,7 @@ export const QUESTS = {
     rewards: { xp: 300, gold: 20 },
   },
   ms5: {
-    id: 'ms5', main: true, act: 'Ato I', name: 'Presa-de-Ferro', giver: 'osric', turnIn: 'osric', lvl: 5, prereq: ['ms4'],
+    id: 'ms5', main: true, act: 'Ato I', name: 'Presa-de-Ferro', giver: 'osric', turnIn: 'osric', lvl: 15, prereq: ['ms4'],
     desc: 'Derrote Presa-de-Ferro, o Javali Ancião, em sua toca no extremo sudeste dos Campos.',
     offer: 'A Névoa precisa de âncoras para se espalhar — criaturas poderosas que ela corrompe primeiro e usa como farol.\n\n' +
       'Nestes campos, a âncora é Presa-de-Ferro, o Javali Ancião. Ele guardava estas colinas desde antes de existir Alvorada. ' +
@@ -174,7 +174,7 @@ export const QUESTS = {
     rewards: { xp: 900, gold: 120, items: [['pot_hp_2', 3], ['enh_stone', 1]] },
   },
   ms6: {
-    id: 'ms6', main: true, act: 'Ato II', name: 'A Floresta Sussurrante', giver: 'osric', turnIn: 'sylvara', lvl: 6, prereq: ['ms5'],
+    id: 'ms6', main: true, act: 'Ato II', name: 'A Floresta Sussurrante', giver: 'osric', turnIn: 'sylvara', lvl: 18, prereq: ['ms5'],
     desc: 'Leve a carta de Osric até a druida Sylvara, no acampamento da Floresta Sussurrante (portal a nordeste dos Campos).',
     offer: 'Há muito tempo, duas irmãs druidas guardavam a Floresta Sussurrante: Sylvara e Vexa. ' +
       'Há um mês, Vexa desapareceu. Na mesma noite em que a Chama se apagou.\n\n' +
@@ -188,7 +188,7 @@ export const QUESTS = {
     startItems: [['q_letter', 1]], consumeOnComplete: ['q_letter'],
   },
   ms7: {
-    id: 'ms7', main: true, act: 'Ato II', name: 'Saqueadores Verdes', giver: 'kael', turnIn: 'kael', lvl: 6, prereq: ['ms6'],
+    id: 'ms7', main: true, act: 'Ato II', name: 'Saqueadores Verdes', giver: 'kael', turnIn: 'kael', lvl: 18, prereq: ['ms6'],
     desc: 'Derrote goblins e recupere os suprimentos roubados da Cidade de Alvorada.',
     offer: 'Antes de pensar em rainhas e névoas, temos um problema mais imediato: goblins.\n\n' +
       'Eles roubaram metade dos suprimentos que Alvorada mandou para este acampamento. Sem comida e remédios, não aguentamos uma semana.\n\n' +
@@ -199,7 +199,7 @@ export const QUESTS = {
     rewards: { xp: 1400, gold: 150, items: [['pot_hp_2', 4]] },
   },
   ms8: {
-    id: 'ms8', main: true, act: 'Ato II', name: 'Teias da Corrupção', giver: 'sylvara', turnIn: 'sylvara', lvl: 8, prereq: ['ms7'],
+    id: 'ms8', main: true, act: 'Ato II', name: 'Teias da Corrupção', giver: 'sylvara', turnIn: 'sylvara', lvl: 25, prereq: ['ms7'],
     desc: 'Elimine Aranhas Tecelãs no sul da floresta e traga seda para Sylvara.',
     offer: 'Desde que Vexa sumiu, aranhas gigantes surgiram no sul da floresta. Elas tecem teias cinzentas que sufocam as árvores.\n\n' +
       'Preciso da seda delas. Com ela, posso preparar um ritual para rastrear a origem da corrupção — e confirmar meus piores medos.\n\n' +
@@ -211,7 +211,7 @@ export const QUESTS = {
     rewards: { xp: 2000, gold: 180, items: [['enh_stone', 1]] },
   },
   ms9: {
-    id: 'ms9', main: true, act: 'Ato II', name: 'A Rainha Tecelã', giver: 'sylvara', turnIn: 'sylvara', lvl: 10, prereq: ['ms8'],
+    id: 'ms9', main: true, act: 'Ato II', name: 'A Rainha Tecelã', giver: 'sylvara', turnIn: 'sylvara', lvl: 32, prereq: ['ms8'],
     desc: "Derrote Vex'ara, a Rainha Tecelã, em seu covil no extremo sudeste da floresta, e recupere a Brasa da Vida.",
     offer: 'Não existe cura para o que fizeram com ela. Eu tentei. Por um mês inteiro, eu tentei.\n\n' +
       "O que resta de Vexa agora se chama Vex'ara. Ela guarda a Brasa da Vida, um dos três fragmentos da Chama. " +
@@ -228,7 +228,7 @@ export const QUESTS = {
 
   // ===================== ATO III — AS PROFUNDEZAS =====================
   ms10: {
-    id: 'ms10', main: true, act: 'Ato III', name: 'Ecos da Vitória', giver: 'sylvara', turnIn: 'thalric', lvl: 11, prereq: ['ms9'],
+    id: 'ms10', main: true, act: 'Ato III', name: 'Ecos da Vitória', giver: 'sylvara', turnIn: 'thalric', lvl: 35, prereq: ['ms9'],
     desc: 'Volte à Cidade de Alvorada e conte a Thalric sobre a Brasa da Vida.',
     offer: 'Thalric precisa saber que a primeira Brasa foi recuperada. Use uma Pedra do Caminho para voltar à cidade mais rápido.',
     progress: 'Thalric espera por você em Alvorada.',
@@ -238,7 +238,7 @@ export const QUESTS = {
     rewards: { xp: 1200, gold: 50 },
   },
   ms11: {
-    id: 'ms11', main: true, act: 'Ato III', name: 'As Minas de Ferro Negro', giver: 'thalric', turnIn: 'durgan', lvl: 11, prereq: ['ms10'],
+    id: 'ms11', main: true, act: 'Ato III', name: 'As Minas de Ferro Negro', giver: 'thalric', turnIn: 'durgan', lvl: 35, prereq: ['ms10'],
     desc: 'Atravesse o portal ao norte da Floresta Sussurrante e encontre Durgan Barba-de-Ferro nas Minas de Ferro Negro.',
     offer: 'Os anões das Minas de Ferro Negro pararam de mandar minério para Alvorada há semanas. Mandei mensageiros. Nenhum voltou.\n\n' +
       'Temo que a segunda Brasa esteja lá embaixo. Os anões tinham um guardião antigo, um golem chamado Kragmor. ' +
@@ -250,7 +250,7 @@ export const QUESTS = {
     rewards: { xp: 1600, gold: 80 },
   },
   ms12: {
-    id: 'ms12', main: true, act: 'Ato III', name: 'Mineiros Perdidos', giver: 'durgan', turnIn: 'durgan', lvl: 12, prereq: ['ms11'],
+    id: 'ms12', main: true, act: 'Ato III', name: 'Mineiros Perdidos', giver: 'durgan', turnIn: 'durgan', lvl: 39, prereq: ['ms11'],
     desc: 'Derrote os esqueletos nos túneis oeste e recupere as plaquetas dos mineiros desaparecidos.',
     offer: 'Quarenta mineiros. Quarenta! Desceram para a galeria oeste e nunca mais subiram. ' +
       'Agora, os túneis estão cheios de esqueletos usando os capacetes deles.\n\n' +
@@ -262,7 +262,7 @@ export const QUESTS = {
     rewards: { xp: 4200, gold: 400, items: [['pot_hp_3', 3]] },
   },
   ms13: {
-    id: 'ms13', main: true, act: 'Ato III', name: 'Pedra e Sombra', giver: 'durgan', turnIn: 'durgan', lvl: 14, prereq: ['ms12'],
+    id: 'ms13', main: true, act: 'Ato III', name: 'Pedra e Sombra', giver: 'durgan', turnIn: 'durgan', lvl: 45, prereq: ['ms12'],
     desc: 'Destrua os Golens de Pedra no salão leste e traga Minério de Ferro Negro para Durgan.',
     offer: 'Os golens menores, aqueles que meu povo construiu para carregar minério, também enlouqueceram. ' +
       'Estão bloqueando o caminho para o salão onde Kragmor dorme.\n\n' +
@@ -273,7 +273,7 @@ export const QUESTS = {
     rewards: { xp: 5500, gold: 450, items: [['enh_stone', 2]] },
   },
   ms14: {
-    id: 'ms14', main: true, act: 'Ato III', name: 'O Coração da Montanha', giver: 'durgan', turnIn: 'durgan', lvl: 16, prereq: ['ms13'],
+    id: 'ms14', main: true, act: 'Ato III', name: 'O Coração da Montanha', giver: 'durgan', turnIn: 'durgan', lvl: 52, prereq: ['ms13'],
     desc: 'Derrote Kragmor, o Coração da Montanha, no salão ao norte das minas, e recupere a Brasa da Terra.',
     offer: 'Kragmor foi forjado por meu bisavô, Thrain Barba-de-Ferro. Por séculos, nos protegeu de tudo. ' +
       'Agora, uma luz laranja pulsa em seu peito, e ele mata qualquer um que se aproxime.\n\n' +
@@ -289,7 +289,7 @@ export const QUESTS = {
 
   // ===================== ATO IV — O REI CINZENTO =====================
   ms15: {
-    id: 'ms15', main: true, act: 'Ato IV', name: 'A Última Vigília', giver: 'durgan', turnIn: 'elira', lvl: 17, prereq: ['ms14'],
+    id: 'ms15', main: true, act: 'Ato IV', name: 'A Última Vigília', giver: 'durgan', turnIn: 'elira', lvl: 56, prereq: ['ms14'],
     desc: 'Atravesse o túnel a oeste das minas até as Ruínas de Cinza e encontre a Comandante Elira.',
     offer: 'O túnel oeste das minas leva até as Ruínas de Cinza — o que restou do Santuário de Lúmen.\n\n' +
       'Dizem que alguns cavaleiros da Última Vigília ainda resistem por lá, comandados por uma tal Elira. ' +
@@ -301,7 +301,7 @@ export const QUESTS = {
     rewards: { xp: 4000, gold: 150 },
   },
   ms16: {
-    id: 'ms16', main: true, act: 'Ato IV', name: 'Os Velados', giver: 'elira', turnIn: 'elira', lvl: 18, prereq: ['ms15'],
+    id: 'ms16', main: true, act: 'Ato IV', name: 'Os Velados', giver: 'elira', turnIn: 'elira', lvl: 59, prereq: ['ms15'],
     desc: 'Derrote os Cultistas Velados ao norte das Ruínas e recolha seus sigilos.',
     offer: 'Os Velados são os seguidores de Morvath. Gente comum que ele convenceu de que o Vazio traria a imortalidade.\n\n' +
       'Eles mantêm uma barreira de Névoa ao redor do Santuário com rituais constantes. Cada um carrega um sigilo que alimenta a barreira.\n\n' +
@@ -312,7 +312,7 @@ export const QUESTS = {
     rewards: { xp: 11000, gold: 900, items: [['pot_hp_3', 4]] },
   },
   ms17: {
-    id: 'ms17', main: true, act: 'Ato IV', name: 'Os Caídos de Lúmen', giver: 'elira', turnIn: 'elira', lvl: 20, prereq: ['ms16'],
+    id: 'ms17', main: true, act: 'Ato IV', name: 'Os Caídos de Lúmen', giver: 'elira', turnIn: 'elira', lvl: 66, prereq: ['ms16'],
     desc: 'Liberte as almas dos Espectros Cinzentos e dos Cavaleiros das Cinzas.',
     offer: 'Os Espectros ao sul eram os sacerdotes de Lúmen. Os Cavaleiros das Cinzas ao noroeste... eram meus irmãos de armas.\n\n' +
       'Morvath os ergueu dos mortos para guardar seu trono. Não posso pedir aos meus homens que matem os próprios irmãos. Mas posso pedir a você.\n\n' +
@@ -323,7 +323,7 @@ export const QUESTS = {
     rewards: { xp: 15000, gold: 1100, items: [['enh_stone', 2], ['pot_hp_4', 3]] },
   },
   ms18: {
-    id: 'ms18', main: true, act: 'Ato IV', name: 'O Rei Cinzento', giver: 'elira', turnIn: 'elira', lvl: 22, prereq: ['ms17'],
+    id: 'ms18', main: true, act: 'Ato IV', name: 'O Rei Cinzento', giver: 'elira', turnIn: 'elira', lvl: 73, prereq: ['ms17'],
     desc: 'Enfrente Morvath, o Rei Cinzento, no Santuário de Lúmen a oeste das Ruínas, e recupere a Brasa do Espírito.',
     offer: 'Chegou a hora, Portador.\n\nMorvath está no Santuário, a oeste. Ele guarda a Brasa do Espírito, a última. ' +
       'Ele é mais forte que Vex\'ara e Kragmor juntos. Vai chamar os Velados e os mortos para lutar ao lado dele. ' +
@@ -338,7 +338,7 @@ export const QUESTS = {
     rewards: { xp: 30000, gold: 3000, flag: 'brasa_espirito' },
   },
   ms19: {
-    id: 'ms19', main: true, act: 'Epílogo', name: 'Reacender a Chama', giver: 'elira', turnIn: 'altar', lvl: 22, prereq: ['ms18'],
+    id: 'ms19', main: true, act: 'Epílogo', name: 'Reacender a Chama', giver: 'elira', turnIn: 'altar', lvl: 73, prereq: ['ms18'],
     desc: 'Leve as três Brasas ao Altar da Chama, no Santuário de Lúmen.',
     offer: 'O altar fica no centro do Santuário, logo acima de onde Morvath caiu. Vá, Portador. Aethra espera por você.',
     progress: 'O Altar da Chama fica no coração do Santuário, a oeste.',
@@ -351,7 +351,7 @@ export const QUESTS = {
     rewards: { xp: 10000, gold: 500, title: 'Portador da Chama' },
   },
   ms20: {
-    id: 'ms20', main: true, act: 'Epílogo', name: 'Alvorada', giver: 'altar', turnIn: 'thalric', lvl: 22, prereq: ['ms19'],
+    id: 'ms20', main: true, act: 'Epílogo', name: 'Alvorada', giver: 'altar', turnIn: 'thalric', lvl: 73, prereq: ['ms19'],
     desc: 'Volte à Cidade de Alvorada e fale com Thalric.',
     offer: 'Uma voz antiga ecoa da Chama: "Volte para casa, Portador. Há alguém esperando por você."',
     progress: 'Thalric espera por você em Alvorada.',
@@ -367,7 +367,7 @@ export const QUESTS = {
 
   // ===================== ATO V — A SOMBRA SOB A CHAMA (Alvorada e Pântano das Brumas) =====================
   ms21: {
-    id: 'ms21', main: true, act: 'Ato V', name: 'Sinos Sem Badalo', giver: 'thalric', turnIn: 'ysolde', lvl: 22, prereq: ['ms20'],
+    id: 'ms21', main: true, act: 'Ato V', name: 'Sinos Sem Badalo', giver: 'thalric', turnIn: 'ysolde', lvl: 73, prereq: ['ms20'],
     desc: 'Os sinos de Alvorada tocam sozinhos à noite. Thalric pediu que você procure a Arquivista Ysolde, no pátio do castelo.',
     offer: 'Você ouviu, não ouviu? Os sinos da Capela da Chama. Tocam à noite, sem ninguém na corda. Três vezes esta semana.\n\n' +
       'Pensei que fosse a Chama reacendendo e o bronze ressoando com ela. Mas o bronze não ressoa assim, {name}. Não com esse ritmo. É um chamado.\n\n' +
@@ -380,7 +380,7 @@ export const QUESTS = {
     rewards: { xp: 6000, gold: 400, items: [['pot_hp_4', 3]] },
   },
   ms22: {
-    id: 'ms22', main: true, act: 'Ato V', name: 'O Que Dorme Embaixo', giver: 'ysolde', turnIn: 'anselmo', lvl: 22, prereq: ['ms21'],
+    id: 'ms22', main: true, act: 'Ato V', name: 'O Que Dorme Embaixo', giver: 'ysolde', turnIn: 'anselmo', lvl: 73, prereq: ['ms21'],
     desc: 'Ysolde quer que você veja a laje selada no fundo do cemitério, a sudeste da cidade, e fale com o Irmão Anselmo.',
     offer: 'Todo mundo acha que a Chama Primordial é a coisa mais antiga de Aethra. Não é. É a segunda.\n\n' +
       'Antes de Aurelion acendê-la, houve outra coisa aqui: o Faminto. Não um deus, não um demônio. Uma fome. Aurelion não a destruiu, não conseguiu. Prendeu-a sob o primeiro santuário, ' +
@@ -393,7 +393,7 @@ export const QUESTS = {
     rewards: { xp: 7000, gold: 450 },
   },
   ms23: {
-    id: 'ms23', main: true, act: 'Ato V', name: 'Rumo ao Pântano', giver: 'anselmo', turnIn: 'garrett', lvl: 22, prereq: ['ms22'],
+    id: 'ms23', main: true, act: 'Ato V', name: 'Rumo ao Pântano', giver: 'anselmo', turnIn: 'garrett', lvl: 73, prereq: ['ms22'],
     desc: 'Atravesse o Portão Oeste de Alvorada até o Pântano das Brumas e encontre Garrett Pé-de-Lodo, no acampamento dos caçadores.',
     offer: 'Os discos são os Selos de Aurelion. Cinco guardiões receberam um cada, e cada guardião levou o seu para longe de Alvorada, para que nenhuma mão só pudesse abrir a laje.\n\n' +
       'Os registros de Ysolde dizem onde. O primeiro está a oeste, no Pântano das Brumas. O Portão Oeste da cidade foi fechado por vinte anos; abri-o esta manhã.\n\n' +
@@ -404,7 +404,7 @@ export const QUESTS = {
     rewards: { xp: 7000, gold: 450 },
   },
   ms24: {
-    id: 'ms24', main: true, act: 'Ato V', name: 'Sapos do Tamanho de Bois', giver: 'garrett', turnIn: 'garrett', lvl: 22, prereq: ['ms23'],
+    id: 'ms24', main: true, act: 'Ato V', name: 'Sapos do Tamanho de Bois', giver: 'garrett', turnIn: 'garrett', lvl: 73, prereq: ['ms23'],
     desc: 'Derrote os Sapos-Boi do Brejo no norte do pântano e traga cinco glândulas para o antídoto de Garrett.',
     offer: 'Primeiro, o básico. Os sapos engordaram. Dez vezes o tamanho de um ano atrás. Comem tudo que se mexe, inclusive meus rapazes.\n\n' +
       'Cada um tem uma glândula no pescoço. Bem preparada, vira antídoto contra o veneno do brejo, e sem antídoto ninguém caminha aqui mais que um dia. ' +
@@ -415,7 +415,7 @@ export const QUESTS = {
     rewards: { xp: 10000, gold: 700, items: [['pot_hp_4', 3], ['enh_stone', 1]] },
   },
   ms25: {
-    id: 'ms25', main: true, act: 'Ato V', name: 'A Herbanária', giver: 'garrett', turnIn: 'zelia', lvl: 23, prereq: ['ms24'],
+    id: 'ms25', main: true, act: 'Ato V', name: 'A Herbanária', giver: 'garrett', turnIn: 'zelia', lvl: 76, prereq: ['ms24'],
     desc: 'Procure Madre Zélia, a herbanária do brejo, na torre afundada a sudoeste do pântano.',
     offer: 'Você perguntou do Selo. Eu sei de uma única pessoa que conhece o brejo mais que eu: Madre Zélia. Vive numa torre antiga, afundada até a cintura, a sudoeste.\n\n' +
       'Ela não gosta de gente. Gosta menos ainda de armas. Leve as mãos à vista e diga que o Garrett manda lembranças. Ou que eu estou devendo. Qualquer uma das duas funciona.',
@@ -425,7 +425,7 @@ export const QUESTS = {
     rewards: { xp: 6000, gold: 400 },
   },
   ms26: {
-    id: 'ms26', main: true, act: 'Ato V', name: 'Luzes que Enganam', giver: 'zelia', turnIn: 'zelia', lvl: 23, prereq: ['ms25'],
+    id: 'ms26', main: true, act: 'Ato V', name: 'Luzes que Enganam', giver: 'zelia', turnIn: 'zelia', lvl: 76, prereq: ['ms25'],
     desc: 'Destrua os Fogos-Fátuos do centro do pântano e traga quatro lanternas verdes para Madre Zélia.',
     offer: 'O Selo está na ilha ao sul, mas ninguém chega lá: as luzes do bosque do meio levam os viajantes para dentro do lodo. Cada luz é uma lanterna que alguém carregou.\n\n' +
       'Mate doze delas e traga quatro lanternas inteiras. Eu as uso para acender um caminho de volta. Uma luz verdadeira contra uma falsa.\n\n' +
@@ -436,7 +436,7 @@ export const QUESTS = {
     rewards: { xp: 12000, gold: 800, items: [['pot_mp_3', 4]] },
   },
   ms27: {
-    id: 'ms27', main: true, act: 'Ato V', name: 'Panelas que Não Esfriam', giver: 'zelia', turnIn: 'zelia', lvl: 24, prereq: ['ms26'],
+    id: 'ms27', main: true, act: 'Ato V', name: 'Panelas que Não Esfriam', giver: 'zelia', turnIn: 'zelia', lvl: 80, prereq: ['ms26'],
     desc: 'Derrote as Bruxas do Brejo na choupana a noroeste e recolha cinco amuletos.',
     offer: 'Nem todo mundo que fugiu para o brejo fugiu direito. Há mulheres na choupana a noroeste que aprenderam com a Névoa. As panelas delas nunca esfriam, e o que cozinham ali sobe pela lama.\n\n' +
       'Eram minhas alunas, {name}. Não as odeio. Só preciso que parem. Traga cinco dos amuletos que usam para cozinhar. Sem eles, a Névoa solta o fio.\n\n' +
@@ -447,7 +447,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 900, items: [['enh_stone', 1], ['pot_hp_4', 3]] },
   },
   ms28: {
-    id: 'ms28', main: true, act: 'Ato V', name: 'Medalhões', giver: 'garrett', turnIn: 'garrett', lvl: 24, prereq: ['ms27'],
+    id: 'ms28', main: true, act: 'Ato V', name: 'Medalhões', giver: 'garrett', turnIn: 'garrett', lvl: 80, prereq: ['ms27'],
     desc: 'Dê descanso aos Afogados do sudeste do pântano e recolha seis medalhões para devolvê-los às famílias.',
     offer: 'Os afogados voltaram do fundo, Portador. Meus próprios pais estão entre eles, aposto, e eu não consigo olhar a cara de nenhum.\n\n' +
       'Todos têm um medalhão no pescoço, com o retrato de quem esperava por eles. Quero os medalhões de volta. Devolvo ao menos o que posso: a lembrança.\n\n' +
@@ -458,7 +458,7 @@ export const QUESTS = {
     rewards: { xp: 15000, gold: 1000, items: [['pot_hp_4', 4], ['elixir_def', 1]] },
   },
   ms29: {
-    id: 'ms29', main: true, act: 'Ato V', name: 'Nhaga, a Mãe-do-Brejo', giver: 'zelia', turnIn: 'ysolde', lvl: 25, prereq: ['ms28'],
+    id: 'ms29', main: true, act: 'Ato V', name: 'Nhaga, a Mãe-do-Brejo', giver: 'zelia', turnIn: 'ysolde', lvl: 83, prereq: ['ms28'],
     desc: 'Derrote Nhaga na ilha ao sul do pântano e leve o Selo do Brejo à Arquivista Ysolde, em Alvorada.',
     offer: 'É hora, {name}. A ilha ao sul é dela. Nhaga é a mãe de tudo que vive no brejo, e a Névoa a encheu de fome.\n\n' +
       'Ela salta, e onde cai o chão afunda. Cospe lodo fervente em círculos, e quando chama os girinos é porque está com medo. Quando inchar o papo, corra.\n\n' +
@@ -471,7 +471,7 @@ export const QUESTS = {
 
   // ===================== ATO VI — AS ÁGUAS MORTAS (Catacumbas Afogadas) =====================
   ms30: {
-    id: 'ms30', main: true, act: 'Ato VI', name: 'A Descida', giver: 'ysolde', turnIn: 'beatriz', lvl: 25, prereq: ['ms29'],
+    id: 'ms30', main: true, act: 'Ato VI', name: 'A Descida', giver: 'ysolde', turnIn: 'beatriz', lvl: 83, prereq: ['ms29'],
     desc: 'Atravesse o Pântano das Brumas até a saída sul e desça às Catacumbas Afogadas. Procure a Irmã Beatriz.',
     offer: 'O segundo selo é das Águas Mortas. Os registros dizem que a Ordem enterrou seu último comandante nas catacumbas sob o pântano, com o disco no peito, e que a água entrou antes da porta fechar.\n\n' +
       'Há uma sacerdotisa lá embaixo, Beatriz, que entrou para enterrar o mestre dela e nunca saiu. Se ainda vive, é a única que sabe o caminho.\n\n' +
@@ -482,7 +482,7 @@ export const QUESTS = {
     rewards: { xp: 9000, gold: 600 },
   },
   ms31: {
-    id: 'ms31', main: true, act: 'Ato VI', name: 'A Lápide do Comandante', giver: 'beatriz', turnIn: 'beatriz', lvl: 25, prereq: ['ms30'],
+    id: 'ms31', main: true, act: 'Ato VI', name: 'A Lápide do Comandante', giver: 'beatriz', turnIn: 'beatriz', lvl: 83, prereq: ['ms30'],
     desc: 'Leia a lápide do Comandante Valdric, na entrada das catacumbas, e volte a falar com a Irmã Beatriz.',
     offer: 'Antes de descer, leia a lápide do comandante. Está ao lado do acampamento, meio afundada.\n\n' +
       'Não é para rezar. É para você saber quem vai enfrentar. Eu o conheci, {name}. Valdric era o homem mais teimoso e mais gentil que a Ordem teve. ' +
@@ -493,7 +493,7 @@ export const QUESTS = {
     rewards: { xp: 6000, gold: 400 },
   },
   ms32: {
-    id: 'ms32', main: true, act: 'Ato VI', name: 'Nomes Apagados', giver: 'beatriz', turnIn: 'beatriz', lvl: 25, prereq: ['ms31'],
+    id: 'ms32', main: true, act: 'Ato VI', name: 'Nomes Apagados', giver: 'beatriz', turnIn: 'beatriz', lvl: 83, prereq: ['ms31'],
     desc: 'Derrote os Esqueletos Afogados da nave oeste e traga seis insígnias da Ordem.',
     offer: 'Os cavaleiros da Ordem ainda vagam pela nave oeste. Cada um carrega uma insígnia de bronze com o brasão. Os nomes se apagaram com a água, mas as insígnias ainda dizem de que fileira eram.\n\n' +
       'Preciso de seis. Vou limpá-las e gravar de novo os nomes, nem que seja a pedido de um fantasma. Mate doze deles, {name}. Quanto mais gentil for, menos eles sofrem.',
@@ -503,7 +503,7 @@ export const QUESTS = {
     rewards: { xp: 16000, gold: 1100, items: [['pot_hp_4', 3], ['enh_stone', 1]] },
   },
   ms33: {
-    id: 'ms33', main: true, act: 'Ato VI', name: 'O Ossário', giver: 'beatriz', turnIn: 'beatriz', lvl: 26, prereq: ['ms32'],
+    id: 'ms33', main: true, act: 'Ato VI', name: 'O Ossário', giver: 'beatriz', turnIn: 'beatriz', lvl: 86, prereq: ['ms32'],
     desc: 'Destrua os Carniçais do ossário leste e traga três chaves de osso.',
     offer: 'A passagem para o fundo está fechada por três portões de osso. As chaves estão no ossário leste, nas mãos de quem tentou saquear as criptas e nunca saiu: os carniçais.\n\n' +
       'São rápidos e se alimentam do que sobrou de você. Mate dez, traga três chaves. Evite lutar cercado, {name}. Eles sempre vêm em bando.',
@@ -513,7 +513,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1200, items: [['pot_hp_4', 3], ['enh_stone', 1]] },
   },
   ms34: {
-    id: 'ms34', main: true, act: 'Ato VI', name: 'Hinos Fúnebres', giver: 'beatriz', turnIn: 'beatriz', lvl: 26, prereq: ['ms33'],
+    id: 'ms34', main: true, act: 'Ato VI', name: 'Hinos Fúnebres', giver: 'beatriz', turnIn: 'beatriz', lvl: 86, prereq: ['ms33'],
     desc: 'Derrote os Sacerdotes Ossudos do centro das catacumbas e recupere quatro tomos de ritos.',
     offer: 'Os sacerdotes eram meus irmãos. Continuaram os ritos depois de morrer, mas agora cantam para os mortos errados, e cada hino levanta mais um cavaleiro.\n\n' +
       'Preciso dos tomos onde escrevem. Se eu quebrar a sequência, os hinos param. Mate oito sacerdotes e traga quatro tomos. Eles curam uns aos outros: derrube os curandeiros primeiro.',
@@ -523,7 +523,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1200, items: [['pot_mp_3', 5], ['enh_stone', 1]] },
   },
   ms35: {
-    id: 'ms35', main: true, act: 'Ato VI', name: 'Os Últimos Guardas', giver: 'beatriz', turnIn: 'beatriz', lvl: 26, prereq: ['ms34'],
+    id: 'ms35', main: true, act: 'Ato VI', name: 'Os Últimos Guardas', giver: 'beatriz', turnIn: 'beatriz', lvl: 86, prereq: ['ms34'],
     desc: 'Derrote os Guardiões da Cripta nas câmaras sul e traga cinco sigilos de ferro.',
     offer: 'A porta do rei está lacrada por cinco sigilos. Cada um está no peito de um guardião das câmaras sul, que juraram não deixar ninguém passar. Nem os vivos que querem entrar, nem os mortos que querem sair.\n\n' +
       'Seis guardiões, cinco sigilos. Eles se cobrem com os escudos quando feridos. Espere o escudo cair para bater.',
@@ -533,7 +533,7 @@ export const QUESTS = {
     rewards: { xp: 20000, gold: 1400, items: [['pot_hp_4', 4], ['enh_stone', 2]] },
   },
   ms36: {
-    id: 'ms36', main: true, act: 'Ato VI', name: 'O Rei Afogado', giver: 'beatriz', turnIn: 'ysolde', lvl: 27, prereq: ['ms35'],
+    id: 'ms36', main: true, act: 'Ato VI', name: 'O Rei Afogado', giver: 'beatriz', turnIn: 'ysolde', lvl: 90, prereq: ['ms35'],
     desc: 'Derrote Valdric, o Rei Afogado, na câmara do fundo das catacumbas e leve o Selo das Águas Mortas a Ysolde, em Alvorada.',
     offer: 'Ele está no fundo, onde a água é mais alta. Ele vai chamar os cavaleiros, depois os guardiões. Vai invocar a maré e, no fim, vai tentar afogar o próprio mundo.\n\n' +
       'Não o odeie. Quando ele cair, diga: "Pode ir". É só o que ele quer ouvir desde o dia em que escreveu NÃO POSSO.\n\n' +
@@ -546,7 +546,7 @@ export const QUESTS = {
 
   // ===================== ATO VII — O INVERNO ETERNO (Picos Gelados e Cidadela de Gelo) =====================
   ms37: {
-    id: 'ms37', main: true, act: 'Ato VII', name: 'Rumo ao Norte', giver: 'ysolde', turnIn: 'hjalmar', lvl: 27, prereq: ['ms36'],
+    id: 'ms37', main: true, act: 'Ato VII', name: 'Rumo ao Norte', giver: 'ysolde', turnIn: 'hjalmar', lvl: 90, prereq: ['ms36'],
     desc: 'Cruze o Portão Norte de Alvorada até os Picos Gelados e encontre o Capitão Hjalmar, no acampamento da expedição.',
     offer: 'O terceiro selo ficou com um lobo, {name}. Parece piada, mas não é. Vargnar, o guardião dos picos, era o animal mais antigo de Aethra, e a Ordem confiou nele porque nenhum homem aguentaria o frio por tanto tempo.\n\n' +
       'O Portão Norte também foi aberto esta manhã. Uma expedição boreal está acampada logo na entrada, sob o comando do Capitão Hjalmar. Procure-o. Leve roupa quente, ou pelo menos uma boa desculpa.',
@@ -556,7 +556,7 @@ export const QUESTS = {
     rewards: { xp: 10000, gold: 700 },
   },
   ms38: {
-    id: 'ms38', main: true, act: 'Ato VII', name: 'A Passagem Norte', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 27, prereq: ['ms37'],
+    id: 'ms38', main: true, act: 'Ato VII', name: 'A Passagem Norte', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 90, prereq: ['ms37'],
     desc: 'Leia o Marco da Passagem Norte, ao sul do acampamento, e volte a falar com o Capitão Hjalmar.',
     offer: 'Antes de sair, passe no marco da passagem, a coluna coberta de gelo ao sul do acampamento. É um bom ponto de partida e um péssimo lugar para morrer.\n\n' +
       'Leia a inscrição. Ela diz que só entra quem for convidado. A boa notícia é que a Chama conta como convite.',
@@ -566,7 +566,7 @@ export const QUESTS = {
     rewards: { xp: 6000, gold: 400 },
   },
   ms39: {
-    id: 'ms39', main: true, act: 'Ato VII', name: 'Lobos de Geada', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 27, prereq: ['ms38'],
+    id: 'ms39', main: true, act: 'Ato VII', name: 'Lobos de Geada', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 90, prereq: ['ms38'],
     desc: 'Derrote os Lobos-de-Gelo da encosta oeste e traga seis presas de geada.',
     offer: 'Vargnar tem uma matilha. Eles eram guardas; hoje caçam os que passam. Já perdemos dois homens para eles.\n\n' +
       'Os lobos do oeste ficam na encosta, entre o acampamento e o rio de gelo. Mate doze e traga seis presas de geada. Vou fazer pontas de lança com elas.\n\n' +
@@ -577,7 +577,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1200, items: [['pot_hp_4', 3], ['enh_stone', 1]] },
   },
   ms40: {
-    id: 'ms40', main: true, act: 'Ato VII', name: 'O Rastro do Yeti', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 27, prereq: ['ms39'],
+    id: 'ms40', main: true, act: 'Ato VII', name: 'O Rastro do Yeti', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 90, prereq: ['ms39'],
     desc: 'Derrote os Yetis do desfiladeiro leste e traga três chifres.',
     offer: 'Os yetis. Eram lenda de caçador, até a semana passada. Agora há um em cada desfiladeiro, e batem tão forte que o chão congela onde pisam.\n\n' +
       'O leste está tomado por eles. Mate oito e traga três chifres. Com os chifres, eu faço sinais que carregam o som por vales inteiros. Preciso falar com o resto do mundo, {name}.',
@@ -587,7 +587,7 @@ export const QUESTS = {
     rewards: { xp: 20000, gold: 1300, items: [['pot_hp_4', 3], ['elixir_str', 1]] },
   },
   ms41: {
-    id: 'ms41', main: true, act: 'Ato VII', name: 'O Círculo do Norte', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 28, prereq: ['ms40'],
+    id: 'ms41', main: true, act: 'Ato VII', name: 'O Círculo do Norte', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 93, prereq: ['ms40'],
     desc: 'Derrote os Corvos de Geada e os Xamãs do Gelo no norte dos picos e traga runas e penas.',
     offer: 'Os últimos magos do Círculo do Norte moram no alto dos picos, ao noroeste. Estão vivos, mas mudaram: escolheram o frio, e o frio escolheu de volta.\n\n' +
       'Eles têm runas que acendem, e os corvos carregam penas que mostram a direção da passagem. Preciso de cinco de cada. Mate dez corvos e seis xamãs.\n\n' +
@@ -598,7 +598,7 @@ export const QUESTS = {
     rewards: { xp: 22000, gold: 1400, items: [['pot_mp_3', 5], ['enh_stone', 1]] },
   },
   ms42: {
-    id: 'ms42', main: true, act: 'Ato VII', name: 'Vargnar, o Lobo do Inverno', giver: 'hjalmar', turnIn: 'ysolde', lvl: 28, prereq: ['ms41'],
+    id: 'ms42', main: true, act: 'Ato VII', name: 'Vargnar, o Lobo do Inverno', giver: 'hjalmar', turnIn: 'ysolde', lvl: 93, prereq: ['ms41'],
     desc: 'Derrote Vargnar no covil a noroeste dos picos e leve o Selo da Geada à Arquivista Ysolde, em Alvorada.',
     offer: 'É ali. Noroeste, atrás do círculo de rochas. Vargnar nunca saiu dali desde que a Névoa chegou.\n\n' +
       'Ele investe de longe, uiva e a nevasca cai, chama a matilha e, no fim, ataca como a própria tempestade. Quando investir, desvie para o lado, não para trás.\n\n' +
@@ -609,7 +609,7 @@ export const QUESTS = {
     rewards: { xp: 55000, gold: 4500, flag: 'selo_geada', items: [['enh_stone', 2], ['pot_hp_4', 5]] },
   },
   ms43: {
-    id: 'ms43', main: true, act: 'Ato VII', name: 'O Portão de Gelo', giver: 'ysolde', turnIn: 'runa', lvl: 28, prereq: ['ms42'],
+    id: 'ms43', main: true, act: 'Ato VII', name: 'O Portão de Gelo', giver: 'ysolde', turnIn: 'runa', lvl: 93, prereq: ['ms42'],
     desc: 'Cruze os Picos Gelados até a Cidadela de Gelo e encontre Runa, a vidente do Círculo do Norte, junto ao portão.',
     offer: 'O quarto selo está na Cidadela de Gelo, a fortaleza boreal da Ordem. Foi construída num dia, dizem, por um mago que não queria perder tempo com pedra.\n\n' +
       'Quem guarda o selo é Kaelisa, a melhor aluna de Aurelion. Há uma vidente do Círculo do Norte, Runa, ainda viva junto ao portão. Fale com ela primeiro. Kaelisa não gosta de visitas, nem de pressa.',
@@ -619,7 +619,7 @@ export const QUESTS = {
     rewards: { xp: 12000, gold: 800 },
   },
   ms44: {
-    id: 'ms44', main: true, act: 'Ato VII', name: 'Juramentos Congelados', giver: 'runa', turnIn: 'runa', lvl: 28, prereq: ['ms43'],
+    id: 'ms44', main: true, act: 'Ato VII', name: 'Juramentos Congelados', giver: 'runa', turnIn: 'runa', lvl: 93, prereq: ['ms43'],
     desc: 'Derrote os Cavaleiros Congelados do pátio e da biblioteca e traga seis juramentos.',
     offer: 'Os cavaleiros da Ordem do Norte congelaram em formação no dia em que a Névoa chegou. O gelo os mantém de pé. A Rainha os mantém em marcha.\n\n' +
       'Cada um tem um pergaminho de juramento no peitoral, intacto, porque a tinta congelou antes da água. Traga-me seis. Vou lê-los em voz alta para os outros, e quem sabe isso os faça se lembrar de quem foram.',
@@ -629,7 +629,7 @@ export const QUESTS = {
     rewards: { xp: 24000, gold: 1600, items: [['pot_hp_4', 4], ['enh_stone', 2]] },
   },
   ms45: {
-    id: 'ms45', main: true, act: 'Ato VII', name: 'Corações de Gelo', giver: 'runa', turnIn: 'runa', lvl: 29, prereq: ['ms44'],
+    id: 'ms45', main: true, act: 'Ato VII', name: 'Corações de Gelo', giver: 'runa', turnIn: 'runa', lvl: 97, prereq: ['ms44'],
     desc: 'Derrote os Golens de Gelo e os Espectros Glaciais dos salões leste e traga quatro núcleos.',
     offer: 'A porta do trono responde ao calor. O gelo dos golens e o frio dos espectros se alimentam do mesmo coração: pequenos núcleos que pulsam devagar.\n\n' +
       'Se eu os reunir, derreto a porta por um minuto. Mate seis golens e dez espectros, e traga quatro núcleos. Os espectros drenam vida, então não deixe nenhum encostar demais.',
@@ -639,7 +639,7 @@ export const QUESTS = {
     rewards: { xp: 26000, gold: 1800, items: [['pot_hp_4', 4], ['pot_mp_3', 5]] },
   },
   ms46: {
-    id: 'ms46', main: true, act: 'Ato VII', name: 'A Rainha Gélida', giver: 'runa', turnIn: 'ysolde', lvl: 29, prereq: ['ms45'],
+    id: 'ms46', main: true, act: 'Ato VII', name: 'A Rainha Gélida', giver: 'runa', turnIn: 'ysolde', lvl: 97, prereq: ['ms45'],
     desc: 'Derrote Kaelisa, a Rainha Gélida, no salão do trono ao norte da Cidadela, e leve o Selo do Inverno a Ysolde, em Alvorada.',
     offer: 'Ela está no trono. Foi lá que prendeu o selo no peito, para o Faminto não o tomar.\n\n' +
       'Vai chamar os espectros, depois os cavaleiros. Vai fazer chover estilhaços, e quando estiver perto do fim, vai tentar congelar o mundo inteiro por um instante. Corra para longe quando o chão ficar branco.\n\n' +
@@ -652,7 +652,7 @@ export const QUESTS = {
 
   // ===================== ATO VIII — O FAMINTO (Sahaar, Alvorada e Cripta da Chama Primeva) =====================
   ms47: {
-    id: 'ms47', main: true, act: 'Ato VIII', name: 'O Quinto Selo', giver: 'ysolde', turnIn: 'nefer', lvl: 29, prereq: ['ms46', 'sa8'],
+    id: 'ms47', main: true, act: 'Ato VIII', name: 'O Quinto Selo', giver: 'ysolde', turnIn: 'nefer', lvl: 97, prereq: ['ms46', 'sa8'],
     desc: 'Volte às Ruínas de Cinza, cruze a Estrada do Sol até Zahrim e vá às Tumbas dos Reis-Sol falar com a Sacerdotisa Nefer.',
     offer: 'O último selo é o mais velho: o disco do sol, que Aurelion entregou ao rei de Sahaar. Amun-Kheb o guardou no próprio túmulo.\n\n' +
       'Você libertou o rei, não libertou? Então ele não vai impedir que o selo volte. Mas a sacerdotisa Nefer ainda o vigia. Fale com ela nas tumbas, ao norte de Zahrim.\n\n' +
@@ -663,7 +663,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 1000 },
   },
   ms48: {
-    id: 'ms48', main: true, act: 'Ato VIII', name: 'O Disco Dourado', giver: 'nefer', turnIn: 'ysolde', lvl: 29, prereq: ['ms47'],
+    id: 'ms48', main: true, act: 'Ato VIII', name: 'O Disco Dourado', giver: 'nefer', turnIn: 'ysolde', lvl: 97, prereq: ['ms47'],
     desc: 'Leve o Selo do Sol a Ysolde, em Alvorada.',
     offer: 'Leve o disco dourado a Ysolde. A viagem é longa. Se encontrar bandidos pelo caminho, não os mate: eles têm famílias.\n\n' +
       'E {name}... diga a Soraya que a sacerdotisa lembra dela com carinho.',
@@ -674,7 +674,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 1000, flag: 'selo_sol', items: [['pot_hp_4', 5]] },
   },
   ms49: {
-    id: 'ms49', main: true, act: 'Ato VIII', name: 'A Laje se Abre', giver: 'ysolde', turnIn: 'anselmo', lvl: 29, prereq: ['ms48'],
+    id: 'ms49', main: true, act: 'Ato VIII', name: 'A Laje se Abre', giver: 'ysolde', turnIn: 'anselmo', lvl: 97, prereq: ['ms48'],
     desc: 'Leve os cinco selos à laje no fundo do cemitério e fale com o Irmão Anselmo.',
     offer: 'Anselmo está esperando. Os selos não precisam de você para abrir a laje, mas precisam de um Portador para atravessá-la, ou nada vai impedir que o Faminto saia antes da hora.\n\n' +
       'Vá ao cemitério, {name}. Eu os enviei com um corvo à frente. A laje já deve estar brilhando.',
@@ -684,7 +684,7 @@ export const QUESTS = {
     rewards: { xp: 16000, gold: 1200, flag: 'cripta_aberta', items: [['pot_hp_4', 5], ['pot_mp_3', 5]] },
   },
   ms50: {
-    id: 'ms50', main: true, act: 'Ato VIII', name: 'O Eco de Aurelion', giver: 'anselmo', turnIn: 'echo_aurelion', lvl: 29, prereq: ['ms49'],
+    id: 'ms50', main: true, act: 'Ato VIII', name: 'O Eco de Aurelion', giver: 'anselmo', turnIn: 'echo_aurelion', lvl: 97, prereq: ['ms49'],
     desc: 'Desça pela cripta selada do cemitério até a Cripta da Chama Primeva e fale com o Eco de Aurelion.',
     offer: 'A escada leva ao primeiro santuário. Dizem que Aurelion deixou algo de si lá embaixo, uma lembrança que espera por quem vier.\n\n' +
       'Leve poções, flechas, aliados e a coragem que você tem. Que a Chama o proteja, {name}. E se não proteger, que ao menos ilumine.',
@@ -694,7 +694,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 1000 },
   },
   ms51: {
-    id: 'ms51', main: true, act: 'Ato VIII', name: 'Fome com Forma', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 29, prereq: ['ms50'],
+    id: 'ms51', main: true, act: 'Ato VIII', name: 'Fome com Forma', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 97, prereq: ['ms50'],
     desc: 'Derrote os Espreitadores do Vazio nas alas oeste e centro da cripta e recolha seis cacos de sombra.',
     offer: 'O Faminto não tem corpo. Tem fome, e a fome toma forma em quem ele devorou. Os espreitadores são essas formas: sombras de quem passou por aqui e nunca saiu.\n\n' +
       'Preciso de cacos da sombra deles para forjar a ponta que vai atravessar o Faminto. Mate doze, traga seis cacos. Eles drenam a vida, {name}. Seja rápido.',
@@ -704,7 +704,7 @@ export const QUESTS = {
     rewards: { xp: 28000, gold: 2000, items: [['pot_hp_4', 5], ['enh_stone', 2]] },
   },
   ms52: {
-    id: 'ms52', main: true, act: 'Ato VIII', name: 'Os Vigias Esquecidos', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 30, prereq: ['ms51'],
+    id: 'ms52', main: true, act: 'Ato VIII', name: 'Os Vigias Esquecidos', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 100, prereq: ['ms51'],
     desc: 'Derrote os Cavaleiros do Vazio e os Guardiões Caídos da ala leste e recolha cinco sigilos.',
     offer: 'Eu enterrei aqui os cavaleiros mais leais da Ordem, para vigiar o selo. Vigiaram tempo demais. A fome os tomou, um a um, mas cada um guarda no peito o sigilo de Lúmen, que ainda se acende perto da Chama.\n\n' +
       'Preciso de cinco sigilos. Mate oito cavaleiros e oito guardiões. Eles vão cair de pé, {name}, e é assim que estão em paz.',
@@ -714,7 +714,7 @@ export const QUESTS = {
     rewards: { xp: 30000, gold: 2200, items: [['pot_hp_4', 5], ['enh_stone', 2]] },
   },
   ms53: {
-    id: 'ms53', main: true, act: 'Ato VIII', name: 'O Faminto', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 30, prereq: ['ms52'],
+    id: 'ms53', main: true, act: 'Ato VIII', name: 'O Faminto', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 100, prereq: ['ms52'],
     desc: 'Derrote Nyxthar, o Faminto, no santuário ao norte da cripta e recolha o Coração do Faminto.',
     offer: 'Chegou a hora. Ele está no centro do santuário, onde a Chama primeva ardeu pela primeira vez. Vai chamar as sombras, depois os vigias que eu enterrei. Vai absorver a luz e vai tentar devorar o próprio chão. Perto do fim, a fome vira desespero.\n\n' +
       'Ele fala a verdade, {name}. Não o escute. Não porque minta, mas porque a verdade é a arma dele.\n\n' +
@@ -725,7 +725,7 @@ export const QUESTS = {
     rewards: { xp: 120000, gold: 12000, items: [['enh_stone', 4], ['pot_hp_4', 5], ['mat_ember', 2]] },
   },
   ms54: {
-    id: 'ms54', main: true, act: 'Epílogo', name: 'Aurora', giver: 'echo_aurelion', turnIn: 'thalric', lvl: 30, prereq: ['ms53'],
+    id: 'ms54', main: true, act: 'Epílogo', name: 'Aurora', giver: 'echo_aurelion', turnIn: 'thalric', lvl: 100, prereq: ['ms53'],
     desc: 'Suba pela escada da cripta e fale com Thalric em Alvorada.',
     offer: 'Suba. Suas mãos ainda brilham, e a luz terá que voltar para quem a espera lá em cima.\n\n' +
       'Eu não vou subir. Fui feito para ficar. Mas diga a Thalric... diga que Aurelion pede desculpas por ter demorado.',
@@ -750,7 +750,7 @@ export const QUESTS = {
     rewards: { xp: 150, gold: 25, items: [['pot_hp_1', 2]] },
   },
   sq_farm: {
-    id: 'sq_farm', name: 'Pragas na Plantação', giver: 'gustavo', turnIn: 'gustavo', lvl: 4,
+    id: 'sq_farm', name: 'Pragas na Plantação', giver: 'gustavo', turnIn: 'gustavo', lvl: 11,
     desc: 'Afaste os Javalis Selvagens da plantação de Gustavo e traga presas como prova.',
     offer: 'Esses javalis aparecem toda noite e reviram tudo! Minhas abóboras, meu milho, até as cenouras da minha esposa!\n\n' +
       'Abata oito deles e me traga quatro presas. Vou pendurá-las na cerca para assustar os outros.\n\n' +
@@ -761,7 +761,7 @@ export const QUESTS = {
     rewards: { xp: 650, gold: 90, items: [['head_1', 1]] },
   },
   sq_herbs: {
-    id: 'sq_herbs', name: 'Ervas para Fenwick', giver: 'fenwick', turnIn: 'fenwick', lvl: 3,
+    id: 'sq_herbs', name: 'Ervas para Fenwick', giver: 'fenwick', turnIn: 'fenwick', lvl: 8,
     desc: 'Colete Ervas Lunares (deixadas por criaturas dos Campos e da Floresta) para o alquimista Fenwick.',
     offer: 'Meu estoque de Erva Lunar acabou! Sem ela, não consigo fazer nem uma poção decente.\n\n' +
       'Os animais dos campos e da floresta vivem comendo as ervas — às vezes você encontra algumas com eles. Me traga cinco e eu te ensino o valor da alquimia.',
@@ -771,7 +771,7 @@ export const QUESTS = {
     rewards: { xp: 450, gold: 40, items: [['pot_mp_2', 3], ['pot_hp_2', 2]] },
   },
   sq_smith: {
-    id: 'sq_smith', name: 'O Ofício da Forja', giver: 'brunhilda', turnIn: 'brunhilda', lvl: 5,
+    id: 'sq_smith', name: 'O Ofício da Forja', giver: 'brunhilda', turnIn: 'brunhilda', lvl: 15,
     desc: 'Traga Peles de Lobo e Presas de Javali para Brunhilda aprender a forjar Pedras de Aprimoramento.',
     offer: 'Quer ficar mais forte? Não basta matar bichos — precisa de bom equipamento, bem aprimorado.\n\n' +
       'Me traga três Peles de Lobo e duas Presas de Javali. Vou te mostrar como faço Pedras de Aprimoramento, e te dou algumas de presente.',
@@ -782,7 +782,7 @@ export const QUESTS = {
     rewards: { xp: 500, gold: 30, items: [['enh_stone', 3]] },
   },
   sq_shaman: {
-    id: 'sq_shaman', name: 'Silenciar os Tambores', giver: 'kael', turnIn: 'kael', lvl: 7, prereq: ['ms6'],
+    id: 'sq_shaman', name: 'Silenciar os Tambores', giver: 'kael', turnIn: 'kael', lvl: 21, prereq: ['ms6'],
     desc: 'Derrote os Goblins Xamãs que conduzem rituais no nordeste da floresta.',
     offer: 'Está ouvindo esses tambores? São os xamãs goblins, fazendo rituais para a Névoa. Cada noite que tocam, mais goblins aparecem.\n\n' +
       'Silencie seis xamãs. Eles ficam a leste do acampamento goblin.',
@@ -792,7 +792,7 @@ export const QUESTS = {
     rewards: { xp: 1500, gold: 140, items: [['pot_mp_2', 3]] },
   },
   sq_ent: {
-    id: 'sq_ent', name: 'Raízes Podres', giver: 'sylvara', turnIn: 'sylvara', lvl: 10, prereq: ['ms7'],
+    id: 'sq_ent', name: 'Raízes Podres', giver: 'sylvara', turnIn: 'sylvara', lvl: 32, prereq: ['ms7'],
     desc: 'Liberte os Ents Corrompidos no bosque a leste e traga cascas para Sylvara.',
     offer: 'Os Ents eram os anciãos da floresta. Agora, a Névoa apodrece suas raízes e eles atacam tudo que se move.\n\n' +
       'Liberte cinco deles e traga três Cascas Corrompidas. Vou usá-las para curar as árvores jovens.',
@@ -802,7 +802,7 @@ export const QUESTS = {
     rewards: { xp: 2600, gold: 220, items: [['elixir_def', 1]] },
   },
   sq_bats: {
-    id: 'sq_bats', name: 'Asas na Escuridão', giver: 'greta', turnIn: 'greta', lvl: 12, prereq: ['ms11'],
+    id: 'sq_bats', name: 'Asas na Escuridão', giver: 'greta', turnIn: 'greta', lvl: 39, prereq: ['ms11'],
     desc: 'Vingue os mineiros da galeria leste eliminando os Morcegos das Cavernas.',
     offer: 'Eles vieram aos milhares. Mordiam, guinchavam, apagavam as tochas. Meus amigos corriam no escuro e caíam nos poços.\n\n' +
       'Mate dez daqueles morcegos e me traga cinco asas. Quero pendurar na entrada da mina para que todos se lembrem.',
@@ -812,7 +812,7 @@ export const QUESTS = {
     rewards: { xp: 3800, gold: 300, items: [['pot_hp_3', 2]] },
   },
   sq_essence: {
-    id: 'sq_essence', name: 'Purificação', giver: 'cael', turnIn: 'cael', lvl: 18, prereq: ['ms15'],
+    id: 'sq_essence', name: 'Purificação', giver: 'cael', turnIn: 'cael', lvl: 59, prereq: ['ms15'],
     desc: 'Traga Essências do Vazio para o Irmão Cael purificar.',
     offer: 'Cada Essência do Vazio é um pedaço de alma que Morvath roubou. Se eu puder purificá-las, talvez essas almas encontrem paz.\n\n' +
       'Traga-me seis essências. Os cultistas e espectros as carregam.',
@@ -822,7 +822,7 @@ export const QUESTS = {
     rewards: { xp: 9000, gold: 600, items: [['elixir_xp', 2]] },
   },
   sq_arena: {
-    id: 'sq_arena', name: 'Sangue na Areia', giver: 'rurik', turnIn: 'rurik', lvl: 5,
+    id: 'sq_arena', name: 'Sangue na Areia', giver: 'rurik', turnIn: 'rurik', lvl: 15,
     desc: 'Derrote três outros jogadores na Arena de Sangue.',
     offer: 'Quer provar seu valor contra adversários de verdade? Monstros são previsíveis. Gente, não.\n\n' +
       'Derrote três oponentes na arena e terá meu respeito. E um pouco do meu ouro.',
@@ -834,7 +834,7 @@ export const QUESTS = {
 
   // ----- Peregrinação: as Pedras de Memória de todo o mundo -----
   sq_pilgrim1: {
-    id: 'sq_pilgrim1', name: 'Peregrino da Memória I', giver: 'ysolde', turnIn: 'ysolde', lvl: 22, prereq: ['ms21'],
+    id: 'sq_pilgrim1', name: 'Peregrino da Memória I', giver: 'ysolde', turnIn: 'ysolde', lvl: 73, prereq: ['ms21'],
     desc: 'Leia as Pedras de Memória de Alvorada, dos Campos, da Floresta, das Minas, das Ruínas e do Pântano das Brumas.',
     offer: 'Aurelion deixou pedras de memória em cada lugar que a Ordem protegeu. Mal se lê metade delas, mas as que sobraram contam a mesma história por ângulos diferentes.\n\n' +
       'Quero que você as leia, {name}. O marco do Portão Norte, a Estátua de Aurelion, a pedra dos Campos, a Árvore-Mãe da Floresta, a placa das Minas, o Mural das Ruínas e o marco dos Afogados no Pântano. ' +
@@ -846,7 +846,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1500, items: [['elixir_xp', 2], ['enh_stone', 1]] },
   },
   sq_pilgrim2: {
-    id: 'sq_pilgrim2', name: 'Peregrino da Memória II', giver: 'ysolde', turnIn: 'ysolde', lvl: 26, prereq: ['sq_pilgrim1', 'ms36'],
+    id: 'sq_pilgrim2', name: 'Peregrino da Memória II', giver: 'ysolde', turnIn: 'ysolde', lvl: 86, prereq: ['sq_pilgrim1', 'ms36'],
     desc: 'Leia as Pedras de Memória do deserto, das Catacumbas, dos Picos e da Cidadela de Gelo.',
     offer: 'Faltam as pedras do outro lado: as de Sahaar e as do norte. Quatro delas, mais as que pertencem às catacumbas e à Cidadela.\n\n' +
       'O Marco da Estrada do Sol nas Dunas, o Obelisco do Oásis em Zahrim, a lápide do comandante nas Catacumbas, o marco da Passagem Norte nos Picos e o friso da Cidadela de Gelo. ' +
@@ -859,7 +859,7 @@ export const QUESTS = {
 
   // ----- Pântano das Brumas -----
   sq_swamp_boots: {
-    id: 'sq_swamp_boots', name: 'Botas à Prova de Lodo', giver: 'garrett', turnIn: 'garrett', lvl: 22, prereq: ['ms24'],
+    id: 'sq_swamp_boots', name: 'Botas à Prova de Lodo', giver: 'garrett', turnIn: 'garrett', lvl: 73, prereq: ['ms24'],
     desc: 'Traga oito couros de Sapo-Boi para Garrett fazer botas para os caçadores.',
     offer: 'O couro do sapo-boi é a única coisa que aguenta a lama do brejo mais de uma semana. Mande-me oito, que eu faço botas para os rapazes que sobraram.',
     progress: 'Oito couros de Sapo-Boi. Eles andam em volta da lagoa ao norte.',
@@ -868,7 +868,7 @@ export const QUESTS = {
     rewards: { xp: 9000, gold: 700, items: [['elixir_speed', 2], ['pot_hp_4', 2]] },
   },
   sq_swamp_essence: {
-    id: 'sq_swamp_essence', name: 'Luz em Frascos', giver: 'zelia', turnIn: 'zelia', lvl: 23, prereq: ['ms26'],
+    id: 'sq_swamp_essence', name: 'Luz em Frascos', giver: 'zelia', turnIn: 'zelia', lvl: 76, prereq: ['ms26'],
     desc: 'Traga cinco essências de Fogo-Fátuo para a Madre Zélia.',
     offer: 'Uma essência de fogo-fátuo, bem fechada, ilumina uma sala por um ano sem esquentar nada. Tenho vários doentes que não suportam o fogo. Traga-me cinco.',
     progress: 'Cinco essências de Fogo-Fátuo. As luzes do bosque do meio as carregam.',
@@ -879,7 +879,7 @@ export const QUESTS = {
 
   // ----- Catacumbas Afogadas -----
   sq_cat_dust: {
-    id: 'sq_cat_dust', name: 'Pó para os Mortos', giver: 'beatriz', turnIn: 'beatriz', lvl: 25, prereq: ['ms31'],
+    id: 'sq_cat_dust', name: 'Pó para os Mortos', giver: 'beatriz', turnIn: 'beatriz', lvl: 83, prereq: ['ms31'],
     desc: 'Recolha oito pós de ossário para a Irmã Beatriz consagrar o chão das catacumbas.',
     offer: 'O pó de ossário, misturado com água benta, fecha a boca de um morto inquieto. Preciso de oito punhados. Servem os que carniçais e esqueletos deixam cair.',
     progress: 'Oito punhados de Pó de Ossário.',
@@ -888,7 +888,7 @@ export const QUESTS = {
     rewards: { xp: 14000, gold: 1000, items: [['pot_hp_4', 3], ['enh_stone', 1]] },
   },
   sq_cat_ghouls: {
-    id: 'sq_cat_ghouls', name: 'Fome nos Corredores', giver: 'beatriz', turnIn: 'beatriz', lvl: 26, prereq: ['ms33'],
+    id: 'sq_cat_ghouls', name: 'Fome nos Corredores', giver: 'beatriz', turnIn: 'beatriz', lvl: 86, prereq: ['ms33'],
     desc: 'Destrua catorze Carniçais que rondam o acampamento da Irmã Beatriz.',
     offer: 'Os carniçais se multiplicam depressa, e quando passam de vinte, já não consigo dormir. Elimine catorze, {name}, e deixe o acampamento respirar.',
     progress: 'Catorze carniçais, nos corredores leste.',
@@ -899,7 +899,7 @@ export const QUESTS = {
 
   // ----- Picos Gelados -----
   sq_peaks_pelts: {
-    id: 'sq_peaks_pelts', name: 'Casacos para a Expedição', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 27, prereq: ['ms38'],
+    id: 'sq_peaks_pelts', name: 'Casacos para a Expedição', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 90, prereq: ['ms38'],
     desc: 'Traga oito peles de geada para o Capitão Hjalmar fazer casacos para a expedição.',
     offer: 'Meus homens estão congelando dentro das próprias roupas. Peles de geada seguram o frio melhor que qualquer lã. Traga oito, e eu pago em ouro e em casacos.',
     progress: 'Oito peles de geada. Lobos-de-Gelo e Yetis as carregam.',
@@ -908,7 +908,7 @@ export const QUESTS = {
     rewards: { xp: 16000, gold: 1200, items: [['elixir_def', 2], ['pot_hp_4', 3]] },
   },
   sq_peaks_golems: {
-    id: 'sq_peaks_golems', name: 'Sentinelas do Passo', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 27, prereq: ['ms40'],
+    id: 'sq_peaks_golems', name: 'Sentinelas do Passo', giver: 'hjalmar', turnIn: 'hjalmar', lvl: 90, prereq: ['ms40'],
     desc: 'Destrua seis Golens de Gelo que bloqueiam a passagem do norte.',
     offer: 'Existem seis golens de gelo parados no meio da passagem. Parados não, esperando. Se eu tentar passar, acordam. Elimine-os, e abrimos o caminho para a Cidadela.',
     progress: 'Seis golens de gelo, perto do santuário central.',
@@ -919,7 +919,7 @@ export const QUESTS = {
 
   // ----- Cidadela de Gelo -----
   sq_cit_shards: {
-    id: 'sq_cit_shards', name: 'Cristais para a Vidente', giver: 'runa', turnIn: 'runa', lvl: 28, prereq: ['ms43'],
+    id: 'sq_cit_shards', name: 'Cristais para a Vidente', giver: 'runa', turnIn: 'runa', lvl: 93, prereq: ['ms43'],
     desc: 'Traga oito estilhas de gelo eterno para Runa reforçar as runas do portão.',
     offer: 'As runas do portão enfraquecem toda noite. Um pouco de gelo eterno fresco as reanima. Traga-me oito estilhas, e eu mantenho a entrada segura até você voltar.',
     progress: 'Oito estilhas de gelo eterno. Todo gelo desta região as carrega.',
@@ -930,7 +930,7 @@ export const QUESTS = {
 
   // ----- Cripta da Chama Primeva -----
   sq_under_shards: {
-    id: 'sq_under_shards', name: 'Escuridão em Pedaços', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 29, prereq: ['ms50'],
+    id: 'sq_under_shards', name: 'Escuridão em Pedaços', giver: 'echo_aurelion', turnIn: 'echo_aurelion', lvl: 97, prereq: ['ms50'],
     desc: 'Recolha seis fragmentos do Vazio para o Eco de Aurelion.',
     offer: 'Posso aprender com a escuridão se a estudar de perto. Traga-me seis fragmentos que as criaturas daqui deixam cair, e eu lhe conto como se vence uma fome.',
     progress: 'Seis fragmentos do Vazio. As criaturas da cripta os carregam.',
@@ -949,7 +949,7 @@ export const QUESTS = {
     rewards: { xp: 260, gold: 35 },
   },
   rb_wolf: {
-    id: 'rb_wolf', repeatable: true, name: 'Contrato: Matilha', giver: 'board', turnIn: 'board', lvl: 3,
+    id: 'rb_wolf', repeatable: true, name: 'Contrato: Matilha', giver: 'board', turnIn: 'board', lvl: 8,
     desc: 'Elimine 10 Lobos Cinzentos nos Campos Verdejantes.',
     offer: 'CARTAZ: "Lobos atacando viajantes na estrada leste. Recompensa por cada dez abatidos."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda de Alvorada.',
@@ -957,7 +957,7 @@ export const QUESTS = {
     rewards: { xp: 650, gold: 60 },
   },
   rb_goblin: {
-    id: 'rb_goblin', repeatable: true, name: 'Contrato: Goblins', giver: 'board', turnIn: 'board', lvl: 6,
+    id: 'rb_goblin', repeatable: true, name: 'Contrato: Goblins', giver: 'board', turnIn: 'board', lvl: 18,
     desc: 'Elimine 12 goblins na Floresta Sussurrante.',
     offer: 'CARTAZ: "Goblins saqueando caravanas. A Guarda paga por cada dúzia de orelhas verdes."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda de Alvorada.',
@@ -965,7 +965,7 @@ export const QUESTS = {
     rewards: { xp: 1700, gold: 120 },
   },
   rb_spider: {
-    id: 'rb_spider', repeatable: true, name: 'Contrato: Aracnídeos', giver: 'board', turnIn: 'board', lvl: 8,
+    id: 'rb_spider', repeatable: true, name: 'Contrato: Aracnídeos', giver: 'board', turnIn: 'board', lvl: 25,
     desc: 'Elimine 10 Aranhas Tecelãs na Floresta Sussurrante.',
     offer: 'CARTAZ: "Aranhas gigantes avistadas perto da estrada da floresta. Recompensa generosa."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda de Alvorada.',
@@ -973,7 +973,7 @@ export const QUESTS = {
     rewards: { xp: 2400, gold: 160 },
   },
   rb_skeleton: {
-    id: 'rb_skeleton', repeatable: true, name: 'Contrato: Mortos-Vivos', giver: 'board', turnIn: 'board', lvl: 12,
+    id: 'rb_skeleton', repeatable: true, name: 'Contrato: Mortos-Vivos', giver: 'board', turnIn: 'board', lvl: 39,
     desc: 'Destrua 12 esqueletos nas Minas de Ferro Negro.',
     offer: 'CARTAZ: "Os anões pagam em ouro por cada morto-vivo destruído nas minas. — Durgan B. F."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelos anões de Ferro Negro.',
@@ -981,7 +981,7 @@ export const QUESTS = {
     rewards: { xp: 5200, gold: 300 },
   },
   rb_golem: {
-    id: 'rb_golem', repeatable: true, name: 'Contrato: Golens', giver: 'board', turnIn: 'board', lvl: 15,
+    id: 'rb_golem', repeatable: true, name: 'Contrato: Golens', giver: 'board', turnIn: 'board', lvl: 49,
     desc: 'Destrua 8 Golens de Pedra nas Minas de Ferro Negro.',
     offer: 'CARTAZ: "Golens descontrolados bloqueando túneis. Os anões pagam bem."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelos anões de Ferro Negro.',
@@ -989,7 +989,7 @@ export const QUESTS = {
     rewards: { xp: 7000, gold: 380, items: [['mat_crystal', 1]] },
   },
   rb_cultist: {
-    id: 'rb_cultist', repeatable: true, name: 'Contrato: Velados', giver: 'board', turnIn: 'board', lvl: 18,
+    id: 'rb_cultist', repeatable: true, name: 'Contrato: Velados', giver: 'board', turnIn: 'board', lvl: 59,
     desc: 'Derrote 12 Cultistas Velados nas Ruínas de Cinza.',
     offer: 'CARTAZ: "Os Velados continuam seus rituais. A Última Vigília paga por cada cultista derrotado."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Última Vigília.',
@@ -997,7 +997,7 @@ export const QUESTS = {
     rewards: { xp: 11000, gold: 600 },
   },
   rb_zombie: {
-    id: 'rb_zombie', repeatable: true, name: 'Contrato: Mortos Famintos', giver: 'board', turnIn: 'board', lvl: 19,
+    id: 'rb_zombie', repeatable: true, name: 'Contrato: Mortos Famintos', giver: 'board', turnIn: 'board', lvl: 62,
     desc: 'Destrua 14 Zumbis das Cinzas ou Brutamontes Putrefatos nas Ruínas de Cinza.',
     offer: 'CARTAZ: "Os soldados caídos de Lúmen vagam pelas ruínas, ao sul do acampamento. A Última Vigília paga por cada um que descansar de vez."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Última Vigília.',
@@ -1005,7 +1005,7 @@ export const QUESTS = {
     rewards: { xp: 15000, gold: 800 },
   },
   rb_scorpion: {
-    id: 'rb_scorpion', repeatable: true, name: 'Contrato: Ninhos de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 24,
+    id: 'rb_scorpion', repeatable: true, name: 'Contrato: Ninhos de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 80,
     desc: 'Elimine 14 Escorpiões Dourados nas Dunas Ardentes.',
     offer: 'CARTAZ: "O emir paga por cada ferrão trazido a Zahrim. Os ninhos crescem mais rápido que a guarda consegue limpá-los."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelo tesouro do emir.',
@@ -1013,7 +1013,7 @@ export const QUESTS = {
     rewards: { xp: 16000, gold: 900, items: [['mat_chitin', 2]] },
   },
   rb_sahaar_bandits: {
-    id: 'rb_sahaar_bandits', repeatable: true, name: 'Contrato: Saqueadores', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 25,
+    id: 'rb_sahaar_bandits', repeatable: true, name: 'Contrato: Saqueadores', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 83,
     desc: 'Derrote 12 Bandidos das Dunas e 6 Feiticeiros das Dunas.',
     offer: 'CARTAZ: "Caravanas atacadas na Estrada do Sol. A Guarda do Emir paga bem a quem a mantiver aberta."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda do Emir.',
@@ -1021,7 +1021,7 @@ export const QUESTS = {
     rewards: { xp: 24000, gold: 1400, items: [['pot_hp_4', 2]] },
   },
   rb_mummy: {
-    id: 'rb_mummy', repeatable: true, name: 'Contrato: Sono Inquieto', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 28,
+    id: 'rb_mummy', repeatable: true, name: 'Contrato: Sono Inquieto', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 93,
     desc: 'Destrua 14 Múmias Reais e 8 Guardiões Dourados nas Tumbas dos Reis-Sol.',
     offer: 'CARTAZ: "A sacerdotisa Nefer pede reforços para as tumbas. O emir dobra a recompensa por cada servo libertado."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pelo emir e pelo Culto do Sol.',
@@ -1029,7 +1029,7 @@ export const QUESTS = {
     rewards: { xp: 34000, gold: 2200, items: [['enh_stone', 1]] },
   },
   rb_sahaar_bosses: {
-    id: 'rb_sahaar_bosses', repeatable: true, name: 'Contrato: Lendas de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 30,
+    id: 'rb_sahaar_bosses', repeatable: true, name: 'Contrato: Lendas de Sahaar', giver: 'board_sahaar', turnIn: 'board_sahaar', lvl: 100,
     desc: 'Derrote Skorvax e Amun-Kheb novamente.',
     offer: 'CARTAZ: "A Névoa insiste em reerguer os guardiões e as rainhas do deserto. Recompensa máxima para quem derrotar os dois."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa máxima paga pelo emir.',
@@ -1037,7 +1037,7 @@ export const QUESTS = {
     rewards: { xp: 60000, gold: 5000, items: [['enh_stone', 3], ['mat_scarab', 2]] },
   },
   rb_knight: {
-    id: 'rb_knight', repeatable: true, name: 'Contrato: Cavaleiros Caídos', giver: 'board', turnIn: 'board', lvl: 21,
+    id: 'rb_knight', repeatable: true, name: 'Contrato: Cavaleiros Caídos', giver: 'board', turnIn: 'board', lvl: 69,
     desc: 'Derrote 8 Cavaleiros das Cinzas e 8 Espectros nas Ruínas de Cinza.',
     offer: 'CARTAZ: "Os mortos de Lúmen não descansam. A Última Vigília precisa de ajuda."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Última Vigília.',
@@ -1045,7 +1045,7 @@ export const QUESTS = {
     rewards: { xp: 20000, gold: 1000, items: [['enh_stone', 1]] },
   },
   rb_bosses: {
-    id: 'rb_bosses', repeatable: true, name: 'Contrato: Caçador de Lendas', giver: 'board', turnIn: 'board', lvl: 20,
+    id: 'rb_bosses', repeatable: true, name: 'Contrato: Caçador de Lendas', giver: 'board', turnIn: 'board', lvl: 66,
     desc: "Derrote Presa-de-Ferro, Vex'ara e Kragmor novamente.",
     offer: 'CARTAZ: "A Névoa insiste em reerguer os antigos guardiões corrompidos. Recompensa máxima para quem derrotar os três."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa máxima paga pela Guarda de Alvorada.',
@@ -1053,7 +1053,7 @@ export const QUESTS = {
     rewards: { xp: 25000, gold: 2000, items: [['enh_stone', 3], ['mat_ember', 1]] },
   },
   rb_bog: {
-    id: 'rb_bog', repeatable: true, name: 'Contrato: Brejo Limpo', giver: 'board', turnIn: 'board', lvl: 22,
+    id: 'rb_bog', repeatable: true, name: 'Contrato: Brejo Limpo', giver: 'board', turnIn: 'board', lvl: 73,
     desc: 'Elimine 14 Sapos-Boi e 10 Afogados no Pântano das Brumas.',
     offer: 'CARTAZ: "O brejo a oeste volta a engordar. A Guarda paga por sapo e por afogado. Traga a prova, não o cheiro. — Garrett P. L."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda de Alvorada.',
@@ -1061,7 +1061,7 @@ export const QUESTS = {
     rewards: { xp: 18000, gold: 1000, items: [['mat_toadskin', 2]] },
   },
   rb_witches: {
-    id: 'rb_witches', repeatable: true, name: 'Contrato: Luzes e Bruxas', giver: 'board', turnIn: 'board', lvl: 23,
+    id: 'rb_witches', repeatable: true, name: 'Contrato: Luzes e Bruxas', giver: 'board', turnIn: 'board', lvl: 76,
     desc: 'Derrote 10 Fogos-Fátuos e 8 Bruxas do Brejo no Pântano das Brumas.',
     offer: 'CARTAZ: "Luzes falsas no brejo, panelas que não esfriam. Madre Zélia e a Guarda pagam o dobro por ambas."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda e por Madre Zélia.',
@@ -1069,7 +1069,7 @@ export const QUESTS = {
     rewards: { xp: 20000, gold: 1100, items: [['mat_wisp', 2]] },
   },
   rb_catacombs: {
-    id: 'rb_catacombs', repeatable: true, name: 'Contrato: Mortos da Ordem', giver: 'board', turnIn: 'board', lvl: 25,
+    id: 'rb_catacombs', repeatable: true, name: 'Contrato: Mortos da Ordem', giver: 'board', turnIn: 'board', lvl: 83,
     desc: 'Destrua 12 Esqueletos Afogados e 10 Carniçais nas Catacumbas Afogadas.',
     offer: 'CARTAZ: "Os mortos das catacumbas não descansam. A Irmã Beatriz e a Guarda pagam por cada um que descansar de vez."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda e pela Irmã Beatriz.',
@@ -1077,7 +1077,7 @@ export const QUESTS = {
     rewards: { xp: 24000, gold: 1300, items: [['mat_gravedust', 2]] },
   },
   rb_priests: {
-    id: 'rb_priests', repeatable: true, name: 'Contrato: Hinos Interrompidos', giver: 'board', turnIn: 'board', lvl: 26,
+    id: 'rb_priests', repeatable: true, name: 'Contrato: Hinos Interrompidos', giver: 'board', turnIn: 'board', lvl: 86,
     desc: 'Derrote 8 Sacerdotes Ossudos e 6 Guardiões da Cripta nas Catacumbas Afogadas.',
     offer: 'CARTAZ: "Os hinos recomeçaram nas catacumbas. Interrompam-nos. Recompensa generosa."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda de Alvorada.',
@@ -1085,7 +1085,7 @@ export const QUESTS = {
     rewards: { xp: 28000, gold: 1500, items: [['enh_stone', 1]] },
   },
   rb_frost: {
-    id: 'rb_frost', repeatable: true, name: 'Contrato: Matilha Branca', giver: 'board', turnIn: 'board', lvl: 22,
+    id: 'rb_frost', repeatable: true, name: 'Contrato: Matilha Branca', giver: 'board', turnIn: 'board', lvl: 73,
     desc: 'Elimine 14 Lobos-de-Gelo e 10 Corvos de Geada nos Picos Gelados.',
     offer: 'CARTAZ: "Lobos e corvos de geada atacam a estrada norte. A expedição de Hjalmar precisa de passagem livre."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Guarda e pela Expedição Boreal.',
@@ -1093,7 +1093,7 @@ export const QUESTS = {
     rewards: { xp: 20000, gold: 1100, items: [['mat_frostpelt', 2]] },
   },
   rb_yeti: {
-    id: 'rb_yeti', repeatable: true, name: 'Contrato: Gigantes da Neve', giver: 'board', turnIn: 'board', lvl: 24,
+    id: 'rb_yeti', repeatable: true, name: 'Contrato: Gigantes da Neve', giver: 'board', turnIn: 'board', lvl: 80,
     desc: 'Derrote 8 Yetis, 8 Xamãs do Gelo e 6 Golens de Gelo nos Picos Gelados.',
     offer: 'CARTAZ: "Yetis, xamãs e golens de gelo bloqueiam as passagens. A Expedição Boreal paga em ouro e em favores."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Expedição Boreal.',
@@ -1101,7 +1101,7 @@ export const QUESTS = {
     rewards: { xp: 26000, gold: 1400, items: [['mat_frost', 2]] },
   },
   rb_citadel: {
-    id: 'rb_citadel', repeatable: true, name: 'Contrato: Salões Congelados', giver: 'board', turnIn: 'board', lvl: 27,
+    id: 'rb_citadel', repeatable: true, name: 'Contrato: Salões Congelados', giver: 'board', turnIn: 'board', lvl: 90,
     desc: 'Derrote 10 Cavaleiros Congelados e 10 Espectros Glaciais na Cidadela de Gelo.',
     offer: 'CARTAZ: "A Cidadela de Gelo ainda guarda cavaleiros e espectros. Runa, a vidente, paga por cada alma libertada."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga por Runa e pela Guarda.',
@@ -1109,7 +1109,7 @@ export const QUESTS = {
     rewards: { xp: 32000, gold: 1800, items: [['mat_frost', 3], ['enh_stone', 1]] },
   },
   rb_void: {
-    id: 'rb_void', repeatable: true, name: 'Contrato: Fome Sem Fim', giver: 'board', turnIn: 'board', lvl: 29,
+    id: 'rb_void', repeatable: true, name: 'Contrato: Fome Sem Fim', giver: 'board', turnIn: 'board', lvl: 97,
     desc: 'Destrua 12 Espreitadores, 8 Cavaleiros do Vazio e 6 Guardiões Caídos na Cripta da Chama Primeva.',
     offer: 'CARTAZ: "A fome sob Alvorada se renova. A Ordem e a Guarda pagam o preço máximo por cada sombra desfeita."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa paga pela Ordem dos Guardiões.',
@@ -1117,7 +1117,7 @@ export const QUESTS = {
     rewards: { xp: 40000, gold: 2400, items: [['mat_voidshard', 2], ['enh_stone', 2]] },
   },
   rb_bosses2: {
-    id: 'rb_bosses2', repeatable: true, name: 'Contrato: Os Quatro Guardiões', giver: 'board', turnIn: 'board', lvl: 29,
+    id: 'rb_bosses2', repeatable: true, name: 'Contrato: Os Quatro Guardiões', giver: 'board', turnIn: 'board', lvl: 97,
     desc: 'Derrote Nhaga, Valdric, Vargnar e Kaelisa novamente.',
     offer: 'CARTAZ: "Os guardiões dos selos insistem em voltar. Recompensa máxima para quem derrotar os quatro."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa máxima paga pela Guarda de Alvorada.',
@@ -1125,7 +1125,7 @@ export const QUESTS = {
     rewards: { xp: 70000, gold: 5000, items: [['enh_stone', 3], ['mat_ember', 1]] },
   },
   rb_faminto: {
-    id: 'rb_faminto', repeatable: true, name: 'Contrato: O Faminto', giver: 'board', turnIn: 'board', lvl: 30,
+    id: 'rb_faminto', repeatable: true, name: 'Contrato: O Faminto', giver: 'board', turnIn: 'board', lvl: 100,
     desc: 'Derrote Nyxthar, o Faminto, novamente.',
     offer: 'CARTAZ: "A fome não morre. Recompensa suprema para quem a calar de novo."',
     progress: 'O contrato ainda está em aberto.', complete: 'Recompensa suprema paga pela Ordem.',

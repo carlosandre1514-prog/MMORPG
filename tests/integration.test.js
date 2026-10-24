@@ -65,7 +65,9 @@ test('missão inicial, combate, experiência e saque', async () => {
   const slime = [...bot.entities.values()].filter((e) => e.k === 'm' && e.m === 'slime')
     .sort((a, b) => Math.hypot(a.x - bot.x, a.y - bot.y) - Math.hypot(b.x - bot.x, b.y - bot.y))[0];
   assert.ok(slime, 'deve existir uma gosma por perto');
-  const xpBefore = bot.state.me ? bot.state.me.xp : 0;
+  // os primeiros níveis são curtos: um nível a mais também conta como XP ganho
+  const progress = (me) => (me ? me.lv * 1e9 + me.xp : 0);
+  const xpBefore = progress(bot.state.me);
   let killed = false;
   for (let i = 0; i < 80 && !killed; i++) {
     const s = bot.entities.get(slime.id);
@@ -85,7 +87,7 @@ test('missão inicial, combate, experiência e saque', async () => {
   const prog = await bot.wait((m) => m.t === 'qprog' && m.m.startsWith('Prova'));
   assert.match(prog.m, /1\/6/);
   await sleep(200);
-  assert.ok(bot.state.me.xp > xpBefore, 'deve ganhar XP');
+  assert.ok(progress(bot.state.me) > xpBefore, 'deve ganhar XP');
   bot.close();
 });
 
@@ -148,7 +150,7 @@ test('loja, criação, aprimoramento, baú e viagem', async () => {
   await bot.login('crafter');
   await bot.createAndEnter('Artesao', 'mage');
   bot.chat('/ouro 3000');
-  bot.chat('/nivel 6');
+  bot.chat('/nivel 20');
   await sleep(200);
   // compra com Otto
   bot.chat(`/tp ${NPCS.otto.x} ${NPCS.otto.y + 1.5}`);

@@ -4,6 +4,7 @@ import { createItem, rollRarity, randomEquipmentBase } from '../../shared/itemge
 import { ITEMS } from '../../shared/data/items.js';
 import { CLASS_LIST } from '../../shared/data/classes.js';
 import { COMBAT_TIMEOUT } from '../../shared/constants.js';
+import { evLevel } from '../../shared/levels.js';
 import { isSafeAt } from '../../shared/data/zones.js';
 import { addStatus, hasStatus, removeStatus, clearStatuses } from './effects.js';
 import { onKill, onPvpKill, needsQuestItem } from './quests.js';
@@ -177,7 +178,7 @@ function killMonster(zone, m, killer) {
   const baseXp = monsterXp(m.lvl) * (def.xpMult || 1) * world.xpRate;
   const n = parts.length;
   const share = n > 1 ? (1 + 0.15 * (n - 1)) / n : 1;
-  const goldTotal = rand.int(def.gold[0], def.gold[1]) * (1 + m.lvl * 0.05);
+  const goldTotal = rand.int(def.gold[0], def.gold[1]) * (1 + evLevel(m.lvl) * 0.05);
   for (const p of parts) {
     const xp = baseXp * share * xpLevelMod(p.level, m.lvl);
     if (p.alive) world.giveXp(p, Math.max(1, Math.round(xp)));

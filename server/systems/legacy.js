@@ -5,7 +5,7 @@ import {
   dayIndex, weekIndex, dayEnds, weekEnds, makeChallenges,
 } from '../../shared/data/legacy.js';
 import { MAX_LEVEL } from '../../shared/constants.js';
-import { xpToNext } from '../../shared/formulas.js';
+import { xpStep } from '../../shared/formulas.js';
 
 const SEND_EVERY = 4000; // ms entre dois envios do legado enquanto o jogador está jogando
 
@@ -98,7 +98,7 @@ function unlock(world, p, a) {
   ch.ach[a.id] = Date.now();
   if (a.gold) { ch.gold += a.gold; p.dirty.me = true; }
   if (a.mxp && ch.level >= MAX_LEVEL) addMasteryXp(p, a.mxp);
-  else if (a.mxp) world.giveXp(p, Math.round(xpToNext(ch.level) * 0.25));
+  else if (a.mxp) world.giveXp(p, Math.round(xpStep(ch.level) * 0.25));
   if (a.title && !ch.titles.includes(a.title)) {
     ch.titles.push(a.title);
     if (!ch.title) { ch.title = a.title; p.ver++; }
@@ -167,7 +167,7 @@ export function claimChallenge(world, p, kind, i) {
   const rw = ch1.rw;
   if (rw.gold) { ch.gold += rw.gold; p.dirty.me = true; }
   if (ch.level >= MAX_LEVEL) addMasteryXp(p, rw.mxp);
-  else world.giveXp(p, Math.round(xpToNext(ch.level) * rw.xp), true);
+  else world.giveXp(p, Math.round(xpStep(ch.level) * rw.xp), true);
   if (rw.pts) ch.stats.glory = (ch.stats.glory || 0) + rw.pts;
   p.msg(`Desafio cumprido: ${ch1.text} (+${rw.gold} de ouro, +${rw.pts} Glória)`, 'quest');
   p.send({ t: 'sfx', s: 'coin' });

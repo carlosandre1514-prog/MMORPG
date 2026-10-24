@@ -55,7 +55,7 @@ test('maestria: fórmulas e o custo cresce devagar para durar anos', () => {
   assert.ok(masteryNext(100) > masteryNext(0));
   // gastar todos os graus de poder dá +20%
   assert.ok(Math.abs(masteryBonus({ power: 50 }).power - 0.2) < 1e-9);
-  const base = { cls: 'warrior', level: 30, alloc: { str: 0, dex: 0, int: 0, vit: 0 }, equip: {}, flags: {} };
+  const base = { cls: 'warrior', level: MAX_LEVEL, alloc: { str: 0, dex: 0, int: 0, vit: 0 }, equip: {}, flags: {} };
   const a = computeStats(base), b = computeStats({ ...base, mastery: { ranks: { power: 50, hp: 50, def: 40, crit: 50, haste: 40, lifesteal: 30, speed: 20 } } });
   assert.ok(b.power > a.power * 1.19 && b.maxHp > a.maxHp * 1.24 && b.def > a.def * 1.19);
   assert.ok(b.crit - a.crit >= 5.9 && b.haste - a.haste >= 7.9 && b.lifesteal - a.lifesteal >= 1.19 && b.speed > a.speed);

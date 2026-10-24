@@ -2,6 +2,7 @@
 import { MONSTERS } from '../../shared/data/monsters.js';
 import { lineClear, moveWithCollision, castRay, canStand } from '../../shared/collision.js';
 import { findPath } from '../../shared/pathfinding.js';
+import { lvSpan } from '../../shared/levels.js';
 import { addStatus, hasStatus } from './effects.js';
 import { dealDamage, computeHit, isHostile, heal, applyStun } from './combat.js';
 import { Monster } from '../entities/monster.js';
@@ -364,7 +365,7 @@ export function updateMonster(zone, m, now, dt) {
         for (const p of zone.players) {
           if (!p.alive || !isHostile(zone, m, p)) continue;
           // monstros muito mais fracos ignoram jogadores fortes
-          if (!m.def.boss && p.level >= m.lvl + 8) continue;
+          if (!m.def.boss && p.level >= m.lvl + lvSpan(8)) continue;
           const d = dist(p, m);
           if (d < bestD) { bestD = d; best = p; }
         }

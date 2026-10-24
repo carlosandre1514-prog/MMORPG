@@ -2,6 +2,7 @@
 import { SKILLS } from '../../shared/data/skills.js';
 import { CLASSES } from '../../shared/data/classes.js';
 import { GLOBAL_COOLDOWN } from '../../shared/constants.js';
+import { evLevel } from '../../shared/levels.js';
 import { castRay, canStand } from '../../shared/collision.js';
 import { addStatus, removeStatus, hasStatus } from './effects.js';
 import { bump } from './legacy.js';
@@ -228,7 +229,7 @@ const IMPL = {
     });
   },
   m_shield(zone, p, sk) {
-    const amount = Math.round(25 + p.stats.int * 3 + p.level * 6);
+    const amount = Math.round(25 + p.stats.int * 3 + evLevel(p.level) * 6);
     addStatus(p, { id: 'm_shield', type: 'shield', amount, dur: sk.dur, name: 'Escudo Arcano' });
     zone.fx({ k: 'bf', id: p.id, s: 'arcane' }, p.x, p.y);
   },

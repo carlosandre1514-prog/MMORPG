@@ -87,7 +87,13 @@ test('dados consistentes: missões, NPCs, receitas, habilidades', () => {
   }
   // a campanha principal é uma cadeia contínua
   const main = Object.values(QUESTS).filter((q) => q.main);
-  assert.equal(main.length, 20);
+  assert.equal(main.length, 54);
+  // cada missão principal (menos a primeira) depende de uma anterior da campanha
+  for (const q of main.slice(1)) assert.ok((q.prereq || []).some((p) => QUESTS[p].main), `${q.id} sem elo com a campanha`);
+  // os chefes das regiões novas entregam o selo da missão certa
+  for (const [m, q] of [['nhaga', 'ms29'], ['valdric', 'ms36'], ['vargnar', 'ms42'], ['kaelisa', 'ms46'], ['nyxthar', 'ms53']]) {
+    assert.ok(MONSTERS[m].questDrops.some((d) => d.quest === q && d.chance === 1), `${m} dá o item de ${q}`);
+  }
 });
 
 test('mapas: gerados, conectados e com NPCs/portais acessíveis', () => {

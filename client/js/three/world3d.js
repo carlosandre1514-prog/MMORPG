@@ -269,6 +269,10 @@ const SCENERY = {
 };
 
 // ------------------------------------------------------------------ cena da zona
+// cor do chão que cerca o mapa e matiz das paredes de rocha, por zona
+const OUTER_GROUND = { ruins: 0x3a3330, swamp: 0x2a3322, peaks: 0xdde7ef, citadel: 0x1b2533, catacombs: 0x141f22, undercroft: 0x150d1b };
+const ROCK_TINT = { catacombs: [0.95, 1.35, 1.3], citadel: [1.5, 1.9, 2.7], undercroft: [1.15, 0.8, 1.35] };
+
 export class ZoneScene {
   constructor(zone, terrain, renderer) {
     this.zone = zone;
@@ -391,7 +395,7 @@ export class ZoneScene {
     // chão além das bordas
     const def = z.def;
     const outer = new THREE.Mesh(new THREE.PlaneGeometry(z.w + 120, z.h + 120).rotateX(-Math.PI / 2),
-      Object.assign(new THREE.MeshLambertMaterial({ color: def.gen.type === 'cave' || def.gen.type === 'arena' ? 0x1c1916 : def.id === 'ruins' ? 0x3a3330 : 0x24401f }), { userData: { ground: true } }));
+      Object.assign(new THREE.MeshLambertMaterial({ color: OUTER_GROUND[def.id] ?? (def.gen.type === 'cave' || def.gen.type === 'arena' ? 0x1c1916 : 0x24401f) }), { userData: { ground: true } }));
     outer.position.set(z.w / 2, -0.02, z.h / 2);
     this.group.add(outer);
   }
@@ -490,12 +494,13 @@ export class ZoneScene {
     const inst = new THREE.InstancedMesh(geo, mat, list.length);
     const mtx = new THREE.Matrix4();
     const tint = new THREE.Color();
+    const rockTint = ROCK_TINT[this.zone.id];
     list.forEach(([x, y], i) => {
       const h = 1.05 + hash2(x, y, 9) * 0.6;
       mtx.compose(_v.set(x + 0.5, 0, y + 0.5), _q.identity(), _s.set(1.001, h, 1.001));
       inst.setMatrixAt(i, mtx);
       // as paredes de arenito das tumbas são mais quentes e claras que a rocha das cavernas
-      inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? tint.setRGB(1.6, 1.32, 0.95) : tint.setRGB(1, 1, 1));
+      inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? tint.setRGB(1.6, 1.32, 0.95) : rockTint ? tint.setRGB(...rockTint) : tint.setRGB(1, 1, 1));
     });
     inst.castShadow = true;
     inst.receiveShadow = true;
@@ -528,7 +533,8 @@ export class ZoneScene {
         mtx.compose(_v.set(x + 0.5, 0, y + 0.5), _q.setFromAxisAngle(up, r * 12), _s.set(s, s * (0.9 + r * 0.5), s));
         inst.setMatrixAt(i, mtx);
         const k = 0.5 + hash2(x, y, 44) * 0.2;
-        inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? col.setRGB(k * 1.55, k * 1.3, k * 0.95) : col.setRGB(k * 1.05, k, k * 0.92));
+        const rt = ROCK_TINT[this.zone.id];
+        inst.setColorAt(i, m.tiles[y * m.w + x] === T.TOMBWALL ? col.setRGB(k * 1.55, k * 1.3, k * 0.95) : rt ? col.setRGB(k * rt[0], k * rt[1], k * rt[2]) : col.setRGB(k * 1.05, k, k * 0.92));
       });
       inst.castShadow = true;
       inst.receiveShadow = true;

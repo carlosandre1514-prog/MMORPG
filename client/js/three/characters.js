@@ -74,12 +74,37 @@ export const LOOKS = {
   zombie: { kind: 'zombie', rise: true },
   zombie_brute: { kind: 'zombie', rise: true, hue: -40, sat: 1.15, bright: 0.72 },
   morvath: { model: 'Knight', right: 'staff', sat: 0.15, bright: 0.6, emissive: [0.4, 0.08, 0.02], float: 0.35 },
+  // Oeste de Alvorada: Pântano das Brumas e Catacumbas Afogadas
+  garrett: { model: 'Ranger', left: 'bow_withString', hue: -35, sat: 0.8, bright: 0.85 },
+  zelia: { model: 'Mage', right: 'staff', hue: -115, sat: 0.6, bright: 0.85, scale: 0.92 },
+  beatriz: { model: 'Mage', right: 'staff', hide: ['Hat'], sat: 0.15, bright: 1.4 },
+  bog_witch: { model: 'Mage', right: 'staff', scale: 0.92, hue: -115, sat: 1.1, bright: 0.85 },
+  drowned: { kind: 'zombie', rise: true, hue: 75, sat: 0.8, bright: 0.9 },
+  drowned_skeleton: { model: 'Skeleton_Minion', right: 'Skeleton_Axe', tint: [0.55, 1.1, 1.0], eyes: [0.3, 1.0, 0.85], rise: true },
+  ghoul: { kind: 'zombie', rise: true, hue: 20, sat: 0.35, bright: 1.35 },
+  bone_priest: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', tint: [0.85, 0.7, 1.2], eyes: [0.7, 0.35, 1.0], emissive: [0.08, 0.03, 0.14], rise: true },
+  crypt_warden: { model: 'Skeleton_Warrior', right: 'Skeleton_Blade', left: 'Skeleton_Shield_Large_A', scale: 1.2, tint: [0.55, 1.0, 1.0], eyes: [0.3, 1.0, 0.85], rise: true },
+  valdric: { model: 'Skeleton_Warrior', right: 'sword_2handed', left: 'Skeleton_Shield_Large_A', scale: 1.15, tint: [0.5, 1.15, 1.05], eyes: [0.3, 1.0, 0.85], emissive: [0, 0.16, 0.14], rise: true },
+  // Norte de Alvorada: Picos Gelados e Cidadela de Gelo
+  ysolde: { model: 'Mage', left: 'spellbook_open', hue: 300, sat: 0.7 },
+  anselmo: { model: 'Rogue_Hooded', right: 'staff', sat: 0.1, bright: 0.8 },
+  hjalmar: { model: 'Barbarian', right: 'axe_2handed', hue: 200, sat: 0.6, bright: 1.15 },
+  runa: { model: 'Mage', right: 'staff', hide: ['Hat'], hue: 195, sat: 0.8, bright: 1.35 },
+  frost_mage: { model: 'Mage', right: 'staff', hue: 200, sat: 0.9, bright: 1.35, emissive: [0.04, 0.1, 0.2] },
+  frozen_knight: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color', hue: 205, sat: 0.6, bright: 1.45, emissive: [0.04, 0.1, 0.18] },
+  frost_wraith: { model: 'Skeleton_Mage', right: 'Skeleton_Staff', tint: [0.7, 0.95, 1.35], eyes: [0.6, 0.95, 1.0], ghost: true, float: 0.4, emissive: [0.1, 0.2, 0.3], spawnClip: 'Spawn_Air' },
+  kaelisa: { model: 'Mage', right: 'staff', hide: ['Hat'], hue: 200, sat: 0.7, bright: 1.6, emissive: [0.1, 0.22, 0.38], float: 0.35 },
+  // Cripta da Chama Primeva
+  echo_aurelion: { model: 'Knight', right: 'sword_2handed', sat: 0.1, bright: 1.7, ghost: true, emissive: [0.35, 0.3, 0.15] },
+  void_knight: { model: 'Knight', right: 'sword_1handed', left: 'shield_badge_color', sat: 0.15, bright: 0.3, emissive: [0.28, 0.04, 0.38] },
+  fallen_keeper: { model: 'Knight', right: 'sword_2handed', hue: 42, sat: 0.4, bright: 0.75, emissive: [0.3, 0.2, 0.0] },
 };
 
 // armas montadas em código (nome com @)
 const PROCEDURAL = { '@mace': () => buildMace(THREE) };
 
-const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith', 'soraya', 'safiya', 'dune_sorcerer', 'sun_king']);
+const CASTERS = new Set(['mage', 'thalric', 'fenwick', 'ilyas', 'osric', 'sylvara', 'cultist', 'goblin_shaman', 'morvath', 'cleric', 'wraith', 'soraya', 'safiya', 'dune_sorcerer', 'sun_king',
+  'ysolde', 'zelia', 'beatriz', 'runa', 'bog_witch', 'bone_priest', 'frost_mage', 'frost_wraith', 'kaelisa']);
 
 const CLIPS = {
   idle: 'Idle_A', walk: 'Walking_A', run: 'Running_A', attack: 'Throw', cast: 'Use_Item',

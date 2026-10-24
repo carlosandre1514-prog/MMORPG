@@ -67,7 +67,8 @@ test('bestiário: degraus de conhecimento viram dano extra contra a espécie', (
   assert.equal(bestiaryRank(10), 1);
   assert.equal(bestiaryRank(5000), 5);
   assert.ok(Math.abs(bestiaryBonus(5000) - 0.15) < 1e-9);
-  assert.equal(BESTIARY_LIST.length, 30);
+  assert.equal(BESTIARY_LIST.length, Object.values(MONSTERS).filter((m) => !m.summon).length);
+  assert.ok(BESTIARY_LIST.length >= 50 && BESTIARY_LIST.includes('nyxthar') && !BESTIARY_LIST.includes('toadling'));
 });
 
 test('desafios: sorteio estável, recompensas e período', () => {

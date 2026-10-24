@@ -18,6 +18,7 @@ import { activeQuests, progress, need, isComplete } from '../questlogic.js';
 import { windowsMixin } from './windows.js';
 import { npcMixin } from './npcui.js';
 import { legacyMixin } from './legacyui.js';
+import { worldMapMixin } from './worldmap.js';
 import { ico, icoHTML, STATUS_ICON } from './icons.js';
 import { MobileControls } from './mobile.js';
 import { chatBox } from './chatbox.js';
@@ -859,5 +860,5 @@ export function objectiveText(o) {
   }
 }
 
-Object.assign(UI.prototype, windowsMixin, npcMixin, legacyMixin);
+Object.assign(UI.prototype, windowsMixin, npcMixin, legacyMixin, worldMapMixin);
 export { CHAT };

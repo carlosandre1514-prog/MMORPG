@@ -5,6 +5,7 @@ export const T = {
   CAVE: 7, ASH: 8, LAVA: 9, BRIDGE: 10, DARKGRASS: 11, CAVEWALL: 12,
   MUD: 13, COBBLE: 14, RUIN: 15, VOID: 16, ARENA: 17,
   DUNE: 18, SANDSTONE: 19, TOMBFLOOR: 20, TOMBWALL: 21, // Reino de Sahaar
+  SNOW: 22, ICE: 23, // Picos Gelados e Cidadela de Gelo
 };
 
 export const TILE_INFO = [];
@@ -30,6 +31,8 @@ TILE_INFO[T.DUNE] = { name: 'duna', walk: true };
 TILE_INFO[T.SANDSTONE] = { name: 'arenito', walk: true };
 TILE_INFO[T.TOMBFLOOR] = { name: 'piso de tumba', walk: true };
 TILE_INFO[T.TOMBWALL] = { name: 'parede de tumba', walk: false };
+TILE_INFO[T.SNOW] = { name: 'neve', walk: true };
+TILE_INFO[T.ICE] = { name: 'gelo', walk: true };
 
 // paredes de rocha das cavernas e das tumbas (desenhadas como paredes altas)
 export const isRock = (t) => t === T.CAVEWALL || t === T.TOMBWALL;

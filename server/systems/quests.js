@@ -106,9 +106,12 @@ export function turnInQuest(world, p, qid) {
     p.recalc();
   }
   if (r.title) {
+    p.char.titles ||= [];
+    if (!p.char.titles.includes(r.title)) p.char.titles.push(r.title);
     p.char.title = r.title;
     p.ver++;
-    world.broadcastSystem(`${p.name} reacendeu a Chama Primordial e tornou-se um ${r.title}!`, 'epic');
+    p.dirty.legacy = true;
+    world.broadcastSystem(`${p.name} ${r.titleMsg || 'reacendeu a Chama Primordial e tornou-se um'} ${r.title}!`, 'epic');
   }
   p.dirty.inv = true;
   p.dirty.quests = true;

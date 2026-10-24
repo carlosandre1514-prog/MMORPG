@@ -17,7 +17,7 @@ Por mil anos a **Chama Primordial**, trazida por Aurelion de além das estrelas,
 
 Quando a Chama se partiu, centelhas caíram do céu e despertaram os **Portadores** — o jogador é um deles.
 
-### Campanha (20 missões)
+### Campanha (54 missões)
 | Ato | Região | Arco |
 |---|---|---|
 | I — O Despertar | Alvorada, Campos | Thalric explica a profecia; Bran e Lyra testam o Portador; o eremita Osric revela as "âncoras" da Névoa; derrota de Presa-de-Ferro. |
@@ -26,9 +26,23 @@ Quando a Chama se partiu, centelhas caíram do céu e despertaram os **Portadore
 | IV — O Rei Cinzento | Ruínas de Cinza | A Última Vigília de Elira; os cultistas Velados e o arrependido Irmão Cael; os cavaleiros caídos; batalha final contra Morvath. |
 | Epílogo | Santuário, Alvorada | As três Brasas reacendem a Chama no Altar; o jogador recebe o título **Portador da Chama** e o Coração da Chama. |
 
+#### Continuação: os Cinco Selos (Atos V a VIII, 34 missões novas)
+
+Reacesa a Chama, os sinos de Alvorada passam a tocar sozinhos. A Arquivista **Ysolde** revela o que Aurelion escondeu: **o Faminto**, uma fome mais velha que a Chama, selado sob o primeiro santuário, hoje a **Cripta da Chama Primeva**, sob o cemitério da capital. A laje que a fecha tem cinco selos, entregues a cinco guardiões que os levaram para longe. A Chama reacendeu e os selos racharam. Alvorada é o centro de uma roda de cinco raios (os portões levam a regiões diferentes), e a campanha percorre todos os biomas:
+
+| Ato | Região | Arco |
+|---|---|---|
+| V — A Sombra sob a Chama | Alvorada, Pântano das Brumas (nv 21–25) | Sinos sem badalo; a laje rachada; Garrett e Madre Zélia; sapos-boi, fogos-fátuos, bruxas e afogados; **Nhaga, a Mãe-do-Brejo**, guarda o Selo do Brejo. |
+| VI — As Águas Mortas | Catacumbas Afogadas (nv 24–27) | A Irmã Beatriz e a lápide do comandante; esqueletos afogados, carniçais, sacerdotes ossudos e guardiões; **Valdric, o Rei Afogado**, e o Selo das Águas Mortas. |
+| VII — O Inverno Eterno | Picos Gelados (nv 22–26) e Cidadela de Gelo (nv 26–29) | A expedição do Capitão Hjalmar; lobos-de-gelo, yetis, corvos e xamãs; **Vargnar, o Lobo do Inverno** (Selo da Geada). Na Cidadela, Runa, os cavaleiros congelados e **Kaelisa, a Rainha Gélida** (Selo do Inverno). |
+| VIII — O Faminto | Sahaar, Alvorada e Cripta da Chama Primeva (nv 29–30) | O quinto selo é o da saga de Sahaar (exige a saga concluída): Nefer entrega o disco dourado; a laje se abre; o Eco de Aurelion; espreitadores, cavaleiros e guardiões caídos; **Nyxthar, o Faminto**. |
+| Epílogo | Alvorada | Thalric fecha a campanha; título **Selador do Faminto**. |
+
+Cada chefe entrega o selo da missão e a vitória só vale depois de levar o selo a Ysolde em Alvorada, então cada ato volta ao centro do mundo. A entrada da Cripta (`req.flag = cripta_aberta`) só deixa passar quem concluiu "A Laje se Abre". Pedras de Memória de todas as regiões entram na peregrinação **Peregrino da Memória I e II**, que obriga a percorrer o mapa inteiro.
+
 Cada Brasa concede bônus permanente: Vida +10% vida, Terra +10% defesa, Espírito +10% poder.
 
-Missões secundárias (gato do Pip, fazendeiro, ervas, forja, xamãs, ents, morcegos, purificação, arena) e **Contratos** repetíveis no Quadro mantêm o jogo após a campanha. Pedras de Memória espalhadas contam a história do mundo.
+Missões secundárias (gato do Pip, fazendeiro, ervas, forja, xamãs, ents, morcegos, purificação, arena, peregrinações e pedidos de cada região nova) e **Contratos** repetíveis nos Quadros (24) mantêm o jogo após a campanha. Pedras de Memória espalhadas contam a história do mundo.
 
 ## 3. Classes
 

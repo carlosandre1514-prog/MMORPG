@@ -17,6 +17,7 @@ const BASE = {
   [T.BRIDGE]: hex('#8b6a42'), [T.MUD]: hex('#5d4d3c'), [T.COBBLE]: hex('#a29d94'), [T.RUIN]: hex('#a99f92'), [T.ARENA]: hex('#c9a56b'),
   [T.STONE]: hex('#8f8d89'), [T.WOOD]: hex('#8b6a42'), [T.VOID]: hex('#000000'),
   [T.DUNE]: hex('#d3ab6b'), [T.SANDSTONE]: hex('#cdac7a'), [T.TOMBFLOOR]: hex('#8b7556'), [T.TOMBWALL]: hex('#5e4a36'),
+  [T.SNOW]: hex('#e9f0f7'), [T.ICE]: hex('#a9d4ea'),
 };
 const BUILT = new Set([T.COBBLE, T.STONE, T.WOOD, T.BRIDGE, T.RUIN, T.ARENA, T.SANDSTONE, T.TOMBFLOOR]);
 const LIQUID = new Set([T.WATER, T.DEEP, T.LAVA]);
@@ -196,6 +197,8 @@ export class MapArt {
         break;
       }
       case T.ASH: speck(9, 'rgba(150,142,135,0.6)', 'rgba(30,25,25,0.5)'); break;
+      case T.SNOW: speck(6, 'rgba(255,255,255,0.85)', 'rgba(150,175,205,0.45)'); break;
+      case T.ICE: speck(4, 'rgba(255,255,255,0.8)', 'rgba(90,140,175,0.4)'); ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 1, py + S - 2); ctx.lineTo(px + S - 2, py + 1); ctx.stroke(); break;
       case T.MUD: speck(5, 'rgba(110,90,70,0.6)', 'rgba(30,22,16,0.5)'); if (R(51) < 0.2) { ctx.fillStyle = 'rgba(40,32,24,0.5)'; ctx.beginPath(); ctx.ellipse(px + 5, py + 5, 2.5, 1.5, 0, 0, Math.PI * 2); ctx.fill(); } break;
       case T.LAVA:
         if (R(52) < 0.5) { ctx.strokeStyle = 'rgba(255,225,110,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); const lx = px + R(53) * 6, ly = py + R(54) * 8; ctx.moveTo(lx, ly); ctx.lineTo(lx + 2 + R(55) * 3, ly + 1 + R(56) * 3); ctx.lineTo(lx + 4 + R(57) * 3, ly + R(58) * 4); ctx.stroke(); }

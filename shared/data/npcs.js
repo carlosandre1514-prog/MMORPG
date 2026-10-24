@@ -284,6 +284,181 @@ export const NPCS = {
     talk: [], services: ['teleport'],
   },
 
+  // ======================= Alvorada: a Arquivista e o guardião da cripta =======================
+  ysolde: {
+    id: 'ysolde', name: 'Arquivista Ysolde', title: 'Guardiã dos Registros', zone: 'town', x: 53.5, y: 18.5,
+    look: { type: 'human', skin: '#f0cfae', hair: '#3b2a20', hairStyle: 'bun', robe: '#5b3a7a', trim: '#f1c40f', glasses: true },
+    greeting: 'Cuidado onde pisa, Portador. Cada pedaço de papel nesta sala é mais velho que a sua cidade.',
+    talk: [
+      'Guardo os registros da Ordem desde antes de Thalric ter barba. Quase tudo que os Guardiões escreveram sobre o Vazio eu li duas vezes.',
+      'Aurelion não escondeu o Faminto por medo. Escondeu porque sabia que, um dia, alguém ia precisar saber onde ele estava.',
+      'Cinco selos, cinco guardiões, cinco lugares. Os registros dizem onde estiveram. Não dizem o que os guardiões viraram.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_xp', 'elixir_def', 'elixir_str'],
+  },
+  anselmo: {
+    id: 'anselmo', name: 'Irmão Anselmo', title: 'Guardião da Cripta', zone: 'town', x: 97.5, y: 83.5,
+    look: { type: 'human', skin: '#d9b08c', hair: '#8a8a8a', hairStyle: 'bald', beard: '#8a8a8a', robe: '#4a4a52', trim: '#c0c0c8', hood: true },
+    greeting: 'Fale baixo. O que dorme embaixo da laje não gosta de barulho — nem da luz.',
+    talk: [
+      'Cuido deste cemitério há quarenta anos. Nunca vi a laje se mexer. Até a noite em que a Chama voltou a arder.',
+      'Eles dizem que os sinos tocam sozinhos. Não tocam sozinhos: tocam porque alguém, lá embaixo, está puxando a corda.',
+    ],
+    services: [],
+  },
+  way_town_n: {
+    id: 'way_town_n', name: 'Marco do Portão Norte', title: 'Pedra de Memória', zone: 'town', x: 91.5, y: 6.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Um marco de pedra junto ao Portão Norte. Alguém riscou um mapa na face, com setas apontando para fora.',
+    talk: [
+      '"Norte: Picos Gelados, duas semanas a pé; ninguém voltou de lá sem perder um dedo. Oeste: Pântano das Brumas, mais perto, mais traiçoeiro. Leste: os Campos e tudo além deles. Sul: a Arena. E embaixo de nós... não perguntem."',
+      'Embaixo, a lápis: "Alvorada não é uma cidade cercada. É o centro de uma roda."',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Pântano das Brumas =======================
+  garrett: {
+    id: 'garrett', name: 'Garrett Pé-de-Lodo', title: 'Chefe dos Caçadores de Lodo', zone: 'swamp', x: 91.5, y: 46.5,
+    look: { type: 'human', skin: '#a8703c', hair: '#2b1d0e', hairStyle: 'short', beard: '#2b1d0e', tunic: '#4a5d2e', trim: '#a9dfbf', bow: true, hat: '#3b4a22' },
+    greeting: 'Pise onde eu piso e não olhe para as luzes. Duas regras. Metade dos meus homens morreu quebrando uma delas.',
+    talk: [
+      'Há dezessete anos eu caço neste brejo. Sei qual lama aguenta um homem e qual o engole. Agora sei que a lama também escolhe quem engole.',
+      'Os sapos engordaram, as luzes se multiplicaram e os afogados voltaram do fundo. Tudo isso em um ano. Isso não é natureza.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_3', 'pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_def', 'elixir_speed'],
+  },
+  zelia: {
+    id: 'zelia', name: 'Madre Zélia', title: 'Herbanária do Brejo', zone: 'swamp', x: 24.5, y: 53.5,
+    look: { type: 'human', skin: '#b58863', hair: '#cfd2d4', hairStyle: 'long', robe: '#3d5a2a', trim: '#bdd9a0', staff: true, leaves: true },
+    greeting: 'Sente o cheiro? Isso é o brejo respirando. Hoje ele está tossindo.',
+    talk: [
+      'Vivo aqui desde antes da Névoa. Ela nunca me incomodou. Os brejos sempre foram assim: guardam o que lhes dão.',
+      'O Selo de Aurelion foi enterrado no coração da ilha ao sul. Quem o guarda não é um monstro: é a mãe de tudo que vive aqui. Ela só está com fome.',
+    ],
+    services: [],
+  },
+  way_swamp: {
+    id: 'way_swamp', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'swamp', x: 86.5, y: 49.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  stone_swamp: {
+    id: 'stone_swamp', name: 'Marco dos Afogados', title: 'Pedra de Memória', zone: 'swamp', x: 100.5, y: 53.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Um marco de madeira podre, coberto de medalhas penduradas por barbante. Algumas ainda têm nomes.',
+    talk: [
+      '"Aqui descansam os que seguiram as luzes. Não os procurem: eles já foram achados."',
+      'Alguém acrescentou, com tinta nova: "Voltaram. Todos voltaram. Não sei para quê."',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Catacumbas Afogadas =======================
+  beatriz: {
+    id: 'beatriz', name: 'Irmã Beatriz', title: 'Última Sacerdotisa da Ordem', zone: 'catacombs', x: 49.5, y: 13.5,
+    look: { type: 'human', skin: '#f0cfae', hair: '#7a4a2a', hairStyle: 'long', robe: '#e8e8ec', trim: '#8fd8cc', hood: true, staff: true },
+    greeting: 'Se veio rezar, reze baixo. Se veio lutar, lute mais baixo ainda. Eles escutam melhor que enxergam.',
+    talk: [
+      'Entrei nestas criptas há sete anos para enterrar meu mestre. A água subiu e a saída fechou. Fiquei, porque alguém precisava lembrar quem eles foram.',
+      'Valdric foi o último comandante da Ordem que ficou aqui. Ele jurou não deixar o Selo sozinho. A Névoa transformou a promessa em prisão.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_def'],
+  },
+  way_catacombs: {
+    id: 'way_catacombs', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'catacombs', x: 46.5, y: 16.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  tablet_catacombs: {
+    id: 'tablet_catacombs', name: 'Lápide do Comandante', title: 'Pedra de Memória', zone: 'catacombs', x: 52.5, y: 19.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Uma lápide rachada, meio submersa. A inscrição foi feita com uma espada, não um cinzel.',
+    talk: [
+      '"Valdric, Comandante da Ordem. Ficou onde mandaram. Que quem o encontrar lhe diga que pode ir."',
+      'Logo abaixo, entalhado fundo: "NÃO POSSO."',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Picos Gelados =======================
+  hjalmar: {
+    id: 'hjalmar', name: 'Capitão Hjalmar', title: 'Chefe da Expedição Boreal', zone: 'peaks', x: 45.5, y: 80.5,
+    look: { type: 'human', skin: '#d9a77a', hair: '#cfcfd4', hairStyle: 'braid', beard: '#cfcfd4', armor: '#6b7b8c', trim: '#d6eaf8', axe: true, cape: '#2e4057' },
+    greeting: 'Sente esse vento? Ele não passa por trás de mim. Aqui, fique perto da fogueira e perto de mim.',
+    talk: [
+      'Estamos aqui há três meses. Mandaram doze. Somos seis. A expedição era para mapear a passagem; agora é para sair vivo dela.',
+      'Dizem que os lobos brancos eram guardiões dos picos. Hoje caçam o que antes protegiam.',
+    ],
+    services: ['shop'],
+    shop: ['pot_hp_4', 'pot_mp_3', 'scroll_return', 'elixir_speed', 'elixir_def', 'head_5', 'chest_5', 'legs_5', 'feet_5'],
+  },
+  runa: {
+    id: 'runa', name: 'Runa', title: 'Vidente do Círculo do Norte', zone: 'citadel', x: 51.5, y: 70.5,
+    look: { type: 'human', skin: '#e8d2bc', hair: '#e8f1f8', hairStyle: 'long', robe: '#2e6a8e', trim: '#d6eaf8', hood: true, staff: true },
+    greeting: 'Você trouxe uma luz. A Cidadela não vê luz há muito tempo. Tire a mão da espada: aqui fora ela não ajuda.',
+    talk: [
+      'Sou a última do Círculo do Norte. Os outros escolheram o frio e o frio os manteve. Eu escolhi lembrar, e lembrar dói.',
+      'Kaelisa foi a melhor aluna de Aurelion. Prendeu o Selo no próprio peito para que o Faminto não o tomasse. O gelo a manteve inteira. A Névoa fez o resto.',
+    ],
+    services: [],
+  },
+  way_peaks: {
+    id: 'way_peaks', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'peaks', x: 50.5, y: 84.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  way_citadel: {
+    id: 'way_citadel', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'citadel', x: 46.5, y: 73.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+  stone_peaks: {
+    id: 'stone_peaks', name: 'Marco da Passagem Norte', title: 'Pedra de Memória', zone: 'peaks', x: 52.5, y: 89.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Uma coluna coberta de gelo. Sob a camada branca ainda dá para ler as runas.',
+    talk: [
+      '"Aqui termina a estrada dos homens. Mais ao norte, só a Ordem do Norte e o vento. Quem passar sem ser convidado não é bem-vindo; quem passar convidado, também não."',
+      'Um viajante gravou ao lado, tremendo: "Frio. Muito frio. Não vão por aqui."',
+    ],
+    services: ['lore'],
+  },
+  frieze_citadel: {
+    id: 'frieze_citadel', name: 'Friso da Ordem do Norte', title: 'Pedra de Memória', zone: 'citadel', x: 45.5, y: 70.5,
+    look: { type: 'lore' }, noMarker: true,
+    greeting: 'Um friso de gelo azul, perfeitamente preservado. Mostra cavaleiros em formação diante de uma figura de mantos brancos.',
+    talk: [
+      'A figura de mantos brancos segura um disco de cristal contra o peito. Os cavaleiros ajoelhados parecem chorar.',
+      'Embaixo, cinco círculos: quatro acesos, um apagado. Sob o apagado, uma só palavra: "Sol".',
+    ],
+    services: ['lore'],
+  },
+
+  // ======================= Cripta da Chama Primeva =======================
+  echo_aurelion: {
+    id: 'echo_aurelion', name: 'Eco de Aurelion', title: 'Primeiro Guardião', zone: 'undercroft', x: 50.5, y: 66.5,
+    look: { type: 'human', skin: '#e8e0c8', hair: '#ffffff', hairStyle: 'long', beard: '#ffffff', robe: '#f4efe0', trim: '#f1c40f', staff: true, crown: true },
+    greeting: 'Eu esperei, Portador. Não por muito tempo — o tempo, aqui embaixo, é outra coisa.',
+    talk: [
+      'Eu não matei o Faminto. Não consegui. Prendi-o, e prendi parte de mim junto. Os cinco selos foram a única forma de segurar uma fome sem fim.',
+      'Ele não mente. Isso é o pior. Tudo que disser a você será verdade — e vai fazer você querer parar de lutar.',
+    ],
+    services: [],
+  },
+  way_undercroft: {
+    id: 'way_undercroft', name: 'Pedra do Caminho', title: 'Teleporte', zone: 'undercroft', x: 46.5, y: 69.5,
+    look: { type: 'waystone' }, noMarker: true,
+    greeting: 'A pedra vibra com energia arcana. Você pode viajar para qualquer lugar que já visitou.',
+    talk: [], services: ['teleport'],
+  },
+
   // ======================= Zahrim, Cidade das Torres =======================
   soraya: {
     id: 'soraya', name: 'Emira Soraya', title: 'Soberana de Sahaar', zone: 'zahrim', x: 91.5, y: 40.5,

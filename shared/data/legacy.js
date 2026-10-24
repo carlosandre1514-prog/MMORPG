@@ -93,10 +93,10 @@ family('combat', 'group', 'group', [50, 500, 5000],
   ['Em Boa Companhia', 'Irmão de Armas', 'Lenda do Grupo'], (n) => `Derrote ${n.toLocaleString('pt-BR')} monstros em grupo.`, { 2: 'Lenda do Grupo' });
 family('quest', 'quest', 'quests', [1, 10, 30, 100, 500, 2000],
   ['Primeiro Chamado', 'Mensageiro', 'Herói do Povo', 'Guardião de Aethra', 'Voz da Chama', 'Lenda dos Contratos'], (n) => `Entregue ${n.toLocaleString('pt-BR')} missões.`, { 3: 'Guardião de Aethra', 4: 'Voz da Chama', 5: 'Lenda dos Contratos' });
-family('explore', 'zones', 'zones', [2, 4, 6, 9],
-  ['Passos Largos', 'Viajante', 'Andarilho', 'Cartógrafo'], (n) => `Descubra ${n} regiões.`, { 3: 'Cartógrafo' });
-family('explore', 'altars', 'altars', [1, 4, 8, 14],
-  ['Primeira Passagem', 'Viajante dos Altares', 'Senhor das Passagens', 'Caminhante das Chamas'], (n) => `Descubra ${n} altar${n > 1 ? 'es' : ''} de viagem.`, { 3: 'Caminhante das Chamas' });
+family('explore', 'zones', 'zones', [2, 4, 6, 9, 12, 14],
+  ['Passos Largos', 'Viajante', 'Andarilho', 'Cartógrafo', 'Desbravador', 'Senhor dos Mapas'], (n) => `Descubra ${n} regiões.`, { 3: 'Cartógrafo', 5: 'Senhor dos Mapas' });
+family('explore', 'altars', 'altars', [1, 4, 8, 14, 25],
+  ['Primeira Passagem', 'Viajante dos Altares', 'Senhor das Passagens', 'Caminhante das Chamas', 'Rosa dos Ventos'], (n) => `Descubra ${n} altar${n > 1 ? 'es' : ''} de viagem.`, { 3: 'Caminhante das Chamas', 4: 'Rosa dos Ventos' });
 family('craft', 'gold', 'gold', [1000, 10000, 100000, 1000000, 10000000],
   ['Bolso Cheio', 'Mercador', 'Barão', 'Magnata', 'Senhor do Ouro'], (n) => `Ganhe ${n.toLocaleString('pt-BR')} de ouro.`, { 3: 'Magnata', 4: 'Senhor do Ouro' });
 family('craft', 'rare', 'rare', [1, 10, 50, 250, 1000],
@@ -127,7 +127,8 @@ for (const [lv, name, title] of [[10, 'Chama Crescente', null], [20, 'Chama Fort
 // campanha e saga
 const mainQuests = Object.values(QUESTS).filter((q) => q.main);
 const sagaQuests = Object.values(QUESTS).filter((q) => q.saga === 'sahaar');
-if (mainQuests.length) add({ id: 'campaign', cat: 'quest', counter: `qd:${mainQuests[mainQuests.length - 1].id}`, goal: 1, name: 'A Chama Reacendida', desc: 'Conclua a campanha principal de Aethra.', pts: 100, gold: 5000, mxp: 0, title: 'Portador da Chama' });
+if (QUESTS.ms20) add({ id: 'campaign', cat: 'quest', counter: 'qd:ms20', goal: 1, name: 'A Chama Reacendida', desc: 'Reacenda a Chama Primordial (Atos I a IV da campanha principal).', pts: 100, gold: 5000, mxp: 0, title: 'Portador da Chama' });
+if (mainQuests.length && mainQuests[mainQuests.length - 1].id !== 'ms20') add({ id: 'campaign2', cat: 'quest', counter: `qd:${mainQuests[mainQuests.length - 1].id}`, goal: 1, name: 'Alvorada Selada', desc: 'Conclua a campanha principal de Aethra: reúna os cinco selos e sele o Faminto sob a capital.', pts: 150, gold: 10000, mxp: 0, title: 'Selador do Faminto' });
 if (sagaQuests.length) add({ id: 'saga_sahaar', cat: 'quest', counter: `qd:${sagaQuests[sagaQuests.length - 1].id}`, goal: 1, name: 'Sol Sobre as Dunas', desc: 'Conclua a saga do Reino de Sahaar.', pts: 100, gold: 5000, mxp: 0, title: 'Senhor das Dunas' });
 // cada chefe tem o seu feito
 for (const m of Object.values(MONSTERS)) {

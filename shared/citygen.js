@@ -144,12 +144,13 @@ export function buildCapital(grid, zone) {
   grid.rect(0, 0, grid.w, grid.h, (x, y) => grid.setT(x, y, T.GRASS));
 
   // ------------------------------------------------------------ muralha da cidade
-  wall(0, 0, 112, 1);
+  // quatro portões: norte (Picos Gelados), leste (Campos), sul (Arena) e oeste (Pântano das Brumas), cada um entre duas torres
+  wall(0, 0, 92, 1); gate(92, 0, 3, 1, 'n'); wall(95, 0, 17, 1);
   wall(0, 95, 55, 1); gate(55, 95, 3, 1, 's'); wall(58, 95, 54, 1);
-  wall(0, 1, 1, 94);
+  wall(0, 1, 1, 44); gate(0, 45, 1, 4, 'w'); wall(0, 49, 1, 46);
   wall(111, 1, 1, 44); gate(111, 45, 1, 4, 'e'); wall(111, 49, 1, 46);
-  for (const [x, y] of [[0, 0], [109, 0], [0, 93], [109, 93], [17, 0], [92, 0], [17, 93], [35, 93], [75, 93], [92, 93],
-    [0, 22], [0, 45], [0, 70], [109, 20], [109, 72], [52, 93], [58, 93], [109, 42], [109, 49]]) tower(x, y);
+  for (const [x, y] of [[0, 0], [109, 0], [0, 93], [109, 93], [17, 0], [89, 0], [95, 0], [17, 93], [35, 93], [75, 93], [92, 93],
+    [0, 22], [0, 42], [0, 49], [0, 70], [109, 20], [109, 72], [52, 93], [58, 93], [109, 42], [109, 49]]) tower(x, y);
 
   // vielas junto às muralhas
   pave(3, 3, 2, 90, T.DIRT); pave(107, 3, 2, 90, T.DIRT);
@@ -233,9 +234,12 @@ export function buildCapital(grid, zone) {
   row(70, 75, 39, 6, 's'); row(70, 75, 49, 6, 'n');
   row(37, 52, 30, 6, 's');                        // casas nobres junto ao castelo
   row(60, 75, 30, 6, 's');
-  row(78, 81, 30, 6, 's'); row(92, 106, 30, 6, 's');
+  row(78, 81, 30, 6, 's'); row(95, 106, 30, 6, 's');
   district(5, 5, 33, 35);                         // bairro noroeste
   district(78, 5, 106, 26, { face: 's' });        // bairro nordeste
+  // Rua do Portão Norte: do portão (x 92–94) pela viela de trás da muralha, rua do bairro nordeste e rua atrás do cofre até a rua norte
+  pave(92, 1, 3, 3); pave(92, 27, 3, 10);
+  lamp(91, 6); lamp(95, 6); lamp(91, 30); lamp(95, 30);
   district(5, 58, 53, 90);                        // bairro sudoeste
   district(59, 58, 85, 90);                       // bairro sudeste
 
@@ -252,6 +256,11 @@ export function buildCapital(grid, zone) {
     else if (rng() < 0.05) grid.setO(x, y, rng() < 0.5 ? O.PINE : O.DEADTREE);
   });
   pave(90, 81, 1, 2, T.DIRT);
+  // entrada da Cripta da Chama Primeva: laje de pedra com colunas e braseiros no fundo do cemitério (um selo a mantém fechada)
+  grid.rect(94, 83, 7, 6, (x, y) => { grid.setO(x, y, 0); grid.setT(x, y, T.RUIN); });
+  grid.rect(96, 85, 3, 2, (x, y) => grid.setT(x, y, T.STONE));
+  for (const [x, y] of [[94, 83], [100, 83], [94, 88], [100, 88]]) grid.setO(x, y, O.PILLAR);
+  for (const [x, y] of [[95, 84], [99, 84]]) grid.setO(x, y, O.BRAZIER);
   obj(89, 74, O.LAMP); obj(89, 62, O.LAMP);
   obj(90, 63, O.CANDLE); obj(90, 68, O.CANDLE); // velas na porta da capela
   grid.rect(92, 76, 13, 13, (x, y) => { if (grid.o(x, y) === O.GRAVE && rng() < 0.3) obj(x, y + 1, O.CANDLE); });

@@ -214,12 +214,13 @@ function tryAbilities(zone, m, tgt, now) {
       case 'root':
         if (abilityReady(m, a, now) && d <= a.range) {
           useAbility(m, a, now);
-          const style = def.id === 'ent' ? 'roots' : 'web';
+          const style = a.style || (def.id === 'ent' ? 'roots' : 'web');
+          const label = a.name || (style === 'web' ? 'Teia' : 'Raízes');
           zone.fx({ k: 'pr', a: m.id, b: tgt.id, s: style, t: 450 }, m.x, m.y);
-          zone.fx({ k: 'ab', id: m.id, n: style === 'web' ? 'Teia' : 'Raízes' }, m.x, m.y);
+          zone.fx({ k: 'ab', id: m.id, n: label }, m.x, m.y);
           zone.schedule(450, () => {
             if (!tgt.alive || tgt.zone !== zone) return;
-            addStatus(tgt, { id: 'root_m', type: 'root', dur: a.dur, name: style === 'web' ? 'Preso na Teia' : 'Enraizado' });
+            addStatus(tgt, { id: 'root_m', type: 'root', dur: a.dur, name: a.status || (style === 'web' ? 'Preso na Teia' : 'Enraizado') });
             if (a.mult) { const { dmg } = computeHit(m, tgt, a.mult); dealDamage(zone, m, tgt, dmg, { noDodge: true }); }
           });
           m.windup = { at: now + 500, fn: () => {} };
@@ -293,10 +294,10 @@ function tryAbilities(zone, m, tgt, now) {
           for (let i = 0; i < a.count; i++) {
             const pt = i < 2 && tgt ? { x: tgt.x + (Math.random() - 0.5) * 2, y: tgt.y + (Math.random() - 0.5) * 2 } : randomPointNear(zone, m.x, m.y, a.spread);
             const delay = ms + i * 120;
-            zone.fx({ k: 'tg', x: pt.x, y: pt.y, r: a.radius, t: delay, s: 'fire' }, pt.x, pt.y);
+            zone.fx({ k: 'tg', x: pt.x, y: pt.y, r: a.radius, t: delay, s: a.style || 'fire' }, pt.x, pt.y);
             zone.schedule(delay, () => {
               if (!m.alive) return;
-              zone.fx({ k: 'ao', x: pt.x, y: pt.y, r: a.radius, s: 'meteor' }, pt.x, pt.y);
+              zone.fx({ k: 'ao', x: pt.x, y: pt.y, r: a.radius, s: a.style || 'meteor' }, pt.x, pt.y);
               areaHit(zone, m, pt.x, pt.y, a);
             });
           }

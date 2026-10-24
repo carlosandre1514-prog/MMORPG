@@ -8,7 +8,7 @@
 export const KINGDOMS = {
   alvorada: {
     id: 'alvorada', name: 'Reino de Alvorada', hub: 'town', theme: 'temperado', assets: ['village'],
-    zones: ['town', 'fields', 'forest', 'mines', 'ruins', 'arena'],
+    zones: ['town', 'fields', 'forest', 'mines', 'ruins', 'swamp', 'catacombs', 'peaks', 'citadel', 'undercroft', 'arena'],
     desc: 'O último reino dos homens, cercado pela Névoa Cinzenta. Sua capital, Alvorada, guarda a Chama reacesa.',
   },
   sahaar: {

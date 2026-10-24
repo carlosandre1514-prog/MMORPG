@@ -2,7 +2,7 @@
 import { ITEMS, isEquipment } from '../shared/data/items.js';
 import { NPCS } from '../shared/data/npcs.js';
 import { RECIPES } from '../shared/data/recipes.js';
-import { ZONES, portalAt, hubOf, kingdomOf } from '../shared/data/zones.js';
+import { ZONES, portalAt, hubOf, kingdomOf, portalSealed, dangerWarning } from '../shared/data/zones.js';
 import { QUESTS } from '../shared/data/quests.js';
 import { MAX_STACK, NPC_RANGE, PICKUP_RANGE, PLAYER_RADIUS, EQUIP_SLOTS } from '../shared/constants.js';
 import { canStand, lineClear } from '../shared/collision.js';
@@ -80,7 +80,17 @@ const HANDLERS = {
     discoverAltars(p, now);
     if (now > p.portalLock) {
       const portal = portalAt(zone.def, x, y);
-      if (portal) world.transfer(p, portal.to, portal.tx, portal.ty);
+      if (portal) {
+        const sealed = portalSealed(p.char, portal);
+        if (sealed) {
+          p.portalLock = now + 4000; // não repete o aviso a cada passo
+          p.err(sealed);
+        } else {
+          const warn = dangerWarning(portal.to, p.char.level);
+          if (warn) p.msg(warn, 'warn');
+          world.transfer(p, portal.to, portal.tx, portal.ty);
+        }
+      }
     }
   },
 

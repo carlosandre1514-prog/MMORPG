@@ -356,10 +356,21 @@ export const windowsMixin = {
     }
   },
 
+  // Janela do mapa: aba "Mundo" (todas as regiões juntas, ver worldmap.js) e aba "Região" (o mapa detalhado da zona atual)
   renderMap() {
-    const g = this.game;
     const body = clear(this.wins.map.body);
+    this.mapTab ||= 'world';
+    body.appendChild(h('div', { class: 'map-tabs' },
+      ...[['world', 'Mundo'], ['local', 'Região']].map(([id, n]) => h('button', { class: 'tab' + (this.mapTab === id ? ' on' : ''), onclick: () => { this.mapTab = id; this.renderMap(); } }, n))));
+    const pane = h('div', {});
+    body.appendChild(pane);
+    if (this.mapTab === 'world') this.renderMapWorld(pane); else this.renderMapLocal(pane);
+  },
+
+  renderMapLocal(body) {
+    const g = this.game;
     const z = g.zone;
+    this.mapSelect = null;
     // mapa detalhado: arrastar move, a roda aproxima (em volta do cursor), duplo clique volta ao início
     const size = 500, dpr = Math.min(2, window.devicePixelRatio || 1);
     const cv = h('canvas', { width: Math.round(size * dpr), height: Math.round(size * dpr), class: 'map-cv', style: { width: size + 'px', height: size + 'px', imageRendering: 'auto', cursor: 'grab' } });
@@ -397,7 +408,16 @@ export const windowsMixin = {
       clampCam(); this.drawWorldMap();
     }, { passive: false });
     cv.addEventListener('dblclick', () => { this.mapCam = { zoom: 1, cx: z.w / 2, cy: z.h / 2 }; this.drawWorldMap(); });
-    const side = h('div', { class: 'map-side' }, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
+    const side = this.mapSide(z.id, 'Arraste para mover · roda para aproximar · duplo clique para voltar.');
+    body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
+    this.drawWorldMap();
+  },
+
+  // Painel lateral do mapa: viagem rápida e a lista de regiões por reino (sel = região destacada; top = bloco opcional acima da lista)
+  mapSide(sel, hint, top = null) {
+    const g = this.game, z = g.zone;
+    const reveal = this.worldReveal();
+    const side = h('div', { class: 'map-side' }, top, h('div', { class: 'ql-sub' }, 'Mundo de Aethra'));
     const near = altarNear(z.id, g.me.x, g.me.y), free = !!near, fee = travelFee(g.me.level);
     const found = altarList().filter((a) => !a.pvp && a.kingdom === z.def.kingdom && (g.me.altars || []).includes(a.id)).length;
     side.appendChild(h('div', { class: 'map-travel' + (free ? ' free' : '') },
@@ -411,8 +431,9 @@ export const windowsMixin = {
       for (const id of K.zones) {
         const zd = ZONES[id];
         const known = g.me.visited.includes(id);
-        side.appendChild(h('div', { class: 'map-zone' + (id === z.id ? ' cur' : '') + (known ? '' : ' unknown') },
-          h('b', {}, known ? zd.name : '???'), h('div', { class: 'small muted' }, zd.levels)));
+        const seen = known || reveal.near.has(id); // avistada: vizinha de uma região já visitada (o nome aparece, esmaecido)
+        side.appendChild(h('div', { class: 'map-zone' + (id === sel ? ' cur' : '') + (known ? '' : ' unknown'), onclick: () => this.mapSelect?.(id) },
+          h('b', {}, seen ? zd.name : '???'), h('div', { class: 'small muted' }, seen ? zd.levels : '')));
         // viagem rápida: os altares já descobertos deste reino
         if (kid === z.def.kingdom) for (const a of altarsIn(id)) {
           if (a.pvp || !(g.me.altars || []).includes(a.id)) continue;
@@ -426,13 +447,16 @@ export const windowsMixin = {
     }
     const sw = (c) => h('span', { class: 'lg-sw', style: { background: c } });
     side.appendChild(h('div', { class: 'small muted map-legend', style: { marginTop: '10px' } }, sw('#f7dc6f'), ' NPC  ', sw('#85c1e9'), ' Pedra do Caminho  ', ico('swirl', 'sm'), ' altar (aceso: descoberto)  ', ico('skull', 'sm'), ' chefe'));
-    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, 'Arraste para mover · roda para aproximar · duplo clique para voltar.'));
-    body.appendChild(h('div', { class: 'map-wrap' }, cv, side));
-    this.drawWorldMap();
+    side.appendChild(h('div', { class: 'small muted', style: { marginTop: '6px' } }, hint));
+    return side;
   },
 
   // Redesenha o mapa da janela (chamado várias vezes por segundo enquanto ela está aberta)
   drawWorldMap() {
+    if (this.mapTab === 'world') this.drawGlobalMap(); else this.drawLocalMap();
+  },
+
+  drawLocalMap() {
     const g = this.game, z = g.zone, cv = this.mapCv;
     if (!cv || !cv.isConnected) return;
     const ctx = cv.getContext('2d');

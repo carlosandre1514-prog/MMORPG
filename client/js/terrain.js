@@ -13,6 +13,7 @@ const BASE = {
   [T.CAVEWALL]: '#2e2925', [T.MUD]: '#594a3a', [T.COBBLE]: '#8f8a83', [T.RUIN]: '#9b9184',
   [T.VOID]: '#000000', [T.ARENA]: '#c7a46a',
   [T.DUNE]: '#cfa56a', [T.SANDSTONE]: '#caa877', [T.TOMBFLOOR]: '#8a7455', [T.TOMBWALL]: '#4a3b2b',
+  [T.SNOW]: '#e6eef6', [T.ICE]: '#a9d4ea',
 };
 
 // Prioridade para bordas orgânicas: tiles de prioridade maior "invadem" os vizinhos.
@@ -21,8 +22,9 @@ const PRIORITY = {
   [T.DIRT]: 5, [T.COBBLE]: 3, [T.RUIN]: 3, [T.ARENA]: 2, [T.GRASS]: 7, [T.DARKGRASS]: 8,
   [T.CAVE]: 2, [T.CAVEWALL]: 9, [T.STONE]: 3, [T.WOOD]: 3, [T.VOID]: 10,
   [T.DUNE]: 2, [T.SANDSTONE]: 3, [T.TOMBFLOOR]: 3, [T.TOMBWALL]: 9,
+  [T.SNOW]: 6, [T.ICE]: 2,
 };
-const BLEEDS = new Set([T.GRASS, T.DARKGRASS, T.SAND, T.DIRT, T.ASH, T.MUD, T.DUNE]);
+const BLEEDS = new Set([T.GRASS, T.DARKGRASS, T.SAND, T.DIRT, T.ASH, T.MUD, T.DUNE, T.SNOW]);
 const LIQUID = new Set([T.WATER, T.DEEP, T.LAVA]);
 
 export class Terrain {
@@ -275,6 +277,23 @@ export class Terrain {
         // faixa dourada de hieróglifos em algumas lajes
         if (h > 0.86) { ctx.fillStyle = 'rgba(214,170,60,0.5)'; ctx.fillRect(px + 6, py + 14, 20, 3); ctx.fillRect(px + 10, py + 9, 4, 3); ctx.fillRect(px + 18, py + 20, 5, 3); }
         if (h < 0.3) { ctx.strokeStyle = shade(base, -0.45); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 5, py + 8); ctx.lineTo(px + 15, py + 15); ctx.lineTo(px + 11, py + 27); ctx.stroke(); }
+        break;
+      }
+      case T.SNOW: {
+        // neve: montinhos azulados e pontinhos brilhantes
+        ctx.fillStyle = shade(base, -0.07);
+        for (let i = 0; i < 3; i++) ellipse(ctx, px + hash2(X, Y, 190 + i) * 26 + 3, py + hash2(X, Y, 195 + i) * 26 + 3, 6, 3.4, ctx.fillStyle);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        for (let i = 0; i < 4; i++) ctx.fillRect(px + hash2(X, Y, 200 + i) * 30, py + hash2(X, Y, 205 + i) * 30, 1.6, 1.6);
+        break;
+      }
+      case T.ICE: {
+        // gelo: placas claras, rachaduras e um brilho diagonal
+        ctx.fillStyle = shade(base, (h - 0.5) * 0.14);
+        ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(px + 4 + h * 6, py + TILE - 6); ctx.lineTo(px + TILE - 8, py + 5 + h * 6); ctx.stroke();
+        if (h < 0.4) { ctx.strokeStyle = 'rgba(70,120,150,0.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 6, py + 9); ctx.lineTo(px + 15, py + 16); ctx.lineTo(px + 13, py + 27); ctx.stroke(); }
         break;
       }
       case T.CAVE:
@@ -926,6 +945,7 @@ export function minimapColor(t, o) {
     [T.BRIDGE]: '#8b6a42', [T.MUD]: '#594a3a', [T.COBBLE]: '#a39e96', [T.RUIN]: '#a99f92', [T.ARENA]: '#c7a46a',
     [T.STONE]: '#8e8e8e', [T.WOOD]: '#8b6a42', [T.VOID]: '#000',
     [T.DUNE]: '#cfa56a', [T.SANDSTONE]: '#caa877', [T.TOMBFLOOR]: '#8a7455', [T.TOMBWALL]: '#2b2218',
+    [T.SNOW]: '#e6eef6', [T.ICE]: '#a9d4ea',
   };
   return map[t] || '#000';
 }

@@ -200,6 +200,115 @@ const B = {
     cr.anim = (dt, st, t) => { r.rotation.y = Math.sin(t * 3) * 0.2; };
     return cr;
   },
+
+  // Sapo-boi do pântano: corpo largo, olhos saltados, papo que incha e pulos curtos; Nhaga é maior, com olhos de âmbar e coroa de juncos
+  toad(c, def) {
+    const cr = new Creature(def.size * 0.9);
+    const boss = !!def.boss;
+    const skin = cr.m(c, { rough: 0.6 }), dark = cr.m(shade(c, 0.55), { rough: 0.7 }), belly = cr.m(shade(c, 1.5), { rough: 0.5 });
+    const ell = (rx, ry, rz, mat, x, y, z) => { const m = mesh(new THREE.SphereGeometry(1, 10, 8), mat, x, y, z); m.scale.set(rx, ry, rz); cr.body.add(m); return m; };
+    ell(0.42, 0.3, 0.5, skin, 0, 0.36, -0.05);
+    ell(0.34, 0.17, 0.32, belly, 0, 0.22, 0.05);
+    ell(0.3, 0.2, 0.28, skin, 0, 0.5, 0.42);
+    ell(0.27, 0.05, 0.2, dark, 0, 0.44, 0.52); // boca
+    const eyeM = cr.m(boss ? 0xffb300 : 0xf4d03f, { emissive: boss ? 0xffa000 : 0x7a6a10, ei: boss ? 1.8 : 0.7 });
+    const pupM = cr.m(0x111111);
+    for (const sx of [-1, 1]) {
+      ell(0.095, 0.095, 0.095, eyeM, sx * 0.17, 0.67, 0.44);
+      ell(0.03, 0.075, 0.03, pupM, sx * 0.17, 0.67, 0.52);
+    }
+    const sac = ell(0.17, 0.12, 0.14, belly, 0, 0.38, 0.62);
+    for (let i = 0; i < 9; i++) { // verrugas escuras no dorso
+      const a = i * 2.4, r = 0.18 + (i % 3) * 0.06;
+      ell(0.04, 0.035, 0.04, dark, Math.cos(a) * r, 0.58 + (i % 2) * 0.03, -0.12 + Math.sin(a) * r * 1.1);
+    }
+    // pernas: as de trás são grandes (coxa e pé espalmado)
+    for (const [sx, front] of [[-1, true], [1, true], [-1, false], [1, false]]) {
+      const leg = pivot(cr.body, sx * (front ? 0.26 : 0.36), front ? 0.28 : 0.3, front ? 0.28 : -0.3);
+      if (front) leg.add(mesh(new THREE.CylinderGeometry(0.045, 0.06, 0.28, 5), skin, 0, -0.14, 0), mesh(new THREE.BoxGeometry(0.16, 0.04, 0.14), dark, 0, -0.28, 0.04));
+      else leg.add(mesh(new THREE.SphereGeometry(0.17, 7, 5), skin, 0, -0.06, 0), mesh(new THREE.BoxGeometry(0.2, 0.04, 0.3), dark, sx * 0.04, -0.28, 0.1));
+      cr.legs.push(leg);
+    }
+    if (boss) { // coroa de juncos e musgo
+      const reed = cr.m(0x6a8f3a), gold = cr.m(0xd4ac0d, { metal: 0.5, rough: 0.4 });
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        const cone = mesh(new THREE.ConeGeometry(0.035, 0.22 + (i % 2) * 0.08, 4), i % 3 === 0 ? gold : reed, Math.cos(a) * 0.14, 0.76, 0.42 + Math.sin(a) * 0.12);
+        cone.rotation.x = Math.sin(a) * 0.3; cone.rotation.z = -Math.cos(a) * 0.3;
+        cr.body.add(cone);
+      }
+    }
+    cr.anim = (dt, st, t) => {
+      sac.scale.set(0.17, 0.12 * (1 + Math.sin(t * 3.2) * 0.3), 0.14 * (1 + Math.sin(t * 3.2) * 0.2));
+      if (st.moving) cr.body.position.y = Math.abs(Math.sin(st.phase || 0)) * 0.2;
+    };
+    return cr;
+  },
+
+  // Fogo-fátuo: núcleo luminoso com um halo e uma cauda de chamas que ondula atrás
+  wisp(c, def) {
+    const cr = new Creature(def.size);
+    cr.float = 0.85;
+    const core = cr.m(c, { emissive: c, ei: 2.6, rough: 0.2 });
+    const halo = cr.m(c, { emissive: c, ei: 1.2, opacity: 0.28 });
+    const orb = mesh(new THREE.SphereGeometry(0.16, 10, 8), core, 0, 0.35, 0);
+    orb.castShadow = false;
+    const aura = mesh(new THREE.SphereGeometry(0.3, 10, 8), halo, 0, 0.35, 0);
+    aura.castShadow = false;
+    cr.body.add(orb, aura);
+    const tail = [];
+    for (let i = 0; i < 4; i++) {
+      const m = mesh(new THREE.SphereGeometry(0.12 - i * 0.02, 7, 5), cr.m(c, { emissive: c, ei: 1.5 - i * 0.25, opacity: 0.6 - i * 0.1 }), 0, 0.3 - i * 0.04, -0.2 - i * 0.16);
+      m.castShadow = false;
+      cr.body.add(m);
+      tail.push(m);
+    }
+    cr.anim = (dt, st, t) => {
+      const k = 1 + Math.sin(t * 5) * 0.12;
+      orb.scale.setScalar(k);
+      aura.scale.setScalar(1 + Math.sin(t * 3.1) * 0.15);
+      tail.forEach((m, i) => { m.position.x = Math.sin(t * 4 - i * 0.9) * 0.08 * (i + 1); m.position.y = 0.3 - i * 0.04 + Math.sin(t * 3 - i) * 0.04; });
+    };
+    return cr;
+  },
+
+  // Yeti: gigante peludo com chifres, braços longos que balançam e rosto azulado
+  yeti(c, def) {
+    const cr = new Creature(def.size);
+    const fur = cr.m(c, { rough: 1 }), shadeM = cr.m(shade(c, 0.78), { rough: 1 }), face = cr.m(0x9ec9e6, { rough: 0.7 });
+    const horn = cr.m(0xe9dfc8, { rough: 0.5 }), eye = cr.m(0xff3b2f, { emissive: 0xff3b2f, ei: 1.4 });
+    const ell = (rx, ry, rz, mat, x, y, z) => { const m = mesh(new THREE.SphereGeometry(1, 9, 7), mat, x, y, z); m.scale.set(rx, ry, rz); cr.body.add(m); return m; };
+    ell(0.42, 0.5, 0.34, fur, 0, 1.0, 0);
+    ell(0.34, 0.3, 0.3, shadeM, 0, 0.62, 0);
+    ell(0.27, 0.27, 0.25, fur, 0, 1.58, 0.05);
+    ell(0.17, 0.15, 0.1, face, 0, 1.55, 0.25);
+    for (const sx of [-1, 1]) {
+      cr.body.add(mesh(new THREE.SphereGeometry(0.035, 5, 4), eye, sx * 0.07, 1.6, 0.31));
+      const h = mesh(new THREE.ConeGeometry(0.05, 0.3, 5), horn, sx * 0.2, 1.86, 0.02);
+      h.rotation.z = -sx * 0.55; h.rotation.x = 0.15;
+      cr.body.add(h);
+      // tufos de pelo nos ombros
+      for (let i = 0; i < 3; i++) {
+        const tuft = mesh(new THREE.ConeGeometry(0.07, 0.22, 4), shadeM, sx * (0.42 + i * 0.05), 1.34 - i * 0.12, 0);
+        tuft.rotation.z = -sx * 1.2;
+        cr.body.add(tuft);
+      }
+    }
+    cr.arms = [];
+    for (const sx of [-1, 1]) {
+      const arm = pivot(cr.body, sx * 0.5, 1.3, 0);
+      arm.add(mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.75, 6), fur, 0, -0.36, 0), mesh(new THREE.SphereGeometry(0.16, 7, 5), shadeM, 0, -0.78, 0));
+      cr.arms.push(arm);
+      const leg = pivot(cr.body, sx * 0.2, 0.55, 0);
+      leg.add(mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.55, 6), fur, 0, -0.27, 0), mesh(new THREE.BoxGeometry(0.24, 0.1, 0.34), shadeM, 0, -0.55, 0.06));
+      cr.legs.push(leg);
+    }
+    cr.anim = (dt, st, t) => {
+      const atk = st.atkStart ? (st.now - st.atkStart) / 450 : 2;
+      for (const a of cr.arms) a.rotation.x = atk < 1 ? -Math.sin(atk * Math.PI) * 2.0 : (st.moving ? Math.sin(st.phase || 0) * 0.4 : Math.sin(t * 1.5) * 0.05);
+    };
+    return cr;
+  },
 };
 
 function quadruped(c, def, o) {

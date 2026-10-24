@@ -207,7 +207,8 @@ function genOutdoor(zone) {
   const seed = g.seed;
   const rng = mulberry32(seed);
   const grid = new Grid(w, h, g.base);
-  const liquid = g.water && g.water.lava ? T.LAVA : T.WATER;
+  // líquido do terreno: água, lava ou lagos congelados (gelo que se pode atravessar a pé, sem árvores sobre ele)
+  const liquid = g.water && g.water.lava ? T.LAVA : g.water && g.water.ice ? T.ICE : T.WATER;
 
   // terreno base + líquidos
   for (let y = 0; y < h; y++) {
@@ -216,7 +217,10 @@ function genOutdoor(zone) {
       if (n > 0.56) grid.setT(x, y, g.alt);
       if (g.water) {
         const wn = fbm(x * g.water.scale, y * g.water.scale, seed + 50, 4);
-        if (wn > g.water.thr) grid.setT(x, y, (liquid === T.WATER && wn > g.water.thr + 0.06) ? T.DEEP : liquid);
+        if (wn > g.water.thr) {
+          grid.setT(x, y, (liquid === T.WATER && wn > g.water.thr + 0.06) ? T.DEEP : liquid);
+          if (liquid === T.ICE) grid.lockMask[grid.i(x, y)] = 1;
+        }
         else if (g.water.sand && wn > g.water.thr - 0.025) grid.setT(x, y, T.SAND);
       }
     }
@@ -224,7 +228,7 @@ function genOutdoor(zone) {
   // florestas por ruído
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (!TILE_INFO[grid.t(x, y)].walk) continue;
+      if (!TILE_INFO[grid.t(x, y)].walk || grid.lockMask[grid.i(x, y)]) continue;
       const fn = fbm(x * g.forest.scale, y * g.forest.scale, seed + 100, 3);
       if (fn > g.forest.thr && (fn > g.forest.thr + 0.07 || hash2(x, y, seed) < 0.55)) {
         grid.setO(x, y, pickObj(g.forest.objs, x, y, seed));

@@ -9,15 +9,22 @@ export const ZONES = {
     gen: { type: 'town', seed: 7 },
     spawn: { x: 56.5, y: 19.5 },
     ambient: '#000000', night: 0.55, music: 'town',
+    // Alvorada é o centro do mundo: cada portão leva a uma região (leste: campos e a estrada dos reinos; norte: picos gelados;
+    // oeste: pântano; sul: arena) e uma cripta selada no cemitério desce até a Cripta da Chama Primeva
+    world: { x: 0, y: 0 },
     portals: [
       { x: 110, y: 45, w: 2, h: 4, to: 'fields', tx: 4.5, ty: 45.5, label: 'Campos Verdejantes' },
       { x: 55, y: 94, w: 3, h: 2, to: 'arena', tx: 20.5, ty: 34.5, label: 'Arena de Sangue' },
+      { x: 92, y: 0, w: 3, h: 2, to: 'peaks', tx: 47.5, ty: 94.5, label: 'Picos Gelados' },
+      { x: 0, y: 45, w: 2, h: 4, to: 'swamp', tx: 104.5, ty: 48.5, label: 'Pântano das Brumas' },
+      { x: 96, y: 85, w: 3, h: 2, to: 'undercroft', tx: 50.5, ty: 72.5, label: 'Cripta da Chama Primeva',
+        req: { flag: 'cripta_aberta', msg: 'Um selo de luz fecha a cripta sob o cemitério. Só a Chama de um Portador que reuniu os cinco selos pode abri-lo.' } },
     ],
-    desc: 'A capital murada, último refúgio dos homens à beira da Névoa Cinzenta.',
+    desc: 'A capital murada, último refúgio dos homens à beira da Névoa Cinzenta. De seus quatro portões partem as estradas para todas as regiões de Aethra.',
   },
 
   fields: {
-    id: 'fields', name: 'Campos Verdejantes', levels: 'Níveis 1–7', w: 110, h: 90,
+    id: 'fields', name: 'Campos Verdejantes', levels: 'Níveis 1–7', lvl: [1, 7], w: 110, h: 90, world: { x: 112, y: 2 },
     spawn: { x: 6.5, y: 45.5 },
     night: 0.6, music: 'fields',
     portals: [
@@ -64,7 +71,7 @@ export const ZONES = {
   },
 
   forest: {
-    id: 'forest', name: 'Floresta Sussurrante', levels: 'Níveis 6–13', w: 110, h: 100,
+    id: 'forest', name: 'Floresta Sussurrante', levels: 'Níveis 6–13', lvl: [6, 13], w: 110, h: 100, world: { x: 222, y: -26 },
     spawn: { x: 6.5, y: 50.5 },
     night: 0.7, tint: 'rgba(20,60,30,0.10)', music: 'forest',
     portals: [
@@ -107,7 +114,7 @@ export const ZONES = {
   },
 
   mines: {
-    id: 'mines', name: 'Minas de Ferro Negro', levels: 'Níveis 12–19', w: 100, h: 90, dark: true,
+    id: 'mines', name: 'Minas de Ferro Negro', levels: 'Níveis 12–19', lvl: [12, 19], w: 100, h: 90, dark: true, world: { x: 273, y: -116 },
     spawn: { x: 50.5, y: 84.5 },
     night: 0.85, alwaysDark: 0.55, music: 'mines',
     portals: [
@@ -150,7 +157,7 @@ export const ZONES = {
   },
 
   ruins: {
-    id: 'ruins', name: 'Ruínas de Cinza', levels: 'Níveis 18–26', w: 110, h: 100,
+    id: 'ruins', name: 'Ruínas de Cinza', levels: 'Níveis 18–26', lvl: [18, 26], w: 110, h: 100, world: { x: 163, y: -154 },
     spawn: { x: 104.5, y: 50.5 },
     night: 0.7, tint: 'rgba(80,30,20,0.12)', music: 'ruins', ash: true,
     portals: [
@@ -195,7 +202,7 @@ export const ZONES = {
 
   // ======================= Reino de Sahaar =======================
   zahrim: {
-    id: 'zahrim', name: 'Zahrim, Cidade das Torres', levels: 'Zona Segura', safe: true, w: 110, h: 80,
+    id: 'zahrim', name: 'Zahrim, Cidade das Torres', levels: 'Zona Segura', safe: true, w: 110, h: 80, world: { x: 293, y: -248 },
     gen: { type: 'desertcity', seed: 5150 },
     spawn: { x: 52.5, y: 46.5 },
     night: 0.5, music: 'desert', ambient: '#000000',
@@ -207,7 +214,7 @@ export const ZONES = {
   },
 
   dunes: {
-    id: 'dunes', name: 'Dunas Ardentes', levels: 'Níveis 24–28', w: 130, h: 100,
+    id: 'dunes', name: 'Dunas Ardentes', levels: 'Níveis 24–28', lvl: [24, 28], w: 130, h: 100, world: { x: 163, y: -254 },
     spawn: { x: 6.5, y: 70.5 },
     night: 0.45, tint: 'rgba(255,170,60,0.08)', music: 'desert',
     portals: [
@@ -254,7 +261,7 @@ export const ZONES = {
   },
 
   tombs: {
-    id: 'tombs', name: 'Tumbas dos Reis-Sol', levels: 'Níveis 28–30', w: 110, h: 100, dark: true,
+    id: 'tombs', name: 'Tumbas dos Reis-Sol', levels: 'Níveis 28–30', lvl: [28, 30], w: 110, h: 100, dark: true, world: { x: 293, y: -348 },
     spawn: { x: 55.5, y: 92.5 },
     night: 0.9, alwaysDark: 0.5, music: 'ruins',
     portals: [
@@ -295,8 +302,234 @@ export const ZONES = {
     ],
   },
 
+  // ======================= Oeste: Pântano das Brumas e Catacumbas Afogadas =======================
+  swamp: {
+    id: 'swamp', name: 'Pântano das Brumas', levels: 'Níveis 21–25', lvl: [21, 25], w: 110, h: 100, world: { x: -110, y: -1 },
+    spawn: { x: 104.5, y: 48.5 },
+    night: 0.8, tint: 'rgba(40,70,40,0.16)', music: 'swamp', fog: true,
+    portals: [
+      { x: 108, y: 46, w: 2, h: 5, to: 'town', tx: 4.5, ty: 46.5, label: 'Cidade de Alvorada' },
+      { x: 48, y: 98, w: 5, h: 2, to: 'catacombs', tx: 49.5, ty: 6.5, label: 'Catacumbas Afogadas' },
+    ],
+    desc: 'O brejo a oeste de Alvorada, onde a Névoa nunca se levanta e as luzes dos mortos guiam viajantes para o fundo.',
+    gen: {
+      type: 'outdoor', seed: 2121, base: T.MUD, alt: T.DARKGRASS, path: T.DIRT,
+      border: [O.DEADTREE, O.BIGTREE, O.DEADTREE],
+      water: { scale: 0.06, thr: 0.66, sand: false },
+      forest: { scale: 0.09, thr: 0.57, objs: [O.DEADTREE, O.BIGTREE, O.BUSH, O.DEADTREE, O.REEDS] },
+      scatter: [{ o: O.DEADTREE, p: 0.006 }, { o: O.ROCK, p: 0.003 }, { o: O.BUSH, p: 0.006 }],
+      decor: [{ o: O.REEDS, p: 0.03, nearWater: 0.55 }, { o: O.MUSHROOM, p: 0.03 }, { o: O.BONES, p: 0.006 }, { o: O.FLOWERS, p: 0.004 }],
+      pois: [
+        { id: 'e', x: 105, y: 48, r: 5 },
+        { id: 'camp', x: 90, y: 50, r: 8 },
+        { id: 'toads', x: 70, y: 24, r: 11 },
+        { id: 'wisps', x: 50, y: 42, r: 10 },
+        { id: 'drowned', x: 78, y: 76, r: 10 },
+        { id: 'hags', x: 28, y: 24, r: 9 },
+        { id: 'tower', x: 22, y: 56, r: 8 },
+        { id: 'boss', x: 30, y: 84, r: 10 },
+        { id: 's', x: 50, y: 96, r: 4 },
+      ],
+      links: [['e', 'camp'], ['camp', 'toads'], ['camp', 'drowned'], ['toads', 'wisps'], ['wisps', 'hags'], ['wisps', 'tower'],
+        ['hags', 'tower'], ['drowned', 'boss'], ['tower', 'boss'], ['boss', 's'], ['drowned', 's']],
+      features: [
+        { type: 'camp', x: 90, y: 50, tents: true },
+        { type: 'webs', x: 70, y: 24, r: 7, n: 12, bones: true },
+        { type: 'shrine', x: 22, y: 56, r: 5 },
+        { type: 'ring', x: 30, y: 84, r: 8, obj: O.DEADTREE, gap: 'e' },
+        { type: 'treasure', x: 30, y: 84, r: 6, n: 10 },
+      ],
+    },
+    spawns: [
+      { m: 'bog_toad', n: 16, x: 70, y: 25, r: 11 },
+      { m: 'wisp', n: 12, x: 50, y: 42, r: 10 },
+      { m: 'bog_witch', n: 8, x: 28, y: 24, r: 9 },
+      { m: 'drowned', n: 14, x: 78, y: 76, r: 10 },
+      { m: 'bog_witch', n: 4, x: 22, y: 56, r: 7 },
+      { m: 'drowned', n: 6, x: 30, y: 62, r: 8 },
+      { m: 'nhaga', n: 1, x: 30, y: 84, r: 1 },
+    ],
+  },
+
+  catacombs: {
+    id: 'catacombs', name: 'Catacumbas Afogadas', levels: 'Níveis 24–27', lvl: [24, 27], w: 100, h: 90, dark: true, world: { x: -109, y: 99 },
+    spawn: { x: 49.5, y: 6.5 },
+    night: 0.9, alwaysDark: 0.5, tint: 'rgba(30,70,80,0.14)', music: 'crypt',
+    portals: [
+      { x: 47, y: 0, w: 5, h: 2, to: 'swamp', tx: 50.5, ty: 94.5, label: 'Pântano das Brumas' },
+    ],
+    desc: 'Criptas de uma ordem esquecida, engolidas pelo lençol do pântano. A água sobe pelos corredores e os mortos não saem dela.',
+    gen: {
+      type: 'cave', seed: 7733, base: T.RUIN, wall: T.CAVEWALL, path: T.RUIN,
+      fill: 0.5,
+      scatter: [{ o: O.PILLAR, p: 0.004 }, { o: O.BROKENPILLAR, p: 0.005 }, { o: O.STALAG, p: 0.006 }, { o: O.URN, p: 0.003 }],
+      decor: [{ o: O.RUBBLE, p: 0.02 }, { o: O.BONES, p: 0.012 }, { o: O.WEB, p: 0.004 }],
+      pois: [
+        { id: 'n', x: 49, y: 5, r: 4 },
+        { id: 'camp', x: 49, y: 16, r: 6 },
+        { id: 'nave', x: 28, y: 32, r: 9 },
+        { id: 'ossuary', x: 72, y: 34, r: 9 },
+        { id: 'priests', x: 50, y: 50, r: 9 },
+        { id: 'wardens', x: 24, y: 66, r: 8 },
+        { id: 'crypt', x: 76, y: 66, r: 8 },
+        { id: 'boss', x: 50, y: 78, r: 10 },
+      ],
+      links: [['n', 'camp'], ['camp', 'nave'], ['camp', 'ossuary'], ['nave', 'priests'], ['ossuary', 'priests'], ['priests', 'wardens'],
+        ['priests', 'crypt'], ['wardens', 'boss'], ['crypt', 'boss']],
+      features: [
+        { type: 'camp', x: 49, y: 16, mine: true },
+        { type: 'torches', every: 8 },
+        { type: 'sarcophagi', x: 72, y: 34, r: 6, n: 6 },
+        { type: 'sarcophagi', x: 50, y: 78, r: 8, n: 6 },
+        { type: 'ring', x: 50, y: 78, r: 8, obj: O.PILLAR, gap: 'n' },
+        { type: 'treasure', x: 50, y: 78, r: 6, n: 12 },
+      ],
+    },
+    spawns: [
+      { m: 'drowned_skeleton', n: 14, x: 28, y: 32, r: 9 },
+      { m: 'ghoul', n: 12, x: 72, y: 34, r: 9 },
+      { m: 'bone_priest', n: 8, x: 50, y: 50, r: 9 },
+      { m: 'drowned_skeleton', n: 6, x: 50, y: 52, r: 8 },
+      { m: 'crypt_warden', n: 8, x: 24, y: 66, r: 8 },
+      { m: 'ghoul', n: 8, x: 76, y: 66, r: 8 },
+      { m: 'valdric', n: 1, x: 50, y: 78, r: 1 },
+    ],
+  },
+
+  // ======================= Norte: Picos Gelados e Cidadela de Gelo =======================
+  peaks: {
+    id: 'peaks', name: 'Picos Gelados', levels: 'Níveis 22–26', lvl: [22, 26], w: 110, h: 100, world: { x: 46, y: -100 },
+    spawn: { x: 47.5, y: 94.5 },
+    night: 0.65, tint: 'rgba(120,170,230,0.10)', music: 'frost', snow: true,
+    portals: [
+      { x: 46, y: 98, w: 3, h: 2, to: 'town', tx: 93.5, ty: 4.5, label: 'Cidade de Alvorada' },
+      { x: 52, y: 0, w: 5, h: 2, to: 'citadel', tx: 49.5, ty: 84.5, label: 'Cidadela de Gelo' },
+    ],
+    desc: 'As montanhas ao norte da capital, varridas por nevascas. Dizem que a Névoa tem medo do frio, mas não destes picos.',
+    gen: {
+      type: 'outdoor', seed: 9090, base: T.SNOW, alt: T.ICE, path: T.DIRT,
+      border: [O.PINE, O.ROCK, O.PINE],
+      water: { scale: 0.05, thr: 0.76, ice: true },
+      forest: { scale: 0.085, thr: 0.58, objs: [O.PINE, O.PINE, O.ROCK, O.PINE, O.BIGTREE] },
+      scatter: [{ o: O.ROCK, p: 0.008 }, { o: O.PINE, p: 0.006 }, { o: O.CRYSTAL, p: 0.0015 }],
+      decor: [{ o: O.BONES, p: 0.004 }, { o: O.RUBBLE, p: 0.008 }],
+      pois: [
+        { id: 's', x: 47, y: 95, r: 5 },
+        { id: 'camp', x: 47, y: 82, r: 8 },
+        { id: 'wolves', x: 22, y: 72, r: 11 },
+        { id: 'yeti', x: 84, y: 68, r: 10 },
+        { id: 'pass', x: 50, y: 56, r: 7 },
+        { id: 'ravens', x: 82, y: 36, r: 9 },
+        { id: 'mages', x: 24, y: 38, r: 9 },
+        { id: 'shrine', x: 60, y: 44, r: 6 },
+        { id: 'boss', x: 28, y: 14, r: 10 },
+        { id: 'n', x: 54, y: 5, r: 5 },
+      ],
+      links: [['s', 'camp'], ['camp', 'wolves'], ['camp', 'yeti'], ['camp', 'pass'], ['pass', 'mages'], ['pass', 'ravens'], ['pass', 'shrine'],
+        ['mages', 'boss'], ['ravens', 'n'], ['shrine', 'n'], ['boss', 'n']],
+      features: [
+        { type: 'camp', x: 47, y: 82, tents: true, banners: true },
+        { type: 'shrine', x: 60, y: 44, r: 4 },
+        { type: 'ring', x: 28, y: 14, r: 8, obj: O.ROCK, gap: 'e' },
+        { type: 'treasure', x: 28, y: 14, r: 6, n: 10 },
+      ],
+    },
+    spawns: [
+      { m: 'frost_wolf', n: 16, x: 22, y: 72, r: 11 },
+      { m: 'yeti', n: 10, x: 84, y: 68, r: 10 },
+      { m: 'frost_raven', n: 12, x: 82, y: 36, r: 9 },
+      { m: 'frost_mage', n: 8, x: 24, y: 38, r: 9 },
+      { m: 'frost_wolf', n: 6, x: 50, y: 56, r: 8 },
+      { m: 'ice_golem', n: 6, x: 60, y: 44, r: 6 },
+      { m: 'vargnar', n: 1, x: 28, y: 14, r: 1 },
+    ],
+  },
+
+  citadel: {
+    id: 'citadel', name: 'Cidadela de Gelo', levels: 'Níveis 26–29', lvl: [26, 29], w: 100, h: 90, dark: true, world: { x: 51, y: -190 },
+    spawn: { x: 49.5, y: 84.5 },
+    night: 0.8, alwaysDark: 0.3, tint: 'rgba(110,160,230,0.14)', music: 'frost', snow: true,
+    portals: [
+      { x: 47, y: 88, w: 5, h: 2, to: 'peaks', tx: 54.5, ty: 5.5, label: 'Picos Gelados' },
+    ],
+    desc: 'A fortaleza boreal da antiga Ordem, congelada no meio de uma batalha que ninguém venceu. A Rainha Gélida reina entre os cavaleiros de gelo.',
+    gen: {
+      type: 'cave', seed: 4417, base: T.ICE, wall: T.CAVEWALL, path: T.STONE,
+      fill: 0.46,
+      scatter: [{ o: O.PILLAR, p: 0.005 }, { o: O.BROKENPILLAR, p: 0.004 }, { o: O.CRYSTAL, p: 0.007 }, { o: O.STATUE, p: 0.0012 }],
+      decor: [{ o: O.RUBBLE, p: 0.015 }, { o: O.BONES, p: 0.006 }],
+      pois: [
+        { id: 's', x: 49, y: 84, r: 4 },
+        { id: 'gate', x: 49, y: 72, r: 7 },
+        { id: 'court', x: 26, y: 56, r: 9 },
+        { id: 'barracks', x: 74, y: 56, r: 9 },
+        { id: 'hall', x: 50, y: 40, r: 9 },
+        { id: 'library', x: 24, y: 24, r: 8 },
+        { id: 'forge', x: 76, y: 24, r: 8 },
+        { id: 'boss', x: 50, y: 12, r: 10 },
+      ],
+      links: [['s', 'gate'], ['gate', 'court'], ['gate', 'barracks'], ['court', 'hall'], ['barracks', 'hall'], ['hall', 'library'],
+        ['hall', 'forge'], ['library', 'boss'], ['forge', 'boss'], ['hall', 'boss']],
+      features: [
+        { type: 'camp', x: 49, y: 72, banners: true },
+        { type: 'torches', every: 9 },
+        { type: 'ring', x: 50, y: 12, r: 8, obj: O.CRYSTAL, gap: 's' },
+        { type: 'treasure', x: 50, y: 12, r: 6, n: 12 },
+      ],
+    },
+    spawns: [
+      { m: 'frozen_knight', n: 10, x: 26, y: 56, r: 9 },
+      { m: 'frost_wraith', n: 10, x: 74, y: 56, r: 9 },
+      { m: 'ice_golem', n: 8, x: 50, y: 40, r: 9 },
+      { m: 'frozen_knight', n: 8, x: 24, y: 24, r: 8 },
+      { m: 'frost_mage', n: 6, x: 76, y: 24, r: 8 },
+      { m: 'frost_wraith', n: 6, x: 50, y: 42, r: 8 },
+      { m: 'kaelisa', n: 1, x: 50, y: 12, r: 1 },
+    ],
+  },
+
+  // ======================= Sul, sob a capital: Cripta da Chama Primeva =======================
+  undercroft: {
+    id: 'undercroft', name: 'Cripta da Chama Primeva', levels: 'Níveis 29–30', lvl: [29, 30], w: 100, h: 80, dark: true, world: { x: 20, y: 150 },
+    spawn: { x: 50.5, y: 72.5 },
+    night: 0.95, alwaysDark: 0.6, tint: 'rgba(90,40,120,0.16)', music: 'void',
+    portals: [
+      { x: 48, y: 76, w: 5, h: 2, to: 'town', tx: 97.5, ty: 88.5, label: 'Cidade de Alvorada' },
+    ],
+    desc: 'O primeiro santuário, soterrado por Alvorada. Aqui Aurelion selou o Faminto — e aqui o selo começa a ceder.',
+    gen: {
+      type: 'cave', seed: 1313, base: T.RUIN, wall: T.CAVEWALL, path: T.RUIN,
+      fill: 0.5,
+      scatter: [{ o: O.PILLAR, p: 0.005 }, { o: O.BROKENPILLAR, p: 0.005 }, { o: O.CRYSTAL, p: 0.004 }, { o: O.BRAZIER, p: 0.0016 }],
+      decor: [{ o: O.RUBBLE, p: 0.018 }, { o: O.BONES, p: 0.008 }],
+      pois: [
+        { id: 's', x: 50, y: 72, r: 5 },
+        { id: 'stair', x: 50, y: 56, r: 7 },
+        { id: 'west', x: 22, y: 40, r: 9 },
+        { id: 'east', x: 78, y: 40, r: 9 },
+        { id: 'nave', x: 50, y: 32, r: 9 },
+        { id: 'boss', x: 50, y: 12, r: 11 },
+      ],
+      links: [['s', 'stair'], ['stair', 'west'], ['stair', 'east'], ['stair', 'nave'], ['west', 'nave'], ['east', 'nave'], ['nave', 'boss']],
+      features: [
+        { type: 'torches', every: 8 },
+        { type: 'sanctuary', x: 50, y: 12, r: 10 },
+        { type: 'sarcophagi', x: 22, y: 40, r: 6, n: 4 },
+        { type: 'sarcophagi', x: 78, y: 40, r: 6, n: 4 },
+        { type: 'treasure', x: 50, y: 12, r: 7, n: 12 },
+      ],
+    },
+    spawns: [
+      { m: 'void_stalker', n: 12, x: 22, y: 40, r: 9 },
+      { m: 'void_knight', n: 10, x: 78, y: 40, r: 9 },
+      { m: 'fallen_keeper', n: 8, x: 50, y: 32, r: 9 },
+      { m: 'void_stalker', n: 6, x: 50, y: 56, r: 7 },
+      { m: 'nyxthar', n: 1, x: 50, y: 12, r: 1 },
+    ],
+  },
+
   arena: {
-    id: 'arena', name: 'Arena de Sangue', levels: 'JxJ — Todos contra todos', w: 40, h: 40, pvp: true,
+    id: 'arena', name: 'Arena de Sangue', levels: 'JxJ — Todos contra todos', w: 40, h: 40, pvp: true, world: { x: 37, y: 100 },
     gen: { type: 'arena', seed: 3 },
     spawn: { x: 20.5, y: 34.5 },
     pvpRespawn: [{ x: 10.5, y: 10.5 }, { x: 29.5, y: 10.5 }, { x: 10.5, y: 24.5 }, { x: 29.5, y: 24.5 }, { x: 20.5, y: 8.5 }],
@@ -330,4 +563,17 @@ export function isSafeAt(zone, x, y) {
 export function portalAt(zone, x, y) {
   const tx = Math.floor(x), ty = Math.floor(y);
   return zone.portals.find((p) => tx >= p.x && tx < p.x + p.w && ty >= p.y && ty < p.y + p.h) || null;
+}
+
+// passagem selada: devolve o aviso se o personagem ainda não cumpriu a condição (req.flag) ou null se pode passar
+export function portalSealed(ch, portal) {
+  if (!portal || !portal.req || !portal.req.flag) return null;
+  return ch && ch.flags && ch.flags[portal.req.flag] ? null : (portal.req.msg || 'A passagem está selada.');
+}
+
+// aviso ao entrar numa região muito acima do nível do personagem (null se estiver tudo bem)
+export function dangerWarning(zoneId, level) {
+  const z = ZONES[zoneId];
+  if (!z || !z.lvl || level >= z.lvl[0] - 5) return null;
+  return `Região perigosa: ${z.name} é recomendada para os ${z.levels.toLowerCase()}. Volte pelo mesmo portal se precisar.`;
 }

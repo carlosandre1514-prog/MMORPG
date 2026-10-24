@@ -136,6 +136,36 @@ add({
   desc: 'Um escaravelho de ouro que guardava o coração do rei. Ainda bate, devagar, no ritmo das dunas.',
   icon: { shape: 'brasa', c1: '#f5b041', c2: '#1e8449' },
 });
+add({
+  id: 'u_nhaga_eye', name: 'Olho da Mãe-do-Brejo', type: 'accessory', slot: 'amulet', lvl: 25, unique: true,
+  base: { hp: 280 }, fixed: { vit: 14, int: 12, def: 14, lifesteal: 3, mp: 90 }, price: 9000,
+  desc: 'Um olho âmbar, do tamanho de um punho, que continua abrindo e fechando. O brejo inteiro parece olhar por ele.',
+  icon: { shape: 'heart', c1: '#9ccc3c', c2: '#1b4d20' },
+});
+add({
+  id: 'u_valdric_crown', name: 'Diadema Afogada', type: 'armor', slot: 'head', lvl: 27, unique: true,
+  def: 34, base: { hp: 150 }, fixed: { str: 13, dex: 13, int: 13, vit: 13, power: 16, crit: 5, mp: 90 }, price: 12000,
+  desc: 'O aro de ouro de Valdric, cheio de algas. Lembra a quem a usa que a água sempre sobe.',
+  icon: { shape: 'crown', c1: '#8fd8cc', c2: '#14504a' },
+});
+add({
+  id: 'u_vargnar_fang', name: 'Presa do Inverno', type: 'accessory', slot: 'ring', lvl: 26, unique: true,
+  base: { power: 34 }, fixed: { dex: 15, crit: 9, haste: 7, speed: 5 }, price: 10000,
+  desc: 'Uma presa de gelo que nunca derrete. Cada golpe dado com ela deixa uma linha de geada no ar.',
+  icon: { shape: 'tusk', c1: '#d6eaf8', c2: '#2874a6' },
+});
+add({
+  id: 'u_kaelisa_heart', name: 'Coração Gélido', type: 'accessory', slot: 'amulet', lvl: 29, unique: true,
+  base: { hp: 340 }, fixed: { vit: 15, def: 22, int: 14, lifesteal: 4, speed: 5 }, price: 14000,
+  desc: 'O cristal que prendia o Quarto Selo no peito da Rainha. Bate devagar, no ritmo de uma nevasca.',
+  icon: { shape: 'heart', c1: '#aed6f1', c2: '#1b4f72' },
+});
+add({
+  id: 'u_nyxthar_shard', name: 'Estilhaço do Faminto', type: 'accessory', slot: 'ring', lvl: 30, unique: true,
+  base: { power: 42 }, fixed: { str: 12, dex: 12, int: 12, crit: 10, haste: 8, lifesteal: 5 }, price: 20000,
+  desc: 'Um caco de escuridão que ainda tem fome. Quanto mais você luta, mais ele quer — e mais ele devolve.',
+  icon: { shape: 'brasa', c1: '#b36ae0', c2: '#2c1338' },
+});
 const LEGEND_WEAPONS = {
   warrior: ['Lâmina da Aurora', { str: 18, vit: 10, crit: 6, lifesteal: 4 }],
   assassin: ['Sombra da Aurora', { dex: 22, crit: 12, haste: 8, lifesteal: 3 }],
@@ -196,6 +226,12 @@ mat('mat_chitin', 'Quitina Dourada', 30, 'bark', '#d4a017', 'Carapaça de escorp
 mat('mat_linen', 'Linho Embalsamado', 30, 'cloth', '#e8dcc0', 'Faixas de múmia ainda impregnadas de resinas antigas.');
 mat('mat_scarab', 'Escaravelho de Ouro', 40, 'gem', '#f5b041', 'Amuleto de ouro maciço que os reis-sol levavam para o além.');
 mat('mat_ember', 'Fagulha da Chama', 120, 'ember', '#f7dc6f', 'Um fragmento minúsculo da Chama Primordial. Raríssimo.');
+mat('mat_toadskin', 'Couro de Sapo-Boi', 24, 'pelt', '#6fa84a', 'Couro viscoso e impermeável, cheio de verrugas.');
+mat('mat_wisp', 'Essência de Fogo-Fátuo', 36, 'essence', '#7fffd4', 'Uma gota de luz esverdeada que flutua sozinha dentro do frasco.');
+mat('mat_gravedust', 'Pó de Ossário', 34, 'ash', '#b8b09a', 'Pó fino de ossos de mil anos. Dissolve em água salgada.');
+mat('mat_frostpelt', 'Pele de Geada', 34, 'pelt', '#d6eaf8', 'Pele branca e densa. Quente por dentro, fria por fora.');
+mat('mat_frost', 'Estilha de Gelo Eterno', 44, 'crystal', '#aed6f1', 'Gelo que nunca derrete. Brilha como um céu de inverno.');
+mat('mat_voidshard', 'Fragmento do Vazio', 80, 'crystal', '#8e44ad', 'Escuridão sólida. Faz a luz em volta parecer menor.');
 add({
   id: 'enh_stone', name: 'Pedra de Aprimoramento', type: 'material', lvl: 1, stack: true, price: 250,
   desc: 'Usada pela ferreira para aprimorar equipamentos.',
@@ -216,6 +252,27 @@ qi('q_water_flask', 'Odre do Oásis', 'sack', '#5dade2', 'Um odre de couro, chei
 qi('q_sun_tablet', 'Tábua Solar', 'sigil', '#f4d03f', 'Uma tábua de ouro com glifos do sol: o selo que mantém os reis dormindo.');
 qi('q_stinger_seal', 'Selo do Ninho', 'tag', '#c0392b', 'Um selo de cera vermelha arrancado de um escorpião carregador de mensagens.');
 qi('q_letter', 'Carta Selada de Osric', 'scroll', '#f5e6c8', 'Uma carta selada com cera verde, endereçada à druida Sylvara.');
+qi('q_toad_gland', 'Glândula de Sapo-Boi', 'herb', '#7cb342', 'Uma glândula inchada que cheira a pântano. Garrett diz que é a base do antídoto.');
+qi('q_wisp_lantern', 'Lanterna de Fogo-Fátuo', 'gem', '#7fffd4', 'Uma pequena lanterna de vidro com uma luz verde que não se apaga.');
+qi('q_hag_charm', 'Amuleto de Bruxa', 'sigil', '#6fa84a', 'Um amuleto de ossinhos e cabelo trançado, ainda morno.');
+qi('q_drowned_locket', 'Medalhão de Afogado', 'tag', '#7fb8b0', 'Um medalhão preso a uma corrente enferrujada, com um retrato desbotado.');
+qi('q_seal_brejo', 'Selo do Brejo', 'sigil', '#58d68d', 'O Primeiro Selo de Aurelion: um disco de bronze verde com um sol gravado.');
+qi('q_order_badge', 'Insígnia da Ordem', 'tag', '#8fd8cc', 'Uma insígnia de bronze com o brasão da Ordem dos Guardiões, corroída pela água.');
+qi('q_ossuary_key', 'Chave do Ossário', 'tag', '#c9c1a3', 'Uma chave de osso, fria como o chão da cripta.');
+qi('q_necro_tome', 'Tomo dos Ritos Fúnebres', 'scroll', '#9b7fd1', 'Páginas encharcadas de um livro de hinos, escritas em duas letras diferentes.');
+qi('q_warden_sigil', 'Sigilo de Guardião', 'sigil', '#7fb8b0', 'Um sigilo de ferro azulado: o selo de um guardião das criptas.');
+qi('q_seal_afogados', 'Selo das Águas Mortas', 'sigil', '#5dade2', 'O Segundo Selo de Aurelion: um disco de ferro azul, ainda pingando.');
+qi('q_frost_fang', 'Presa de Geada', 'tusk', '#d6eaf8', 'Uma presa branca, tão fria que queima os dedos.');
+qi('q_yeti_horn', 'Chifre de Yeti', 'bone', '#eaf2f8', 'Um chifre curvo e liso, do tamanho do braço de um homem.');
+qi('q_raven_feather', 'Pena de Geada', 'wing', '#aed6f1', 'Uma pena azul-clara coberta de uma camada fina de gelo.');
+qi('q_frost_rune', 'Runa do Círculo do Norte', 'sigil', '#85c1e9', 'Uma pedrinha com uma runa de gelo que se acende quando você sopra.');
+qi('q_seal_geada', 'Selo da Geada', 'sigil', '#d6eaf8', 'O Terceiro Selo de Aurelion: um disco de prata gelada.');
+qi('q_knight_oath', 'Juramento do Cavaleiro', 'scroll', '#7fb3d5', 'Um pergaminho congelado com o juramento de um cavaleiro, a tinta intacta.');
+qi('q_frost_core', 'Núcleo de Gelo Vivo', 'crystal', '#aed6f1', 'Um núcleo de gelo que pulsa devagar, como um coração adormecido.');
+qi('q_seal_inverno', 'Selo do Inverno', 'sigil', '#aed6f1', 'O Quarto Selo de Aurelion: um disco de cristal azul, partido ao meio e colado pelo gelo.');
+qi('q_void_shard', 'Cacos de Sombra', 'crystal', '#8e44ad', 'Cacos de sombra que engolem o brilho das tochas.');
+qi('q_keeper_seal', 'Sigilo do Guardião Caído', 'sigil', '#d4ac0d', 'Um sigilo dourado, rachado, com o brasão de Lúmen.');
+qi('q_faminto_heart', 'Coração do Faminto', 'brasa', '#8e44ad', 'Uma brasa de escuridão pulsando. Não esquenta; devora.');
 
 export function getItem(id) {
   return ITEMS[id];

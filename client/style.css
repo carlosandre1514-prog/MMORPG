@@ -402,7 +402,15 @@ input { font-family: var(--font); user-select: text; }
 .rw { padding: 3px 8px; border-radius: 3px; background: rgba(0, 0, 0, 0.4); font-weight: 700; font-size: 13px; }
 .rw.xp { color: #c39bd3; } .rw.flag { color: #ff9f43; } .rw.title { color: var(--gold); }
 
+/* Mapa: abas Mundo / Região e o cartão da região selecionada */
+.map-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.map-tabs .tab { flex: 0 0 auto; min-width: 110px; }
+.wm-card { margin: 4px 0 8px; padding: 8px 10px; border: 1px solid rgba(201, 162, 74, 0.45); border-radius: 5px; background: rgba(201, 162, 74, 0.08); }
+.wm-name { font-family: var(--font-title); font-size: 17px; color: #ffd27a; letter-spacing: 0.5px; }
+.wm-dir { margin-top: 3px; color: #bfe3ff; }
+.map-zone { cursor: pointer; }
 .map-wrap { display: flex; gap: 12px; }
+@media (max-width: 760px) { .map-wrap { flex-direction: column; } .map-tabs .tab { min-width: 90px; } }
 .map-cv { border: 1px solid #444; border-radius: 4px; max-width: 100%; }
 .map-side { flex: 1; }
 .map-kingdom { margin: 10px 0 2px; padding-bottom: 2px; border-bottom: 1px solid rgba(201, 162, 74, 0.35); color: #c9a24a; font-family: var(--font-title); font-size: 15px; letter-spacing: 1px; }

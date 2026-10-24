@@ -7,6 +7,7 @@ import { ITEMS } from '/shared/data/items.js';
 import { ZoneScene, glowTexture } from './world3d.js';
 import { Effects3D } from './fx3d.js';
 import { characters, LOOKS } from './characters.js';
+import { Weather, weatherOf } from './weather.js';
 import { buildCreature, buildNpcProp } from './creatures.js';
 import { medieval } from './medieval.js';
 import { arms } from './arms.js';
@@ -32,6 +33,12 @@ const ATMOS = {
   zahrim: { day: 0xdcc59b, night: 0x14101c, fog: [42, 100] },
   dunes: { day: 0xe2c690, night: 0x15111a, fog: [38, 95] },
   tombs: { day: 0x2a2018, night: 0x120d08, fog: [14, 38] },
+  // oeste e norte de Alvorada: brejo enevoado, catacumbas alagadas, picos nevados, cidadela de gelo e a cripta sob a capital
+  swamp: { day: 0x7f9f86, night: 0x07130c, fog: [13, 40] },
+  catacombs: { day: 0x15262a, night: 0x0a1416, fog: [13, 36] },
+  peaks: { day: 0xcfe3f2, night: 0x0c1528, fog: [26, 70] },
+  citadel: { day: 0x2a3d54, night: 0x0b1322, fog: [15, 44] },
+  undercroft: { day: 0x1c1026, night: 0x0b0612, fog: [12, 34] },
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -203,6 +210,9 @@ export class Renderer3D {
     this.scene.add(this.zoneScene.group);
     this.atmos = ATMOS[zone.id] || ATMOS.fields;
     this.scene.fog = new THREE.Fog(this.atmos.day, this.atmos.fog[0], this.atmos.fog[1]);
+    if (this.weather) { this.scene.remove(this.weather.points); this.weather.dispose(); this.weather = null; }
+    const wk = weatherOf(zone.def);
+    if (wk) { this.weather = new Weather(wk); this.scene.add(this.weather.points); }
     this.lights = terrain.lights.map((L) => ({ x: L.x, y: L.lava ? 0.4 : 1.15, z: L.y, r: L.r, lava: L.lava, o: L.o }));
     const me = this.game.me;
     this.camTarget.set(me.x, 0.8, me.y);
@@ -527,6 +537,7 @@ export class Renderer3D {
     this.updateCamera(dt);
     this.updateLights(now, t);
     this.updateRings(t);
+    if (this.weather) this.weather.update(dt, g.me.x, g.me.y, now / 1000);
     this.zoneScene.cull(g.me.x, g.me.y);
     this.updateRoom(dt, now);
     this.guideFx.update(g.guide, g.me, t, g.zone.id);
